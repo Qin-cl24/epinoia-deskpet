@@ -193,8 +193,18 @@
 ```
 README.md                          ← 你现在在看的
 LICENSE                            ← CC BY-NC-SA 4.0
+.gitignore                         ← 防密钥/构建产物泄漏
+app/                               ← 可编译的 Android 工程（本地内测版）
+  build.gradle.kts
+  src/main/AndroidManifest.xml     ← 权限 + 服务声明
+  src/main/assets/pet.html         ← 桌宠渲染模板（占位素材，可替换）
+  src/main/java/com/example/deskpet/
+    MainActivity.kt                ← 权限引导 + 开关页
+    service/OverlayService.kt      ← 悬浮窗核心服务
+    ai/                            ← AI 接入通道（默认 DeepSeek）
 examples/
   ExampleOverlayService.kt         ← 最简悬浮窗示例（能跑）
+  pet.html                         ← 对应渲染模板
 docs/
   overlay-service.md               ← 核心服务详解
   gesture-system.md                ← 手势状态机
@@ -203,6 +213,7 @@ docs/
   notification-whispers.md         ← 通知碎念
   supabase-sync.md                 ← 后端同步设计
   ci-cd.md                         ← GitHub Actions 自动构建
+  ai-channel.md                    ← AI 接入通道设计（多通道/默认 DeepSeek）
 ```
 
 ---

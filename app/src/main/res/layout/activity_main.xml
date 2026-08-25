@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#fff8f0"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🧡 Epinoia 桌宠设置"
+            android:textColor="#333333"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="形象固定为橙色方块小人（无嘴设定），所有功能可在此开关。"
+            android:textColor="#666666"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="🔐 权限设置"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_overlay_perm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="悬浮窗权限（必需）" />
+
+        <Button
+            android:id="@+id/btn_notif_perm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="通知权限（保活用）" />
+
+        <Button
+            android:id="@+id/btn_storage_perm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="文件访问权限（AI 消息通道用）" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="🎛️ 功能开关"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <Switch
+            android:id="@+id/sw_dock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="悬浮球贴边（无操作10s自动贴边半透明）"
+            android:textColor="#333333" />
+
+        <Switch
+            android:id="@+id/sw_edge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="边缘跑（随机沿屏幕边缘滑跑）"
+            android:textColor="#333333" />
+
+        <Switch
+            android:id="@+id/sw_peek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="躲猫猫（随机消失→随机位置现身）"
+            android:textColor="#333333" />
+
+        <Switch
+            android:id="@+id/sw_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="自主小动作（13种动作/连击/时段/孤独）"
+            android:textColor="#333333" />
+
+        <Switch
+            android:id="@+id/sw_water"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="喝水提醒（每2小时）"
+            android:textColor="#333333" />
+
+        <Switch
+            android:id="@+id/sw_keyboard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="键盘感知（键盘弹出时趴到键盘上方）"
+            android:textColor="#333333" />
+
+        <Switch
+            android:id="@+id/sw_ai"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="AI 消息通道（监听 /sdcard/Deskpet/messages.txt）"
+            android:textColor="#333333" />
+
+        <Switch
+            android:id="@+id/sw_http"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="本地 AI 服务（127.0.0.1:9001，Agent 可 curl 控制）"
+            android:textColor="#333333" />
+
+        <Switch
+            android:id="@+id/sw_deepseek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="DeepSeek 大脑（AI 主动说话，本地内测）"
+            android:textColor="#333333" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="📐 桌宠尺寸"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="当前：标准（52×24dp）"
+            android:textColor="#666666"
+            android:textSize="12sp" />
+
+        <SeekBar
+            android:id="@+id/sb_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="最小 52×24dp ↔ 最大 130×60dp（重启桌宠后生效）"
+            android:textColor="#999999"
+            android:textSize="11sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="🤖 AI 服务配置（可选）"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/et_ai_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:autofillHints="url"
+            android:hint="后端地址，如 https://example.com/messages"
+            android:inputType="textUri"
+            android:textColor="#333333"
+            android:textColorHint="#999999" />
+
+        <EditText
+            android:id="@+id/et_ai_key"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:autofillHints="password"
+            android:hint="API Key（可空，非空时带 Authorization: Bearer）"
+            android:inputType="textPassword"
+            android:textColor="#333333"
+            android:textColorHint="#999999" />
+
+        <Button
+            android:id="@+id/btn_save_ai"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="💾 保存 AI 配置" />
+
+        <Button
+            android:id="@+id/btn_start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="🚀 启动桌宠" />
+
+        <Button
+            android:id="@+id/btn_stop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="⏹ 停止桌宠" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="20dp"
+            android:text="💡 AI 通道三种方式：\n① 文件：/sdcard/Deskpet/messages.txt（动作名|文本）\n② 本地 HTTP（仅本机）：curl -X POST http://127.0.0.1:9001/say -d '{&quot;text&quot;:&quot;你好&quot;,&quot;action&quot;:&quot;jump&quot;}'\n③ 外部后端：配置 URL + Key 后自动轮询\n动作：happy/sleepy/angry/cry/proud/jump/wiggle/music/shock/think/celebrate/cute/run/roll"
+            android:textColor="#666666"
+            android:textSize="11sp" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,28 @@
+# ── Gradle ──
+.gradle/
+build/
+**/build/
+
+# ── Android Studio / IntelliJ ──
+.idea/
+*.iml
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ── 密钥 / 签名（坚决不进仓库）──
+*.jks
+*.keystore
+keystore.txt
+keystore.properties
+secrets.properties
+
+# ── 系统 ──
+.DS_Store
+Thumbs.db
+*.log
+
+# ── 产物 ──
+*.apk
+.dsh-vision-router/

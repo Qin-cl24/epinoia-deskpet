@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+  html, body { width: 100%; height: 100%; background: transparent; overflow: hidden; }
+  body { display: flex; align-items: flex-end; justify-content: center; }
+
+  /* 气泡 (窗口顶部) */
+  .bubble {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,.95); color: #333; padding: 1px 4px;
+    border-radius: 6px; font-size: 8px; white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25); opacity: 0; transition: opacity .3s;
+    max-width: 42px; overflow: hidden; text-overflow: ellipsis;
+    z-index: 10; pointer-events: none;
+  }
+  .bubble.show { opacity: 1; }
+
+  /* ===== 桌宠形象 ===== */
+  .pet {
+    position: relative; width: 68px; height: 42px;
+    animation: idle 2.5s ease-in-out infinite;
+  }
+  @keyframes idle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  .pet.bounce { animation: bounce .4s ease; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+
+  /* 主体：横向长方形 52×24（下移给头顶气泡让位） */
+  .body {
+    position: relative;
+    width: 52px; height: 24px; background: #e67e22;
+    margin: 12px auto 0;
+  }
+  /* 眼睛（两只） */
+  .eye { position: absolute; width: 6px; height: 6px; background: #000; top: 6px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
+  .eye-left { left: 10px; } .eye-right { right: 10px; }
+  .pet.blink .eye { height: 2px; }
+  /* 手：小正方形、与身体同色、垂直居中、紧贴身体两侧无缝隙 */
+  .arm { position: absolute; width: 8px; height: 8px; background: #e67e22; top: 8px; }
+  .arm-left { left: -8px; } .arm-right { right: -8px; }
+  /* 腿：两条，分开在下方 */
+  .leg { position: absolute; width: 8px; height: 6px; background: #d35400; bottom: -6px; border-radius: 0 0 4px 4px; }
+  .leg-left { left: 10px; } .leg-right { right: 10px; }
+
+  /* ===== 自主小动作特效 ===== */
+  .fx { position: absolute; display: none; pointer-events: none; z-index: 5; font-size: 9px; }
+  .fx.show { display: block; animation: fxrise 1.2s ease-out forwards; }
+  @keyframes fxrise { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-14px) scale(1.4); } }
+  .fx-heart { top: -6px; left: 30px; }
+  .fx-tear  { top: 22px; left: 13px; }
+  .fx-tear.r{ top: 22px; left: auto; right: 13px; }
+  .fx-star  { top: -6px; left: 46px; }
+  .fx-zzz   { top: -9px; left: 42px; font-size: 7px; }
+  .fx-smoke { top: -9px; left: 8px; }
+  .fx-bubble { top: 6px; left: 6px; font-size: 7px; }
+  .fx-music { top: -8px; left: 27px; font-size: 10px; }
+  .fx-note { font-size: 7px; }
+  .fx-note.n1 { top: -6px; left: 6px; animation-delay: .1s; }
+  .fx-note.n2 { top: 0px;  left: 58px; animation-delay: .35s; }
+  .fx-note.n3 { top: -10px; left: 38px; animation-delay: .6s; }
+  .fx-exclaim { top: -8px; left: 30px; font-size: 11px; color: #e53935; font-weight: bold; }
+  .fx-question { top: -10px; left: 30px; font-size: 10px; color: #666; font-weight: bold; }
+  .fx-confetti { font-size: 8px; }
+  .fx-confetti.c1 { top: -4px; left: 4px; animation-delay: 0s; }
+  .fx-confetti.c2 { top: -2px; left: 56px; animation-delay: .2s; }
+  .fx-confetti.c3 { top: -8px; left: 30px; animation-delay: .4s; }
+
+  /* 动作表情 */
+  .act-happy .eye { height: 2px; border-radius: 50%; }
+  .act-sleepy .eye { height: 2px; }
+  .act-sleepy { animation: yawn 2.4s ease-in-out infinite; }
+  @keyframes yawn { 0%,100% { transform: translateY(0) scaleY(1); } 25% { transform: translateY(-3px) scaleY(1.1); } 50% { transform: translateY(0) scaleY(1); } }
+  .act-angry .eye-left { transform: rotate(-45deg); }
+  .act-angry .eye-right { transform: rotate(45deg); }
+  .act-angry { animation: shake .3s ease-in-out 6; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  .act-cry .eye { height: 2px; border-radius: 50%; }
+  .act-cry { animation: crybob 1.2s ease-in-out infinite; }
+  @keyframes crybob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(1px); } }
+  .act-proud .eye { height: 2px; }
+  .act-proud { animation: proudbob .8s ease-in-out infinite; }
+  @keyframes proudbob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .act-wiggle { animation: wiggle .5s ease-in-out 4; }
+  @keyframes wiggle { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-7deg); } 75% { transform: rotate(7deg); } }
+  .act-music { animation: wiggle .45s ease-in-out 6; }
+  .act-shock { animation: bounce .35s ease 2; }
+  .act-think { animation: thinkbob 1s ease-in-out infinite; }
+  @keyframes thinkbob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  .act-celebrate { animation: wiggle .3s ease-in-out 6; }
+  .act-cute .eye { width: 8px; height: 8px; border-radius: 50%; }
+  .act-run { animation: run .15s linear infinite; }
+  @keyframes run { 0%,100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-1px) rotate(-4deg); } 75% { transform: translateY(1px) rotate(4deg); } }
+  /* 趴键盘 */
+  .act-crouch { animation: crouch 1.5s ease-in-out infinite; }
+  @keyframes crouch { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(.8) translateY(3px); } }
+  /* 睡着 */
+  .pet.asleep { opacity: .65; animation: none; }
+  /* 完全隐藏时显示边缘手柄 */
+  .handle {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 20px; color: rgba(230, 126, 34, .55); display: none; z-index: 20;
+    line-height: 1;
+  }
+  .pet.handle-mode .body, .pet.handle-mode .fx, .pet.handle-mode .bubble { display: none; }
+  .pet.handle-mode .handle { display: block; }
+  /* 翻滚动作 */
+  .act-roll { animation: roll .6s ease 1; }
+  @keyframes roll { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="pet" id="pet">
+    <span class="bubble" id="bubble"></span>
+    <span class="handle" id="handle">❯</span>
+    <span class="fx fx-heart">❤</span>
+    <span class="fx fx-tear">💧</span>
+    <span class="fx fx-tear r">💧</span>
+    <span class="fx fx-star">✨</span>
+    <span class="fx fx-zzz">zZz</span>
+    <span class="fx fx-smoke">💢</span>
+    <span class="fx fx-bubble">🫧</span>
+    <span class="fx fx-music">🎧</span>
+    <span class="fx fx-note n1">♪</span>
+    <span class="fx fx-note n2">♫</span>
+    <span class="fx fx-note n3">♪</span>
+    <span class="fx fx-exclaim">!</span>
+    <span class="fx fx-question">?</span>
+    <span class="fx fx-confetti c1">🎉</span>
+    <span class="fx fx-confetti c2">🎊</span>
+    <span class="fx fx-confetti c3">✨</span>
+    <div class="body">
+      <div class="eye eye-left"></div>
+      <div class="eye eye-right"></div>
+      <div class="arm arm-left"></div>
+      <div class="arm arm-right"></div>
+      <div class="leg leg-left"></div>
+      <div class="leg leg-right"></div>
+    </div>
+  </div>
+
+<script>
+  const pet = document.getElementById('pet');
+  const bubble = document.getElementById('bubble');
+
+  function say(text, ms) {
+    bubble.textContent = text;
+    bubble.classList.add('show');
+    clearTimeout(say._t);
+    say._t = setTimeout(() => bubble.classList.remove('show'), ms || 1600);
+  }
+  function bounce() {
+    pet.classList.remove('bounce'); void pet.offsetWidth; pet.classList.add('bounce');
+  }
+  setInterval(() => {
+    pet.classList.add('blink');
+    setTimeout(() => pet.classList.remove('blink'), 130);
+  }, 3000);
+
+  window.petEngine = {
+    onTap: function() {
+      if (waterLv > 0) { waterLv = 0; say('咕嘟咕嘟... 喝了！💧'); return; }
+      randomSay(GREETS[PERIOD]);
+    },
+    onDoubleTap: function() { bounce(); say('嘿嘿!'); },
+    onLongPress: function() { say('唔...'); },
+    onDragEnd: function() { say('嘿咻~'); },
+    onFling: function() { say('哇!'); },
+    // 连击：2秒内连戳 3/5/8 次，层层递进
+    onCombo3: function() {
+      say('三连击！嘿嘿~');
+      pet.classList.add('act-happy');
+      setTimeout(function() { pet.classList.remove('act-happy'); }, 1200);
+    },
+    onCombo5: function() { say('五连击！！哇哦'); bounce(); },
+    onCombo8: function() {
+      say('八连击！！要被戳坏了🌚');
+      pet.classList.add('act-angry');
+      var s = document.querySelector('.fx-smoke'); if (s) s.classList.add('show');
+      setTimeout(function() { pet.classList.remove('act-angry'); clearFx(); }, 1500);
+    },
+    // 孤独递进：5/10/15/20分钟无互动
+    onLonely1: function() { say('(偷偷看你一眼)'); pet.classList.add('act-wiggle'); setTimeout(function() { pet.classList.remove('act-wiggle'); }, 1500); },
+    onLonely2: function() { say('呼~呼~'); var b = document.querySelector('.fx-bubble'); if (b) b.classList.add('show'); setTimeout(function() { if (b) b.classList.remove('show'); }, 3000); },
+    onLonely3: function() { pet.classList.add('act-sleepy'); say('zZz... 好困'); },
+    onLonely4: function() { pet.classList.add('asleep'); say('(睡熟了...)'); },
+    // 边缘跑：沿屏幕边缘滑跑时的动作
+    onEdgeRun: function() {
+      pet.classList.add('act-wiggle');
+      setTimeout(function() { pet.classList.remove('act-wiggle'); }, 2200);
+    },
+    // 躲猫猫现身：突然出现在随机位置
+    onPeekaboo: function() {
+      say('嘿嘿 我在这儿！');
+      pet.classList.add('act-happy');
+      var s = document.querySelector('.fx-star'); if (s) s.classList.add('show');
+      setTimeout(function() { pet.classList.remove('act-happy'); clearFx(); }, 1500);
+    },
+    // 键盘弹出：趴到键盘上方
+    onKeyboardUp: function() {
+      pet.classList.add('act-crouch');
+      say('键盘！我趴这儿咯~');
+      setTimeout(function() { pet.classList.remove('act-crouch'); }, 4000);
+    },
+    // 键盘收起：回原位
+    onKeyboardHide: function() { say('键盘走了~'); },
+    // AI 消息通道：AI 通过文件推送消息（动作名|文本）
+    onAiSay: function(text, action) {
+      say(text, 4000);
+      if (action && action !== 'none' && ACTIONS.indexOf(action) >= 0) {
+        pet.classList.remove('blink');
+        ACTIONS.forEach(function(a) { pet.classList.remove('act-' + a); });
+        pet.classList.add('act-' + action);
+        (FX[action] || []).forEach(function(sel) {
+          var el = document.querySelector(sel); if (el) el.classList.add('show');
+        });
+        setTimeout(function() { pet.classList.remove('act-' + action); clearFx(); }, 2500);
+      }
+    }
+  };
+
+  // 互动时唤醒
+  function wakeUp() {
+    pet.classList.remove('asleep', 'act-sleepy');
+    clearFx();
+  }
+
+  // 读取设置开关（原生 SharedPreferences）
+  function getPref(key, def) {
+    try { return window.AndroidBridge ? AndroidBridge.getPref(key, def) : def; } catch (e) { return def; }
+  }
+
+  // 完全隐藏模式：显示边缘手柄（原生层缩小窗口后调用）
+  function showHandle(left) {
+    pet.classList.add('handle-mode');
+    document.getElementById('handle').textContent = left ? '❯' : '❮';
+  }
+  function showPet() {
+    pet.classList.remove('handle-mode');
+  }
+
+  pet.addEventListener('click', () => window.petEngine.onTap());
+
+  // ===== 时段感知：按小时换说话风格 =====
+  var PERIOD = (function(h) {
+    if (h >= 0 && h < 6) return 'lateNight';
+    if (h >= 6 && h < 9) return 'morning';
+    if (h >= 11 && h < 14) return 'noon';
+    if (h >= 22) return 'night';
+    return 'day';
+  })(new Date().getHours());
+  var GREETS = {
+    lateNight: ['都这么晚了还不睡吗🌙','熬夜对身体不好哦...','快睡啦！'],
+    morning:   ['早安呀～☀️','新的一天！精神满满！','早！'],
+    noon:      ['午饭吃了吗？🍚','该吃饭啦～','饿了...'],
+    night:     ['晚上好呀～','今天辛苦啦！','夜深了哦🌙'],
+    day:       ['嗨~','主人!','在呢']
+  };
+  function randomSay(pool) { say(pool[Math.floor(Math.random() * pool.length)]); }
+
+  // ===== 喝水提醒：每2小时，越不理越凶（可开关） =====
+  var waterLv = 0;
+  var WATER_MSGS = ['该喝水啦～💧','都说了要喝水！💧💧','再不喝我就生气了！(｀へ´)','(盯着你) 水！水！'];
+  if (getPref('pref_water', true)) {
+    setInterval(function() {
+      waterLv++;
+      say(WATER_MSGS[(waterLv - 1) % WATER_MSGS.length], 4000);
+    }, 2 * 60 * 60 * 1000);
+  }
+
+  // ===== 自主小动作：参考相册表情图，随机自觉做 =====
+  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll'];
+  var FX = {
+    happy: ['.fx-heart'],
+    sleepy: ['.fx-zzz'],
+    angry: ['.fx-smoke'],
+    cry: ['.fx-tear', '.fx-tear.r'],
+    proud: ['.fx-star'],
+    jump: [],
+    wiggle: [],
+    music: ['.fx-music', '.fx-note.n1', '.fx-note.n2', '.fx-note.n3'],
+    shock: ['.fx-exclaim'],
+    think: ['.fx-question'],
+    celebrate: ['.fx-confetti.c1', '.fx-confetti.c2', '.fx-confetti.c3'],
+    cute: ['.fx-heart'],
+    run: [],
+    roll: []
+  };
+  function clearFx() {
+    document.querySelectorAll('.fx').forEach(function(el) { el.classList.remove('show'); });
+  }
+  function runAction() {
+    if (pet.classList.contains('asleep')) return;
+    if (!getPref('pref_idle_actions', true)) return;
+    // 做小动作时通知原生层从贴边弹出，刷存在感
+    try { window.AndroidBridge && window.AndroidBridge.peekOut(); } catch (e) {}
+    pet.classList.remove('blink');
+    ACTIONS.forEach(function(a) { pet.classList.remove('act-' + a); });
+    clearFx();
+    var a = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+    pet.classList.add('act-' + a);
+    if (a === 'jump') bounce();
+    (FX[a] || []).forEach(function(sel) {
+      var el = document.querySelector(sel);
+      if (el) el.classList.add('show');
+    });
+    setTimeout(function() {
+      pet.classList.remove('act-' + a);
+      clearFx();
+    }, 2500);
+  }
+  setTimeout(function schedule() {
+    runAction();
+    setTimeout(schedule, 5000 + Math.random() * 5000); // 每 5~10 秒随机一个小动作
+  }, 4000);
+
+  // ===== 尺寸缩放：AndroidBridge.getPetScale() 返回 1.0~2.5（52×24 ↔ 130×60）=====
+  // 用 zoom 而不是 transform，避免覆盖 idle 等动画的 transform
+  try {
+    var petScale = window.AndroidBridge ? window.AndroidBridge.getPetScale() : 1;
+    if (petScale && petScale !== 1) {
+      pet.style.zoom = petScale;
+    }
+  } catch (e) {}
+
+  randomSay(GREETS[PERIOD]);
+</script>
+</body>
+</html>

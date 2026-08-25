@@ -29,6 +29,12 @@ class OverlayService : Service() {
         private const val NOTIFICATION_ID = 1001
         private const val PET_SIZE_DP = 180
         private const val PET_HEIGHT_DP = 240
+
+        // === Gesture parameters (keep in sync with docs/gesture-system.md) ===
+        private const val DOUBLE_TAP_TIMEOUT = 300L          // ms between the two taps
+        private const val LONG_PRESS_TIMEOUT = 600L          // hold duration before long press fires
+        private const val MOVE_THRESHOLD_PX = 10             // px before it counts as a drag
+        private const val FLING_VELOCITY_THRESHOLD = 800f    // px/s, from VelocityTracker
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -82,6 +88,24 @@ class OverlayService : Service() {
     private var lastTapTime = 0L
     private var touchStartTime = 0L
     private var hasMoved = false
+    private var longPressTriggered = false
+    private var velocityTracker: VelocityTracker? = null
+    private val gestureHandler = Handler(Looper.getMainLooper())
+
+    /** Fires while the finger is still down, so the pet reacts without waiting for release. */
+    private val longPressRunnable = Runnable {
+        longPressTriggered = true
+        fireJs("onLongPress()")
+    }
+
+    /** Single tap is delayed by DOUBLE_TAP_TIMEOUT so a second tap can cancel it (double tap). */
+    private val singleTapRunnable = Runnable { fireJs("onTap()") }
+
+    private fun fireJs(call: String) {
+        overlayView?.evaluateJavascript(
+            "window.petEngine && window.petEngine.$call", null
+        )
+    }
 
     private fun createTouchListener(): View.OnTouchListener {
         return View.OnTouchListener { _, event ->
@@ -93,31 +117,79 @@ class OverlayService : Service() {
                     initialTouchY = event.rawY
                     touchStartTime = System.currentTimeMillis()
                     hasMoved = false
+                    longPressTriggered = false
+                    velocityTracker?.recycle()
+                    velocityTracker = VelocityTracker.obtain()
+                    velocityTracker?.addMovement(event)
+                    gestureHandler.removeCallbacks(longPressRunnable)
+                    gestureHandler.removeCallbacks(singleTapRunnable)
+                    gestureHandler.postDelayed(longPressRunnable, LONG_PRESS_TIMEOUT)
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
+                    velocityTracker?.addMovement(event)
                     val dx = (event.rawX - initialTouchX).toInt()
                     val dy = (event.rawY - initialTouchY).toInt()
-                    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                    if (Math.abs(dx) > MOVE_THRESHOLD_PX || Math.abs(dy) > MOVE_THRESHOLD_PX) {
+                        if (!hasMoved) {
+                            // Movement cancels the pending long press
+                            gestureHandler.removeCallbacks(longPressRunnable)
+                        }
                         hasMoved = true
                         params?.x = initialX + dx
                         params?.y = initialY + dy
-                        windowManager?.updateViewLayout(overlayView, params)
+                        params?.let { p ->
+                            overlayView?.let { v ->
+                                windowManager?.updateViewLayout(v, p)
+                            }
+                        }
                     }
                     true
                 }
                 MotionEvent.ACTION_UP -> {
+                    gestureHandler.removeCallbacks(longPressRunnable)
+                    velocityTracker?.addMovement(event)
+                    velocityTracker?.computeCurrentVelocity(1000)
+                    val vx = velocityTracker?.xVelocity ?: 0f
+                    val vy = velocityTracker?.yVelocity ?: 0f
+                    velocityTracker?.recycle()
+                    velocityTracker = null
+
                     val elapsed = System.currentTimeMillis() - touchStartTime
-                    if (!hasMoved) {
-                        when {
-                            elapsed > 600 -> onLongPress()
-                            System.currentTimeMillis() - lastTapTime < 300 -> onDoubleTap()
-                            else -> {
-                                lastTapTime = System.currentTimeMillis()
-                                onTap()
+                    when {
+                        // Long press already fired while the finger was down
+                        longPressTriggered -> Unit
+                        // Second tap inside the window → double tap, cancel the pending single tap
+                        !hasMoved && elapsed <= LONG_PRESS_TIMEOUT &&
+                                System.currentTimeMillis() - lastTapTime < DOUBLE_TAP_TIMEOUT -> {
+                            gestureHandler.removeCallbacks(singleTapRunnable)
+                            lastTapTime = 0L
+                            fireJs("onDoubleTap()")
+                        }
+                        // Plain tap — delay it briefly to disambiguate from a double tap
+                        !hasMoved -> {
+                            lastTapTime = System.currentTimeMillis()
+                            gestureHandler.removeCallbacks(singleTapRunnable)
+                            gestureHandler.postDelayed(singleTapRunnable, DOUBLE_TAP_TIMEOUT)
+                        }
+                        // Dragged: fling (fast flick) or a plain drag that ended
+                        else -> {
+                            if (Math.abs(vx) > FLING_VELOCITY_THRESHOLD ||
+                                Math.abs(vy) > FLING_VELOCITY_THRESHOLD) {
+                                fireJs("onFling($vx, $vy)")
+                            } else {
+                                fireJs("onDragEnd()")
                             }
                         }
                     }
+                    true
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    // System stole the gesture (call, notification…) — reset everything
+                    gestureHandler.removeCallbacks(longPressRunnable)
+                    gestureHandler.removeCallbacks(singleTapRunnable)
+                    velocityTracker?.recycle()
+                    velocityTracker = null
                     true
                 }
                 else -> false
@@ -125,23 +197,11 @@ class OverlayService : Service() {
         }
     }
 
-    private fun onTap() {
-        overlayView?.evaluateJavascript(
-            "window.petEngine && window.petEngine.onTap()", null
-        )
-    }
+    private fun onTap() = fireJs("onTap()")
 
-    private fun onDoubleTap() {
-        overlayView?.evaluateJavascript(
-            "window.petEngine && window.petEngine.onDoubleTap()", null
-        )
-    }
+    private fun onDoubleTap() = fireJs("onDoubleTap()")
 
-    private fun onLongPress() {
-        overlayView?.evaluateJavascript(
-            "window.petEngine && window.petEngine.onLongPress()", null
-        )
-    }
+    private fun onLongPress() = fireJs("onLongPress()")
 
     // === NOTIFICATION ===
 
@@ -180,7 +240,12 @@ class OverlayService : Service() {
     }
 
     override fun onDestroy() {
+        gestureHandler.removeCallbacksAndMessages(null)
+        velocityTracker?.recycle()
+        velocityTracker = null
         overlayView?.let {
+            it.loadUrl("about:blank")
+            it.removeAllViews()
             windowManager?.removeView(it)
             it.destroy()
         }

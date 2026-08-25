@@ -72,10 +72,13 @@ View.OnTouchListener { view, event ->
                     }
                 }
             } else {
-                // Check fling vs normal drag end
-                val velocity = sqrt((dx*dx + dy*dy).toDouble())
-                if (velocity > 200 && elapsed < 400) onFling(dx, dy)
-                else onDragEnd()
+                // NOTE: dx/dy from ACTION_MOVE are out of scope here — don't reference them!
+                // Use a VelocityTracker for real fling detection:
+                //   - addMovement(event) on every DOWN/MOVE/UP
+                //   - computeCurrentVelocity(1000) on ACTION_UP
+                //   - val vx = tracker.xVelocity; val vy = tracker.yVelocity
+                //   - if (abs(vx) > 800 || abs(vy) > 800) onFling(vx, vy) else onDragEnd()
+                onDragEnd() // placeholder — wire up the VelocityTracker as above
             }
             true
         }
