@@ -8,6 +8,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ComponentCallbacks2
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
@@ -26,6 +27,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import org.json.JSONObject
@@ -55,9 +57,9 @@ class PetOverlayService : Service() {
         private const val NOTIFICATION_ID = 1
 
         private const val PET_WIDTH_DP = 72
-        private const val PET_HEIGHT_DP = 72
+        private const val PET_HEIGHT_DP = 48   // 贴合桌宠（pet.html 36px 高 + 顶部动画余量），不再留气泡空间
         private const val MAX_PET_WIDTH_DP = 180   // 尺寸最大档（对应 pet.html 130×60 放大 2.5 倍）
-        private const val MAX_PET_HEIGHT_DP = 180
+        private const val MAX_PET_HEIGHT_DP = 100
         private const val HANDLE_W_DP = 26
         private const val HANDLE_H_DP = 52
         private const val DOCK_EDGE_MARGIN_DP = 16
@@ -83,11 +85,30 @@ class PetOverlayService : Service() {
         private const val PREFS_NAME = "deskpet_prefs"
         private const val MSG_FILE = "/sdcard/Deskpet/messages.txt"
         private const val LOCAL_PORT = 9001
+
+        // ===== 独立气泡窗口（跟随文字长短自适应）=====
+        private const val BUBBLE_MAX_W_DP = 210      // 气泡最大宽度（约 20 字）
+        private const val BUBBLE_MIN_W_DP = 48       // 气泡最小宽度
+        private const val BUBBLE_PAD_H_DP = 10       // 气泡左右内边距
+        private const val BUBBLE_PAD_V_DP = 5        // 气泡上下内边距
+        private const val BUBBLE_FONT_SP = 13f       // 气泡字号
+        private const val BUBBLE_GAP_DP = 6          // 气泡与桌宠的间距
+        private const val BUBBLE_MAX_LINES = 3       // 最长 3 行（超长省略）
+        private const val BUBBLE_DURATION_BASE_MS = 1500L
+        private const val BUBBLE_DURATION_PER_CHAR_MS = 90L
+        private const val BUBBLE_DURATION_MAX_MS = 5000L
     }
 
     private var windowManager: WindowManager? = null
     private var overlayView: WebView? = null
     private var params: WindowManager.LayoutParams? = null
+
+    // 独立气泡窗口（文字自适应大小的原生 TextView 悬浮窗）
+    private var bubbleView: TextView? = null
+    private var bubbleParams: WindowManager.LayoutParams? = null
+    // 长文本按句切分后的队列：一条条依次显示
+    private val bubbleQueue = ArrayDeque<String>()
+    private val bubbleShowRunnable = Runnable { showNextBubble(0) }
 
     // 贴边 / 手柄 / 隐藏状态
     private var docked = false
@@ -156,10 +177,69 @@ class PetOverlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        // 全局崩溃捕获：任何线程崩溃都写 /sdcard/Deskpet/crash.log，便于诊断
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            try {
+                val f = File("/sdcard/Deskpet/crash.log")
+                f.parentFile?.mkdirs()
+                f.appendText("${System.currentTimeMillis()} THREAD=${thread.name} ${throwable}\n")
+                // 崩溃前桌宠状态：帮助判断是「贴边/手柄/动画」哪个阶段崩的
+                f.appendText(
+                    "state: docked=$docked hidden=$hidden alpha=${params?.alpha} " +
+                        "x=${params?.x} y=${params?.y} w=${params?.width} h=${params?.height}\n"
+                )
+                throwable.stackTrace.take(25).forEach { f.appendText("    at $it\n") }
+                f.appendText("---\n")
+            } catch (_: Exception) {
+            }
+            android.os.Process.killProcess(android.os.Process.myPid())
+        }
         logLifecycle("onCreate")
         startAsForeground()
         Toast.makeText(this, "Epinoia 桌宠正在启动...", Toast.LENGTH_SHORT).show()
         setupOverlay()
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // 用户从最近任务划掉：记录一下，判断是不是这个动作导致服务死掉
+        logLifecycle("onTaskRemoved")
+        super.onTaskRemoved(rootIntent)
+    }
+
+    override fun onTrimMemory(level: Int) {
+        // 系统内存压力：杀进程前会先回调，记录等级便于判断是否 LMK
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_MODERATE) {
+            logLifecycle("onTrimMemory level=$level")
+        }
+        super.onTrimMemory(level)
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        // 屏幕旋转/尺寸变化：悬浮窗坐标基于旧屏幕，必须重新 clamp 进新屏幕，
+        // 否则桌宠会跑到屏幕外（横屏高度变小最常见）
+        super.onConfigurationChanged(newConfig)
+        logLifecycle("onConfigurationChanged ${getScreenW()}x${getScreenH()}")
+        handler.post {
+            try {
+                val p = params ?: return@post
+                if (docked) {
+                    // 贴边状态：保持原 dockSide 方向，按新屏幕重新贴边（不重新判断左右）
+                    val inset = (p.width * (1f - BODY_WINDOW_RATIO) / 2f).toInt()
+                    val visible = dpToPx(VISIBLE_EDGE_DP)
+                    p.x = if (dockSide >= 0) getScreenW() - (inset + visible) else -(p.width - inset - visible)
+                    p.y = p.y.coerceIn(0, (getScreenH() - p.height).coerceAtLeast(0))
+                    p.alpha = DOCKED_ALPHA
+                    safeUpdate(p)
+                } else {
+                    p.x = p.x.coerceIn(0, (getScreenW() - p.width).coerceAtLeast(0))
+                    p.y = p.y.coerceIn(0, (getScreenH() - p.height).coerceAtLeast(0))
+                    safeUpdate(p)
+                }
+                // 气泡若在显示，updateBubblePosition 已在 safeUpdate 内同步
+            } catch (e: Exception) {
+                logLifecycle("onConfigurationChanged FAILED: $e")
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -184,6 +264,7 @@ class PetOverlayService : Service() {
             v.destroy()
         }
         overlayView = null
+        hideBubble()
         super.onDestroy()
     }
 
@@ -207,8 +288,12 @@ class PetOverlayService : Service() {
             .setOngoing(true)
             .setSilent(true)
             .build()
-        // Android 15+ 强制要求传 type（不传会抛 MissingForegroundServiceTypeException 崩溃）
-        startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        // Android 15+ 强制要求传 type；sticky 重启等场景 startForeground 可能被拒，捕获避免崩溃
+        try {
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } catch (e: Exception) {
+            logLifecycle("startForeground FAILED: $e")
+        }
     }
 
     private fun setupOverlay() {
@@ -260,6 +345,7 @@ class PetOverlayService : Service() {
             startLocalServer()
             scheduleBrainTick()
             startScreenshotWatch()
+            logLifecycle("overlay up win=${params?.width}x${params?.height} @(${params?.x},${params?.y})")
             Toast.makeText(this, "桌宠已上线！", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             logLifecycle("setupOverlay FAILED: $e")
@@ -278,13 +364,24 @@ class PetOverlayService : Service() {
 
         @JavascriptInterface
         fun peekOut() {
-            if (docked) undock()
-            resetIdleTimer()
+            // 关键修复：@JavascriptInterface 回调运行在 WebView 线程池（非主线程），
+            // 直接操作 WindowManager/View 会抛「Calling View methods on another thread」崩溃。
+            // 必须切回主线程再 undock（贴边动画每帧都在 updateViewLayout）。
+            handler.post {
+                if (docked) undock()
+                resetIdleTimer()
+            }
         }
 
         /** 桌宠缩放比：1.0（52×24）~ 2.5（130×60），pet.html 按此缩放 */
         @JavascriptInterface
         fun getPetScale(): Float = 1f + 1.5f * petSizeRatio()
+
+        /** 独立气泡窗口（pet.html 的 say() 改走这里）：文字自适应宽度，任意线程安全 */
+        @JavascriptInterface
+        fun showBubble(text: String, durationMs: Long) {
+            this@PetOverlayService.showBubble(text, durationMs)
+        }
     }
 
     /** pref_pet_size（0~100）→ 0.0~1.0 */
@@ -387,7 +484,7 @@ class PetOverlayService : Service() {
                         params?.let { p ->
                             p.x = initialX + (event.rawX - initialTouchX).toInt()
                             p.y = initialY + (event.rawY - initialTouchY).toInt()
-                            overlayView?.let { windowManager?.updateViewLayout(it, p) }
+                            safeUpdate(p)
                         }
                         hasMoved = true
                         return@OnTouchListener true
@@ -401,7 +498,7 @@ class PetOverlayService : Service() {
                     params?.let { p ->
                         p.x = (initialX + dx).coerceIn(0, getScreenW() - p.width)
                         p.y = (initialY + dy).coerceIn(0, getScreenH() - p.height)
-                        overlayView?.let { windowManager?.updateViewLayout(it, p) }
+                        safeUpdate(p)
                     }
                     true
                 }
@@ -492,6 +589,7 @@ class PetOverlayService : Service() {
         val left = p.x < (getScreenW() - p.width) / 2
         dockSide = if (left) -1 else 1
         docked = true
+        logLifecycle("dockToEdge side=$dockSide x=${p.x}")
         // 贴边：主体滑出屏幕外，但露出一条桌宠身体（悬浮球式半透明条，始终可见）。
         // 原版露出的 16dp 是窗口透明边缘（body 在窗口中央），导致完全不可见。
         val inset = (p.width * (1f - BODY_WINDOW_RATIO) / 2f).toInt() // body 在窗口内的边距
@@ -504,11 +602,12 @@ class PetOverlayService : Service() {
 
     private fun undock() {
         if (!docked) return
+        logLifecycle("undock")
         docked = false
         params?.let { p ->
             p.x = if (dockSide >= 0) getScreenW() - p.width else 0
             p.alpha = 1.0f
-            overlayView?.let { windowManager?.updateViewLayout(it, p) }
+            safeUpdate(p)
         }
     }
 
@@ -517,13 +616,14 @@ class PetOverlayService : Service() {
         val left = p.x < (getScreenW() - p.width) / 2
         p.x = if (left) 0 else getScreenW() - p.width
         p.y = p.y.coerceIn(0, getScreenH() - p.height)
-        overlayView?.let { windowManager?.updateViewLayout(it, p) }
+        safeUpdate(p)
         overlayView?.evaluateJavascript("window.showHandle && showHandle($left)", null)
     }
 
     private fun toHandleMode() {
         if (hidden || !docked) return
         val p = params ?: return
+        logLifecycle("toHandleMode")
         petW = p.width
         petH = p.height
         petX = p.x
@@ -535,7 +635,7 @@ class PetOverlayService : Service() {
         p.y = ((getScreenH() - p.height) / 2).coerceIn(0, getScreenH() - p.height)
         p.alpha = 1.0f
         hidden = true
-        overlayView?.let { windowManager?.updateViewLayout(it, p) }
+        safeUpdate(p)
         overlayView?.evaluateJavascript("window.showHandle && showHandle($left)", null)
     }
 
@@ -548,7 +648,7 @@ class PetOverlayService : Service() {
                 p.y = petY.coerceIn(0, getScreenH() - p.height)
                 p.alpha = 1.0f
                 hidden = false
-                overlayView?.let { windowManager?.updateViewLayout(it, p) }
+                safeUpdate(p)
                 overlayView?.evaluateJavascript("window.showPet && showPet()", null)
                 docked = false
                 resetIdleTimer()
@@ -569,9 +669,10 @@ class PetOverlayService : Service() {
     private fun edgeRun() {
         hideHandler.removeCallbacks(hideRunnable)
         val p = params ?: return
+        logLifecycle("edgeRun")
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onEdgeRun()", null)
         p.alpha = 1.0f
-        overlayView?.let { windowManager?.updateViewLayout(it, p) }
+        safeUpdate(p)
 
         val margin = dpToPx(DOCK_EDGE_MARGIN_DP)
         val left = p.x < (getScreenW() - p.width) / 2
@@ -600,10 +701,11 @@ class PetOverlayService : Service() {
     private fun peekaboo() {
         hideHandler.removeCallbacks(hideRunnable)
         val p = params ?: return
+        logLifecycle("peekaboo")
         animateAlpha(0.0f, 250L) {
             p.x = (Math.random() * (getScreenW() - p.width)).toInt()
             p.y = (Math.random() * (getScreenH() - p.height)).toInt()
-            overlayView?.let { windowManager?.updateViewLayout(it, p) }
+            safeUpdate(p)
             overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onPeekaboo()", null)
             animateAlpha(1.0f, 250L) {}
         }
@@ -646,14 +748,14 @@ class PetOverlayService : Service() {
         posBeforeKeyboardY = p.y
         if (docked) undock()
         p.y = (getScreenH() - imeHeightPx - p.height).coerceAtLeast(0)
-        overlayView?.let { windowManager?.updateViewLayout(it, p) }
+        safeUpdate(p)
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onKeyboardUp()", null)
     }
 
     private fun onKeyboardHide() {
         params?.let { p ->
             p.y = posBeforeKeyboardY
-            overlayView?.let { windowManager?.updateViewLayout(it, p) }
+            safeUpdate(p)
         }
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onKeyboardHide()", null)
     }
@@ -722,12 +824,204 @@ class PetOverlayService : Service() {
             "window.petEngine && window.petEngine.onAiSay(${escapeJs(text)}, 'none')"
         }
         overlayView?.evaluateJavascript(jsCall, null)
+        // AI 消息的气泡由 pet.html 的 onAiSay → say() → JS 桥统一弹出（避免双重触发）
         hideHandler.removeCallbacks(hideRunnable)
         if (docked) undock()
     }
 
     private fun escapeJs(s: String): String =
         "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+    // ============ 独立气泡窗口（文字自适应宽度）============
+
+    /** 显示气泡：独立悬浮窗，宽度按文字长度自适应，锚定桌宠窗口上方居中。
+     *  任意线程可调用（内部切主线程）。
+     *  长文本会按句子切分，一条条依次显示（像聊天逐条冒出来）。
+     *  durationMs<=0 时按字数自动算每条时长。 */
+    private fun showBubble(text: String, durationMs: Long = 0) {
+        handler.post {
+            // 新消息打断旧队列
+            bubbleQueue.clear()
+            handler.removeCallbacks(bubbleShowRunnable)
+            val segs = splitBubbleSentences(text)
+            if (segs.isEmpty()) {
+                hideBubble()
+                return@post
+            }
+            bubbleQueue.addAll(segs)
+            // 单条用调用方给的时长；多条时每条按字数自适应，避免第一条霸占太久
+            val firstMs = if (segs.size == 1) durationMs else 0
+            showNextBubble(firstMs)
+        }
+    }
+
+    /** 按标点断句；单句过长再按字数硬切，保证每条气泡都完整显示 */
+    private fun splitBubbleSentences(text: String): List<String> {
+        val maxChars = 22
+        val out = mutableListOf<String>()
+        val sentences = text.split(Regex("[。！？；!?;…\\n]"))
+        for (s in sentences) {
+            val t = s.trim()
+            if (t.isEmpty()) continue
+            if (t.length <= maxChars) {
+                out.add(t)
+            } else {
+                var i = 0
+                while (i < t.length) {
+                    out.add(t.substring(i, minOf(i + maxChars, t.length)))
+                    i += maxChars
+                }
+            }
+        }
+        return out
+    }
+
+    /** 显示队列下一条；队列空则隐藏气泡 */
+    private fun showNextBubble(durationMs: Long) {
+        val seg = bubbleQueue.removeFirstOrNull() ?: run {
+            hideBubble()
+            return
+        }
+        showSingleBubble(seg)
+        val dur = if (durationMs > 0) durationMs else
+            (BUBBLE_DURATION_BASE_MS + seg.length * BUBBLE_DURATION_PER_CHAR_MS)
+                .coerceAtMost(BUBBLE_DURATION_MAX_MS)
+        handler.removeCallbacks(bubbleShowRunnable)
+        handler.postDelayed(bubbleShowRunnable, dur)
+    }
+
+    /** 显示单条气泡（不负责定时隐藏，由队列调度） */
+    private fun showSingleBubble(text: String) {
+        try {
+            if (text.isBlank()) return
+            val wm = windowManager ?: return
+            val tv = bubbleView ?: TextView(this).also { bubbleView = it }
+            tv.text = text
+            tv.textSize = BUBBLE_FONT_SP
+            tv.setTextColor(0xFF5D4037.toInt())   // 暖棕文字，配暖色气泡
+            tv.gravity = android.view.Gravity.CENTER
+            tv.maxLines = BUBBLE_MAX_LINES
+            tv.ellipsize = android.text.TextUtils.TruncateAt.END
+            tv.setPadding(dpToPx(BUBBLE_PAD_H_DP), dpToPx(BUBBLE_PAD_V_DP), dpToPx(BUBBLE_PAD_H_DP), dpToPx(BUBBLE_PAD_V_DP))
+            // 美化：暖白→浅杏渐变底 + 暖橙细描边 + 圆角 + 阴影（贴合桌宠橙色系）
+            tv.background = android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+                intArrayOf(0xFFFFFBF5.toInt(), 0xFFFFF1E2.toInt())
+            ).apply {
+                cornerRadius = dpToPx(12).toFloat()
+                setStroke(dpToPx(1), 0x40E67E22.toInt())
+            }
+            tv.elevation = dpToPx(4).toFloat()
+            // 淡入动画（每次换文本重放，灵动一点）
+            tv.alpha = 0f
+            tv.animate().alpha(1f).setDuration(160).start()
+
+            // 宽度自适应：文字测量宽度，夹在最小/最大之间；超宽则换行
+            val maxW = dpToPx(BUBBLE_MAX_W_DP)
+            val minW = dpToPx(BUBBLE_MIN_W_DP)
+            val padH = dpToPx(BUBBLE_PAD_H_DP)
+            val measured = tv.paint.measureText(text).toInt() + padH * 2
+            val w = measured.coerceIn(minW, maxW)
+
+            val bp = bubbleParams ?: WindowManager.LayoutParams(
+                w,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                android.graphics.PixelFormat.TRANSLUCENT
+            ).also { bubbleParams = it }
+            bp.width = w
+            bp.height = WindowManager.LayoutParams.WRAP_CONTENT
+
+            if (tv.parent == null) wm.addView(tv, bp) else wm.updateViewLayout(tv, bp)
+            // 位置：实时跟随桌宠（锚定可见身体条 / clamp 屏幕内）
+            updateBubblePosition()
+        } catch (e: Exception) {
+            logLifecycle("showBubble FAILED: $e")
+        }
+    }
+
+    /** 让气泡跟随桌宠：每次桌宠窗口移动后调用（safeUpdate 里自动同步）。
+     *  方位智能选择（贴合转角场景）：
+     *  1. 默认头顶上方（锚定可见身体条或窗口中心）；
+     *  2. 头顶空间不足（贴屏幕顶部）→ 放下方；
+     *  3. 上下都不足（转角/居中）→ 左右二选一，取空间大的一侧，垂直对齐桌宠中心；
+     *  双轴 clamp 屏幕内，任何角落气泡都不会消失。 */
+    private fun updateBubblePosition() {
+        val tv = bubbleView ?: return
+        val bp = bubbleParams ?: return
+        val pet = params ?: return
+        val wm = windowManager ?: return
+        try {
+            val w = bp.width
+            val padH = dpToPx(BUBBLE_PAD_H_DP)
+            val padV = dpToPx(BUBBLE_PAD_V_DP)
+            val perLine = ((dpToPx(BUBBLE_MAX_W_DP) - padH * 2) / tv.paint.textSize).toInt().coerceAtLeast(1)
+            val lines = kotlin.math.ceil(tv.text.length.toDouble() / perLine).toInt().coerceAtMost(BUBBLE_MAX_LINES)
+            val estH = (lines * tv.paint.textSize.toInt()) + padV * 2 + dpToPx(2)
+            val gap = dpToPx(BUBBLE_GAP_DP)
+            val m = dpToPx(2)
+            val screenW = getScreenW()
+            val screenH = getScreenH()
+
+            // 锚点：贴边时用露出的身体条（屏幕边缘），否则桌宠窗口水平中心
+            val anchorX = if (docked) {
+                if (dockSide >= 0) screenW - dpToPx(10) else dpToPx(10)
+            } else {
+                pet.x + pet.width / 2
+            }
+            val petTop = pet.y
+            val petBottom = pet.y + pet.height
+            val petCenterY = pet.y + pet.height / 2
+
+            // 四个方向可用空间
+            val spaceUp = petTop - m
+            val spaceDown = screenH - petBottom - m
+            val spaceLeft = pet.x - m
+            val spaceRight = screenW - (pet.x + pet.width) - m
+
+            var bx: Int
+            var by: Int
+            when {
+                spaceUp >= estH + gap -> {
+                    // 1. 头顶放得下
+                    bx = anchorX - w / 2
+                    by = petTop - gap - estH
+                }
+                spaceDown >= estH + gap -> {
+                    // 2. 头顶放不下 → 下方
+                    bx = anchorX - w / 2
+                    by = petBottom + gap
+                }
+                else -> {
+                    // 3. 上下都不够（转角/居中）→ 左右取空间大的一侧，垂直对齐桌宠中心
+                    val placeLeft = spaceLeft >= spaceRight
+                    bx = if (placeLeft) m else screenW - w - m
+                    by = petCenterY - estH / 2
+                }
+            }
+
+            bp.x = bx.coerceIn(m, (screenW - w - m).coerceAtLeast(m))
+            bp.y = by.coerceIn(m, (screenH - estH - m).coerceAtLeast(m))
+            if (tv.parent != null) wm.updateViewLayout(tv, bp)
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun hideBubble() {
+        handler.removeCallbacks(bubbleShowRunnable)
+        bubbleQueue.clear()
+        val wm = windowManager ?: return
+        val tv = bubbleView ?: return
+        try {
+            wm.removeView(tv)
+        } catch (_: Exception) {
+        }
+        bubbleView = null
+        bubbleParams = null
+    }
 
     // ============ 本地 HTTP 服务（127.0.0.1:9001）============
 
@@ -828,13 +1122,33 @@ class PetOverlayService : Service() {
 
     // ============ 动画工具 ============
 
+    /** updateViewLayout 安全包装：部分 ROM（如 HyperOS）会在后台清理悬浮窗窗口，
+     *  窗口被移除后 updateViewLayout 抛 IllegalArgumentException 会崩掉整个进程。
+     *  这里捕获并记录日志，不再让「贴边/手柄/动画」阶段的小问题升级成崩溃。
+     *  另加线程兜底：非主线程调用时切回主线程执行（updateViewLayout 必须在 UI 线程）。 */
+    private fun safeUpdate(p: WindowManager.LayoutParams) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            handler.post { safeUpdate(p) }
+            return
+        }
+        val v = overlayView ?: return
+        val wm = windowManager ?: return
+        try {
+            wm.updateViewLayout(v, p)
+            // 桌宠动了 → 气泡跟着走（若正在显示）
+            updateBubblePosition()
+        } catch (e: Exception) {
+            logLifecycle("updateViewLayout FAILED: $e (docked=$docked hidden=$hidden)")
+        }
+    }
+
     private fun animateAlpha(target: Float, dur: Long, onEnd: () -> Unit) {
         val p = params ?: return
         val anim = ValueAnimator.ofFloat(p.alpha, target)
         anim.duration = dur
         anim.addUpdateListener { it ->
             p.alpha = it.animatedValue as Float
-            overlayView?.let { windowManager?.updateViewLayout(it, p) }
+            safeUpdate(p)
         }
         anim.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) = onEnd()
@@ -852,7 +1166,7 @@ class PetOverlayService : Service() {
             val t = it.animatedValue as Float
             p.x = startX + ((targetX - startX) * t).toInt()
             p.alpha = startAlpha + (targetAlpha - startAlpha) * t
-            overlayView?.let { windowManager?.updateViewLayout(it, p) }
+            safeUpdate(p)
         }
         anim.start()
     }
@@ -864,7 +1178,7 @@ class PetOverlayService : Service() {
         anim.duration = dur
         anim.addUpdateListener { it ->
             p.x = it.animatedValue as Int
-            overlayView?.let { windowManager?.updateViewLayout(it, p) }
+            safeUpdate(p)
         }
         anim.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) = onEnd()
@@ -880,7 +1194,7 @@ class PetOverlayService : Service() {
         anim.duration = dur
         anim.addUpdateListener { it ->
             p.y = it.animatedValue as Int
-            overlayView?.let { windowManager?.updateViewLayout(it, p) }
+            safeUpdate(p)
         }
         anim.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) = onEnd()
@@ -927,11 +1241,11 @@ class PetOverlayService : Service() {
             if (p.alpha <= 0f) return@post
             val restoreAlpha = p.alpha
             p.alpha = 0f
-            overlayView?.let { windowManager?.updateViewLayout(it, p) }
+            safeUpdate(p)
             handler.postDelayed({
                 params?.let { q ->
                     q.alpha = restoreAlpha
-                    overlayView?.let { windowManager?.updateViewLayout(it, q) }
+                    safeUpdate(q)
                 }
             }, 8000)
         }

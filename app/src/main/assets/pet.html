@@ -11,8 +11,8 @@
   /* 气泡 (窗口顶部) */
   .bubble {
     position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-    background: rgba(255,255,255,.95); color: #333; padding: 1px 4px;
-    border-radius: 6px; font-size: 8px; white-space: nowrap;
+    background: rgba(255,255,255,.95); color: #333; padding: 2px 6px;
+    border-radius: 6px; font-size: 10px; white-space: nowrap;
     box-shadow: 0 1px 3px rgba(0,0,0,.25); opacity: 0; transition: opacity .3s;
     max-width: 42px; overflow: hidden; text-overflow: ellipsis;
     z-index: 10; pointer-events: none;
@@ -21,18 +21,18 @@
 
   /* ===== 桌宠形象 ===== */
   .pet {
-    position: relative; width: 68px; height: 42px;
+    position: relative; width: 68px; height: 36px;
     animation: idle 2.5s ease-in-out infinite;
   }
   @keyframes idle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
   .pet.bounce { animation: bounce .4s ease; }
   @keyframes bounce { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
 
-  /* 主体：横向长方形 52×24（下移给头顶气泡让位） */
+  /* 主体：横向长方形 52×24（气泡已独立成悬浮窗，不再留头顶空间） */
   .body {
     position: relative;
     width: 52px; height: 24px; background: #e67e22;
-    margin: 12px auto 0;
+    margin: 4px auto 0;
   }
   /* 眼睛（两只） */
   .eye { position: absolute; width: 6px; height: 6px; background: #000; top: 6px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
@@ -146,6 +146,14 @@
   const bubble = document.getElementById('bubble');
 
   function say(text, ms) {
+    // 优先走独立气泡窗口（原生 TextView，文字自适应宽度不截断）；
+    // 桥不可用时退回 WebView 内气泡
+    try {
+      if (window.AndroidBridge) {
+        window.AndroidBridge.showBubble(text, ms || 1600);
+        return;
+      }
+    } catch (e) {}
     bubble.textContent = text;
     bubble.classList.add('show');
     clearTimeout(say._t);
@@ -323,6 +331,9 @@
     if (petScale && petScale !== 1) {
       pet.style.zoom = petScale;
     }
+    // 气泡宽度跟随窗口：除以缩放比后，视觉上始终不超出悬浮窗（能显示约 20 字）
+    var bw = Math.max(60, (window.innerWidth - 16) / (petScale || 1));
+    bubble.style.maxWidth = Math.round(bw) + 'px';
   } catch (e) {}
 
   randomSay(GREETS[PERIOD]);
