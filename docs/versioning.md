@@ -27,6 +27,10 @@
 - **APK 级**：编译产物已同时存到手机 `Download/`（`AI-桌宠-vX.X.apk`）
 - **密钥级**：`~/.config/dsh-vision.key`（权限 600，不进仓库）
 
+> 📌 **APK 分发注意**：本工程 APK 参考自 [AI-Live-Overflow](https://github.com/Vael-KY/AI-Live-Overflow)
+> （CC BY-NC-SA 4.0）。内测 APK 含本机调试内容，
+> **仅供自用备份，不要直接转发**；对外分发请走源码编译并遵守协议（标注来源、不可商用、相同方式共享）。
+
 ## 版本号
 
 - 内测版号跟着功能走：v4.0 对齐原版 → v4.6 Android 16 崩溃修复（+1 每次体验优化）

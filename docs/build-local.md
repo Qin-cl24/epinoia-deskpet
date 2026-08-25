@@ -57,6 +57,11 @@ $HOME/gradle-8.7/bin/gradle wrapper --gradle-version 8.7   # 生成 wrapper jar
 - 有 adb：`adb install app/build/outputs/apk/debug/app-debug.apk`
 - 没 adb：把 APK 拷到手机（Termux 里 `cp` 到 `~/storage/downloads/`），文件管理器点开安装
 
+> 📌 **来源注明**：本 APK（Epinoia 桌宠 v4）参考自 [AI-Live-Overflow](https://github.com/Vael-KY/AI-Live-Overflow)
+> （CC BY-NC-SA 4.0）。
+> 内测版包含个人调试内容（崩溃日志、agent 桥、本机路径），**请勿直接分发 APK**——
+> 公开分发请走仓库源码自行编译，并遵守 CC BY-NC-SA 4.0（标注来源、不可商用、相同方式共享）。
+
 首次打开需要：
 1. 允许「悬浮窗」权限（App 内按钮会跳转系统设置）
 2. Android 13+ 允许「通知」权限
