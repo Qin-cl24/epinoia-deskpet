@@ -26,3 +26,5 @@ Thumbs.db
 # ── 产物 ──
 *.apk
 .dsh-vision-router/
+.zhipu-key
+pet-brain.sh
