@@ -28,3 +28,7 @@ Thumbs.db
 .dsh-vision-router/
 .zhipu-key
 pet-brain.sh
+
+# ── 记忆数据 / 私密文档 ──
+.dsh/
+docs/memory.md

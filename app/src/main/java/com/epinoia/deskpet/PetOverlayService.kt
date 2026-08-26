@@ -76,6 +76,11 @@ class PetOverlayService : Service() {
         private const val HIDE_DELAY_MS = 60_000L         // 贴边 60s → 缩成手柄
         private const val LONELY_INTERVAL_MS = 300_000L   // 5 分钟无互动 → 孤独递进
 
+        // 横屏（游戏）防误触加强：露出更少、更透明、更快让开
+        private const val LANDSCAPE_VISIBLE_EDGE_DP = 8   // 横屏贴边只露 8dp
+        private const val LANDSCAPE_ALPHA = 0.3f          // 横屏贴边透明度 0.3（更隐形）
+        private const val LANDSCAPE_HIDE_DELAY_MS = 20_000L // 横屏贴边 20s → 缩成手柄
+
         private const val DOUBLE_TAP_TIMEOUT = 300L
         private const val LONG_PRESS_TIMEOUT = 600L
         private const val MOVE_THRESHOLD = 10
@@ -125,6 +130,7 @@ class PetOverlayService : Service() {
     private var keyboardVisible = false
     private var imeHeightPx = 0
     private var posBeforeKeyboardY = 0
+    private var keyboardDocked = false   // 键盘弹出时桌宠贴边让开（打字不挡）
 
     // 触摸状态
     private var initialX = 0
@@ -225,10 +231,10 @@ class PetOverlayService : Service() {
                 if (docked) {
                     // 贴边状态：保持原 dockSide 方向，按新屏幕重新贴边（不重新判断左右）
                     val inset = (p.width * (1f - BODY_WINDOW_RATIO) / 2f).toInt()
-                    val visible = dpToPx(VISIBLE_EDGE_DP)
+                    val visible = dpToPx(dockVisibleEdgeDp())
                     p.x = if (dockSide >= 0) getScreenW() - (inset + visible) else -(p.width - inset - visible)
                     p.y = p.y.coerceIn(0, (getScreenH() - p.height).coerceAtLeast(0))
-                    p.alpha = DOCKED_ALPHA
+                    p.alpha = dockAlpha()
                     safeUpdate(p)
                 } else {
                     p.x = p.x.coerceIn(0, (getScreenW() - p.width).coerceAtLeast(0))
@@ -382,7 +388,16 @@ class PetOverlayService : Service() {
         fun showBubble(text: String, durationMs: Long) {
             this@PetOverlayService.showBubble(text, durationMs)
         }
+
+        /** 桌宠身体在 WebView 窗口内的相对位置（比例 0~1，由 pet.html 上报）；空 = 未上报 */
+        @JavascriptInterface
+        fun setPetBodyRect(left: Float, top: Float, width: Float, height: Float) {
+            petBodyRect = floatArrayOf(left, top, width, height)
+        }
     }
+
+    // 桌宠身体在窗口内的相对比例（left/top/width/height，0~1，pet.html 上报）；空 = 未上报
+    private var petBodyRect: FloatArray? = null
 
     /** pref_pet_size（0~100）→ 0.0~1.0 */
     private fun petSizeRatio(): Float {
@@ -456,6 +471,13 @@ class PetOverlayService : Service() {
                         return@OnTouchListener true
                     }
                     val now = System.currentTimeMillis()
+                    // 打字中：桌宠可能落在键盘附近，单击/双击/长按不响应（避免误触），
+                    // 必须连点 3 下才识别为互动
+                    val typing = keyboardVisible && keyboardDocked
+                    if (typing && elapsed > LONG_PRESS_TIMEOUT) {
+                        tapCount = 0
+                        return@OnTouchListener true
+                    }
                     if (elapsed > LONG_PRESS_TIMEOUT) {
                         tapCount = 0
                         onLongPress()
@@ -467,11 +489,15 @@ class PetOverlayService : Service() {
                     }
                     if (tapCount == 0) firstTapTime = now
                     tapCount++
-                    when (tapCount) {
-                        2 -> onDoubleTap()
-                        3 -> onCombo3()
-                        5 -> onCombo5()
-                        8 -> {
+                    when {
+                        typing && tapCount < 3 -> {
+                            // 打字中：1~2 下当误触吞掉，不触发
+                            return@OnTouchListener true
+                        }
+                        tapCount == 2 -> onDoubleTap()
+                        tapCount == 3 -> onCombo3()
+                        tapCount == 5 -> onCombo5()
+                        tapCount == 8 -> {
                             onCombo8()
                             tapCount = 0
                         }
@@ -593,11 +619,11 @@ class PetOverlayService : Service() {
         // 贴边：主体滑出屏幕外，但露出一条桌宠身体（悬浮球式半透明条，始终可见）。
         // 原版露出的 16dp 是窗口透明边缘（body 在窗口中央），导致完全不可见。
         val inset = (p.width * (1f - BODY_WINDOW_RATIO) / 2f).toInt() // body 在窗口内的边距
-        val visible = dpToPx(VISIBLE_EDGE_DP)                        // 贴边后露出的 body 宽度
+        val visible = dpToPx(dockVisibleEdgeDp())                     // 贴边后露出的 body 宽度（横屏更少）
         val targetX = if (left) -(p.width - inset - visible) else getScreenW() - (inset + visible)
-        animateTo(targetX, DOCKED_ALPHA)
+        animateTo(targetX, dockAlpha())
         hideHandler.removeCallbacks(hideRunnable)
-        hideHandler.postDelayed(hideRunnable, HIDE_DELAY_MS)
+        hideHandler.postDelayed(hideRunnable, hideDelayMs())
     }
 
     private fun undock() {
@@ -683,7 +709,10 @@ class PetOverlayService : Service() {
             animateYTo(targetY, 1600L) {
                 docked = true
                 dockSide = if (left) -1 else 1
-                animateTo(p.x, DOCKED_ALPHA)
+                animateTo(p.x, dockAlpha())
+                // 边缘跑停下后：横屏更快缩成手柄让开，竖屏保持原节奏
+                hideHandler.removeCallbacks(hideRunnable)
+                hideHandler.postDelayed(hideRunnable, hideDelayMs())
             }
         }
         scheduleEdgeRun()
@@ -704,7 +733,11 @@ class PetOverlayService : Service() {
         logLifecycle("peekaboo")
         animateAlpha(0.0f, 250L) {
             p.x = (Math.random() * (getScreenW() - p.width)).toInt()
-            p.y = (Math.random() * (getScreenH() - p.height)).toInt()
+            // 打字中：躲猫猫避开键盘区域（不落在候选词栏/按键上方挡输入）
+            val maxY = if (keyboardVisible && imeHeightPx > 0)
+                (getScreenH() - imeHeightPx - p.height).coerceAtLeast(0)
+            else getScreenH() - p.height
+            p.y = (Math.random() * maxY).toInt()
             safeUpdate(p)
             overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onPeekaboo()", null)
             animateAlpha(1.0f, 250L) {}
@@ -743,19 +776,34 @@ class PetOverlayService : Service() {
 
     // ============ 键盘感知 ============
 
+    /** 键盘弹出：桌宠贴边让开（最稳——不依赖任何键盘/输入法/候选词栏高度）。
+     *  候选词栏高度随输入动态变化，锚它必翻车；屏幕边缘永远空着。 */
     private fun onKeyboardShow() {
         val p = params ?: return
         posBeforeKeyboardY = p.y
-        if (docked) undock()
-        p.y = (getScreenH() - imeHeightPx - p.height).coerceAtLeast(0)
-        safeUpdate(p)
+        keyboardDocked = !docked
+        if (!docked) {
+            dockToEdge()
+            // 打字期间保持贴边小条，不触发「缩手柄」计时器
+            hideHandler.removeCallbacks(hideRunnable)
+        }
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onKeyboardUp()", null)
     }
 
     private fun onKeyboardHide() {
-        params?.let { p ->
-            p.y = posBeforeKeyboardY
-            safeUpdate(p)
+        if (keyboardDocked) {
+            keyboardDocked = false
+            // 恢复键盘弹出前的位置
+            if (docked) {
+                docked = false
+                params?.let { q ->
+                    q.x = if (dockSide >= 0) getScreenW() - q.width else 0
+                    q.y = posBeforeKeyboardY
+                    q.alpha = 1.0f
+                    safeUpdate(q)
+                }
+            }
+            resetIdleTimer()
         }
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onKeyboardHide()", null)
     }
@@ -932,6 +980,9 @@ class PetOverlayService : Service() {
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 android.graphics.PixelFormat.TRANSLUCENT
             ).also { bubbleParams = it }
+            // 关键：gravity 必须和桌宠窗口一致（TOP|START），
+            // 否则 x/y 的定位基准不同，锚定坐标全部偏移（气泡会跑到右下角）
+            bp.gravity = android.view.Gravity.TOP or android.view.Gravity.START
             bp.width = w
             bp.height = WindowManager.LayoutParams.WRAP_CONTENT
 
@@ -966,14 +1017,19 @@ class PetOverlayService : Service() {
             val screenW = getScreenW()
             val screenH = getScreenH()
 
-            // 锚点：贴边时用露出的身体条（屏幕边缘），否则桌宠窗口水平中心
+            // 锚点：桌宠身体的实际位置（pet.html 上报的窗口内相对比例 0~1）。
+            // 之前锚在窗口顶部，但窗口比身体高（贴底布局），气泡会悬空 12dp+。
+            // 比例 × 窗口物理尺寸 = 屏幕物理偏移，不依赖 CSS px/dp 换算假设。
+            val body = petBodyRect
             val anchorX = if (docked) {
                 if (dockSide >= 0) screenW - dpToPx(10) else dpToPx(10)
+            } else if (body != null) {
+                (pet.x + body[0] * pet.width + body[2] * pet.width / 2).toInt()
             } else {
                 pet.x + pet.width / 2
             }
-            val petTop = pet.y
-            val petBottom = pet.y + pet.height
+            val petTop = if (body != null) (pet.y + body[1] * pet.height).toInt() else pet.y
+            val petBottom = if (body != null) (pet.y + (body[1] + body[3]) * pet.height).toInt() else pet.y + pet.height
             val petCenterY = pet.y + pet.height / 2
 
             // 四个方向可用空间
@@ -1006,6 +1062,10 @@ class PetOverlayService : Service() {
             bp.x = bx.coerceIn(m, (screenW - w - m).coerceAtLeast(m))
             bp.y = by.coerceIn(m, (screenH - estH - m).coerceAtLeast(m))
             if (tv.parent != null) wm.updateViewLayout(tv, bp)
+            logLifecycle(
+                "bubble@(${bp.x},${bp.y}) pet@(${pet.x},${pet.y},${pet.width}x${pet.height}) " +
+                    "body=${petBodyRect?.contentToString()} docked=$docked"
+            )
         } catch (_: Exception) {
         }
     }
@@ -1268,6 +1328,18 @@ class PetOverlayService : Service() {
 
     private fun dpToPx(dp: Int): Int =
         (dp * resources.displayMetrics.density).toInt()
+
+    /** 横屏判断（游戏/视频场景，防误触用） */
+    private fun isLandscape(): Boolean = getScreenW() > getScreenH()
+
+    /** 横屏时贴边露出量（dp）：更少，避免挡游戏操作区 */
+    private fun dockVisibleEdgeDp(): Int = if (isLandscape()) LANDSCAPE_VISIBLE_EDGE_DP else VISIBLE_EDGE_DP
+
+    /** 横屏时贴边透明度：更隐形 */
+    private fun dockAlpha(): Float = if (isLandscape()) LANDSCAPE_ALPHA else DOCKED_ALPHA
+
+    /** 横屏时贴边多久缩成手柄：更快让开屏幕 */
+    private fun hideDelayMs(): Long = if (isLandscape()) LANDSCAPE_HIDE_DELAY_MS else HIDE_DELAY_MS
 
     private fun getScreenW(): Int = resources.displayMetrics.widthPixels
     private fun getScreenH(): Int = resources.displayMetrics.heightPixels

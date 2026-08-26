@@ -206,14 +206,14 @@
       var s = document.querySelector('.fx-star'); if (s) s.classList.add('show');
       setTimeout(function() { pet.classList.remove('act-happy'); clearFx(); }, 1500);
     },
-    // 键盘弹出：趴到键盘上方
+    // 键盘弹出：贴边让开（不挡候选词栏/按键/输入框）
     onKeyboardUp: function() {
-      pet.classList.add('act-crouch');
-      say('键盘！我趴这儿咯~');
-      setTimeout(function() { pet.classList.remove('act-crouch'); }, 4000);
+      pet.classList.add('act-proud');
+      say('你先打，我靠边~');
+      setTimeout(function() { pet.classList.remove('act-proud'); }, 4000);
     },
     // 键盘收起：回原位
-    onKeyboardHide: function() { say('键盘走了~'); },
+    onKeyboardHide: function() { say('键盘走啦~'); },
     // AI 消息通道：AI 通过文件推送消息（动作名|文本）
     onAiSay: function(text, action) {
       say(text, 4000);
@@ -334,6 +334,19 @@
     // 气泡宽度跟随窗口：除以缩放比后，视觉上始终不超出悬浮窗（能显示约 20 字）
     var bw = Math.max(60, (window.innerWidth - 16) / (petScale || 1));
     bubble.style.maxWidth = Math.round(bw) + 'px';
+  } catch (e) {}
+
+  // 上报桌宠身体在窗口内的相对位置（比例 0~1，原生层用窗口实际尺寸换算成屏幕坐标）。
+  // 用比例而不是像素：不依赖 CSS px 与 dp 的换算假设，任何 density 下都精确锚定在头顶。
+  try {
+    var b = document.querySelector('.body');
+    var r = b.getBoundingClientRect();
+    window.AndroidBridge && window.AndroidBridge.setPetBodyRect(
+      r.left / window.innerWidth,
+      r.top / window.innerHeight,
+      r.width / window.innerWidth,
+      r.height / window.innerHeight
+    );
   } catch (e) {}
 
   randomSay(GREETS[PERIOD]);
