@@ -1,6 +1,7 @@
 package com.epinoia.deskpet
 
 import android.Manifest
+import android.app.AppOpsManager
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_overlay_perm).setOnClickListener { requestOverlay() }
         findViewById<Button>(R.id.btn_notif_perm).setOnClickListener { requestNotif() }
         findViewById<Button>(R.id.btn_storage_perm).setOnClickListener { requestStorage() }
+        findViewById<Button>(R.id.btn_usage_perm).setOnClickListener { requestUsageAccess() }
 
         bindSwitch(R.id.sw_dock, "pref_dock", true)
         bindSwitch(R.id.sw_edge, "pref_edge_run", true)
@@ -45,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         bindSwitch(R.id.sw_ai, "pref_ai_channel", true)
         bindSwitch(R.id.sw_http, "pref_local_http", true)
         bindSwitch(R.id.sw_deepseek, "pref_deepseek", true)
+        bindSwitch(R.id.sw_fg_sense, "pref_fg_sense", true)
 
         // 桌宠尺寸：0 = 最小（52×24dp），100 = 最大（130×60dp）
         val tvSize = findViewById<TextView>(R.id.tv_size)
@@ -127,6 +130,24 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_storage_perm).text =
             if (Build.VERSION.SDK_INT < 30 || Environment.isExternalStorageManager())
                 "✅ 文件访问权限已授予" else "⚠️ 文件访问权限（AI 消息通道用）"
+        findViewById<Button>(R.id.btn_usage_perm).text =
+            if (hasUsageAccess()) "✅ 使用情况访问已授予" else "⚠️ 使用情况访问（前台感知用）"
+    }
+
+    /** 是否已授予「使用情况访问」特殊权限（前台 app 感知必需） */
+    private fun hasUsageAccess(): Boolean {
+        val appOps = getSystemService(AppOpsManager::class.java)
+        val mode = appOps.unsafeCheckOpNoThrow(
+            AppOpsManager.OPSTR_GET_USAGE_STATS,
+            packageManager.getPackageInfo(packageName, 0).applicationInfo.uid,
+            packageName
+        )
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun requestUsageAccess() {
+        if (hasUsageAccess()) return
+        startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
     }
 
     private fun requestNotif() {

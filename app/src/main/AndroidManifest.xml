@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- 悬浮窗（用户手动授权） -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -11,6 +12,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 文件访问（AI 消息通道 /sdcard/Deskpet/messages.txt 用） -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <!-- 前台 app 感知（UsageStatsManager，特殊权限需设置里手动开） -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
     <!-- 网络（外部后端轮询 + DeepSeek 大脑） -->
     <uses-permission android:name="android.permission.INTERNET" />
 

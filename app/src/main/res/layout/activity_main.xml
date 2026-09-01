@@ -56,6 +56,13 @@
             android:layout_marginTop="8dp"
             android:text="文件访问权限（AI 消息通道用）" />
 
+        <Button
+            android:id="@+id/btn_usage_perm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="使用情况访问（前台 app 感知用）" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -135,6 +142,14 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="DeepSeek 大脑（AI 主动说话，本地内测）"
+            android:textColor="#333333" />
+
+        <Switch
+            android:id="@+id/sw_fg_sense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="前台感知（知道你正在用什么 app，需要使用情况权限）"
             android:textColor="#333333" />
 
         <TextView

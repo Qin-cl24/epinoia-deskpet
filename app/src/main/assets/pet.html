@@ -224,7 +224,10 @@
         (FX[action] || []).forEach(function(sel) {
           var el = document.querySelector(sel); if (el) el.classList.add('show');
         });
-        setTimeout(function() { pet.classList.remove('act-' + action); clearFx(); }, 2500);
+        // 状态类动作（思考/干活/惊讶/睡觉）持续更久，普通动作短一点
+        var hold = (action === 'think' || action === 'run' || action === 'shock' || action === 'sleepy')
+          ? 8000 : 2500;
+        setTimeout(function() { pet.classList.remove('act-' + action); clearFx(); }, hold);
       }
     }
   };
@@ -265,6 +268,14 @@
     noon:      ['午饭吃了吗？🍚','该吃饭啦～','饿了...'],
     night:     ['晚上好呀～','今天辛苦啦！','夜深了哦🌙'],
     day:       ['嗨~','主人!','在呢']
+  };
+  // 自言自语四词池：日常/黏人/混乱/深夜（按 PERIOD 选池）
+  var MUTTERS = {
+    lateNight: ['（打个哈欠）好困...','zZz 我还在陪着你','夜深了，主人也早点睡','（偷看主人一眼）'],
+    morning:   ['新的一天也要元气满满！','（伸懒腰）早~','今天也要一起加油！','主人早安呀'],
+    noon:      ['（摸摸肚子）饿了...','该吃午饭啦主人','下午也要精神！','好想喝奶茶'],
+    night:     ['今天辛苦啦～','（揉眼睛）晚上好','主人今天开心吗？','陪我一会儿嘛'],
+    day:       ['（转圈）好无聊呀','主人主人～','在想什么呢？','我在看你哦～']
   };
   function randomSay(pool) { say(pool[Math.floor(Math.random() * pool.length)]); }
 
@@ -314,6 +325,10 @@
       var el = document.querySelector(sel);
       if (el) el.classList.add('show');
     });
+    // 自言自语：约 1/4 概率顺带冒一句独白（日常/黏人/混乱/深夜四词池，按时段）
+    if (Math.random() < 0.25) {
+      say(MUTTERS[PERIOD][Math.floor(Math.random() * MUTTERS[PERIOD].length)]);
+    }
     setTimeout(function() {
       pet.classList.remove('act-' + a);
       clearFx();
