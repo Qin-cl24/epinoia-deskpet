@@ -102,6 +102,33 @@ class PetOverlayService : Service() {
         private const val BUBBLE_DURATION_BASE_MS = 1500L
         private const val BUBBLE_DURATION_PER_CHAR_MS = 90L
         private const val BUBBLE_DURATION_MAX_MS = 5000L
+
+        // ===== 通知碎碎念（常驻通知每小时换一句）=====
+        private val WHISPERS_LATENIGHT = arrayOf("都这么晚了，还不睡吗🌙", "熬夜伤身体…", "我陪着你，但你该睡啦", "半夜三更，记得关灯")
+        private val WHISPERS_MORNING = arrayOf("早安呀～新的一天☀️", "起床气消了吗？", "今天也要元气满满！", "早！我一直在等你哦")
+        private val WHISPERS_NOON = arrayOf("午饭吃了吗？🍚", "该吃饭啦～", "下午别犯困哦", "好想喝奶茶")
+        private val WHISPERS_NIGHT = arrayOf("今天辛苦啦～", "晚上好呀🌙", "夜深了，眼睛累吗", "今天过得怎么样？")
+        private val WHISPERS_DAY = arrayOf("在呢～随时找我", "想我了吗？", "我趴在这儿陪你", "主人今天开心吗？")
+
+        // ===== 前台 app 感知（阶段1：先做抖音专属反应）=====
+        private const val FG_POLL_MS = 3000L             // 每 3 秒轮询前台 app
+        private const val FG_FILE = "/sdcard/Deskpet/foreground.txt"  // 当前前台 app（agent 可读，阶段2铺路）
+        private const val DOUYIN_PKG = "com.ss.android.ugc.aweme"     // 抖音
+        private const val FG_SWITCH_KEY = "pref_fg_sense"            // 开关
+        private const val DOUYIN_LONG_MS = 90 * 60 * 1000L   // 刷抖音超过 1.5 小时 → 提醒「刷太久」（主人中度近视+网瘾，别刷太狠）
+        private const val DOUYIN_LONG_COOLDOWN_MS = 30 * 60 * 1000L // 提醒后冷却 30 分钟再提醒
+
+        // 敏感 app 列表：前台是这些时，桌宠自动贴边让位（不挡屏幕内容，隐私保护靠「不看」）
+        private val SENSITIVE_APPS = setOf(
+            "com.tencent.mm",              // 微信
+            "com.eg.android.AlipayGphone", // 支付宝
+            "com.unionpay",                // 银联
+            "com.miui.gallery",            // 小米相册
+            "com.mfashiongallery.emag",    // 时尚画报
+            "com.jingdong.app.mall",       // 京东
+            "com.taobao.taobao",           // 淘宝
+            "com.taobao.idlefish"          // 闲鱼
+        )
     }
 
     private var windowManager: WindowManager? = null
@@ -114,6 +141,18 @@ class PetOverlayService : Service() {
     // 长文本按句切分后的队列：一条条依次显示
     private val bubbleQueue = ArrayDeque<String>()
     private val bubbleShowRunnable = Runnable { showNextBubble(0) }
+
+    // 前台 app 感知：轮询 + 上次前台包名 + 抖音吃醋冷却
+    private val fgHandler = Handler(Looper.getMainLooper())
+    private var lastFgPkg = ""
+    private var lastJealousAt = 0L
+    private var douyinStartAt = 0L        // 本次连续刷抖音的开始时间（0=没在刷）
+    private var lastLongRemindAt = 0L     // 上次「刷太久」提醒时间
+    private var sensitiveMode = false     // 敏感 app 模式：贴边保持中，切走才解除
+
+    // 通知碎碎念：每小时换一句
+    private val whisperHandler = Handler(Looper.getMainLooper())
+    private var whisperIndex = 0
 
     // 贴边 / 手柄 / 隐藏状态
     private var docked = false
@@ -257,6 +296,8 @@ class PetOverlayService : Service() {
         aiHandler.removeCallbacksAndMessages(null)
         hideHandler.removeCallbacksAndMessages(null)
         brainTickHandler.removeCallbacksAndMessages(null)
+        fgHandler.removeCallbacksAndMessages(null)
+        whisperHandler.removeCallbacksAndMessages(null)
         edgeAnimator?.cancel()
         screenshotObservers.forEach { it.stopWatching() }
         screenshotObservers.clear()
@@ -281,24 +322,63 @@ class PetOverlayService : Service() {
             .apply { setShowBadge(false) }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
 
+        // 通知碎碎念：常驻通知每小时换一句（按时段选词）
+        whisperIndex = 0
+        updateWhisperNotification()
+        // Android 15+ 强制要求传 type；sticky 重启等场景 startForeground 可能被拒，捕获避免崩溃
+        try {
+            startForeground(NOTIFICATION_ID, whisperNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } catch (e: Exception) {
+            logLifecycle("startForeground FAILED: $e")
+        }
+        // 每小时更新一次碎碎念
+        whisperHandler.removeCallbacksAndMessages(null)
+        whisperHandler.postDelayed(whisperTick, 60 * 60 * 1000L)
+    }
+
+    /** 每小时碎碎念：换一句 + 更新通知 */
+    private val whisperTick = object : Runnable {
+        override fun run() {
+            updateWhisperNotification()
+            whisperHandler.postDelayed(this, 60 * 60 * 1000L)
+        }
+    }
+
+    private fun whisperNotification(): Notification {
         val pendingIntent = PendingIntent.getActivity(
             this, 0,
             packageManager.getLaunchIntentForPackage(packageName),
             PendingIntent.FLAG_IMMUTABLE
         )
-        val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("🧡 Epinoia 桌宠")
-            .setContentText("点击返回应用")
+            .setContentText(whisperText())
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setSilent(true)
             .build()
-        // Android 15+ 强制要求传 type；sticky 重启等场景 startForeground 可能被拒，捕获避免崩溃
+    }
+
+    /** 按时段取一句碎碎念（轮换，避免老重复） */
+    private fun whisperText(): String {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        val pool = when {
+            hour < 6 -> WHISPERS_LATENIGHT
+            hour < 9 -> WHISPERS_MORNING
+            hour in 11..13 -> WHISPERS_NOON
+            hour >= 22 -> WHISPERS_NIGHT
+            else -> WHISPERS_DAY
+        }
+        whisperIndex = (whisperIndex + 1) % pool.size
+        return pool[whisperIndex]
+    }
+
+    private fun updateWhisperNotification() {
         try {
-            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
-        } catch (e: Exception) {
-            logLifecycle("startForeground FAILED: $e")
+            getSystemService(NotificationManager::class.java)
+                .notify(NOTIFICATION_ID, whisperNotification())
+        } catch (_: Exception) {
         }
     }
 
@@ -351,6 +431,7 @@ class PetOverlayService : Service() {
             startLocalServer()
             scheduleBrainTick()
             startScreenshotWatch()
+            startFgSense()
             logLifecycle("overlay up win=${params?.width}x${params?.height} @(${params?.x},${params?.y})")
             Toast.makeText(this, "桌宠已上线！", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
@@ -687,6 +768,8 @@ class PetOverlayService : Service() {
 
     private fun scheduleEdgeRun() {
         edgeRunHandler.removeCallbacksAndMessages(null)
+        // 敏感模式（微信/支付等）：不边缘跑，避免把桌宠从贴边位拉走
+        if (sensitiveMode) return
         if (prefBool("pref_edge_run", true)) {
             edgeRunHandler.postDelayed({ edgeRun() }, (Math.random() * 30000).toLong() + 30000)
         }
@@ -722,6 +805,8 @@ class PetOverlayService : Service() {
 
     private fun schedulePeekaboo() {
         peekabooHandler.removeCallbacksAndMessages(null)
+        // 敏感模式：不躲猫猫，避免桌宠乱跑到敏感内容上
+        if (sensitiveMode) return
         if (prefBool("pref_peekaboo", true)) {
             peekabooHandler.postDelayed({ peekaboo() }, (Math.random() * 4 * 60 * 1000).toLong() + 180000)
         }
@@ -862,12 +947,134 @@ class PetOverlayService : Service() {
     }
 
     /** 消息格式：「动作名|文本」或纯文本；支持 /say 的 JSON {text, action}。 */
+    // ============ 前台 app 感知（阶段1：抖音专属反应）============
+
+    private fun startFgSense() {
+        fgHandler.removeCallbacksAndMessages(null)
+        if (!prefBool(FG_SWITCH_KEY, true)) {
+            logLifecycle("fgSense DISABLED by pref")
+            return
+        }
+        logLifecycle("fgSense started")
+        fgHandler.post(fgRunnable)
+    }
+
+    private val fgRunnable = object : Runnable {
+        override fun run() {
+            try {
+                val pkg = foregroundPackage()
+                logLifecycle("fgSense tick pkg='$pkg' last='$lastFgPkg'")
+                if (pkg.isNotEmpty() && pkg != lastFgPkg) {
+                    lastFgPkg = pkg
+                    logLifecycle("foreground=$pkg")
+                    writeFgFile(pkg)
+                    onFgAppChanged(pkg)
+                }
+                // 持续追踪抖音连续时长：刷太久 → 提醒
+                trackDouyinDuration(pkg)
+            } catch (e: Exception) {
+                logLifecycle("fgSense ERR: $e")
+            }
+            fgHandler.postDelayed(this, FG_POLL_MS)
+        }
+    }
+
+    /** 追踪抖音连续使用时长；刷超过 DOUYIN_LONG_MS 且冷却过了就提醒 */
+    private fun trackDouyinDuration(pkg: String) {
+        val now = System.currentTimeMillis()
+        if (pkg == DOUYIN_PKG) {
+            if (douyinStartAt == 0L) douyinStartAt = now
+            if (now - douyinStartAt >= DOUYIN_LONG_MS &&
+                now - lastLongRemindAt >= DOUYIN_LONG_COOLDOWN_MS
+            ) {
+                lastLongRemindAt = now
+                logLifecycle("douyin long: ${(now - douyinStartAt) / 60000}min")
+                overlayView?.evaluateJavascript(
+                    "window.petEngine && window.petEngine.onAiSay('都刷${(now - douyinStartAt) / 60000}分钟了！眼睛不要啦？','angry')", null
+                )
+                showBubble("都刷${(now - douyinStartAt) / 60000}分钟了！眼睛不要啦？", 0)
+            }
+        } else {
+            douyinStartAt = 0L   // 切走了，重置连续计时
+        }
+    }
+
+    /** 读取当前前台 app 包名（无使用情况权限时返回空）。
+     *  用 queryEvents 事件流替代 queryUsageStats 轮询：
+     *  - 窗口拉到 60 秒（系统事件缓冲有延迟，5 秒窗口常查不到）
+     *  - 取窗口内最后一个 resumed 事件为前台（小窗/分屏也尽量拿真实 resumed） */
+    private fun foregroundPackage(): String {
+        val usm = getSystemService(android.app.usage.UsageStatsManager::class.java)
+        val now = System.currentTimeMillis()
+        val events = usm.queryEvents(now - 60_000, now) ?: return ""
+        val event = android.app.usage.UsageEvents.Event()
+        var lastPkg = ""
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event)
+            if (event.eventType == android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED ||
+                event.eventType == android.app.usage.UsageEvents.Event.ACTIVITY_PAUSED
+            ) {
+                // resumed 记包名；paused 也记（下一个 resumed 到来前，paused 前的算最后活动）
+                lastPkg = event.packageName
+            }
+        }
+        return lastPkg
+    }
+
+    /** 前台 app 变化 → 触发反应 */
+    private fun onFgAppChanged(pkg: String) {
+        // 敏感 app（微信/支付/相册等）：桌宠贴边让位，不挡屏幕内容
+        if (SENSITIVE_APPS.contains(pkg)) {
+            sensitiveMode = true
+            if (!docked) {
+                dockToEdge()
+                hideHandler.removeCallbacks(hideRunnable)   // 隐私场景保持贴边，不缩手柄打扰
+            }
+            return
+        }
+        // 从敏感 app 切回普通 app：解除敏感模式，恢复常态
+        if (sensitiveMode) {
+            sensitiveMode = false
+            // 恢复常态（由闲置计时器自行决定贴边或自由）
+            hideHandler.removeCallbacks(hideRunnable)
+        }
+        when (pkg) {
+            DOUYIN_PKG -> {
+                // 「打开抖音→吃醋」（README 蓝图设计）
+                val now = System.currentTimeMillis()
+                if (now - lastJealousAt > 60_000L) {   // 1 分钟冷却，别太碎嘴
+                    lastJealousAt = now
+                    overlayView?.evaluateJavascript(
+                        "window.petEngine && window.petEngine.onAiSay('又刷抖音！都不理我…','angry')", null
+                    )
+                    showBubble("又刷抖音！都不理我…", 0)
+                }
+            }
+            else -> {
+                // 其他 app：先不反应（等阶段2/指定清单）
+            }
+        }
+    }
+
+    /** 把当前前台 app 写到文件（agent 可轮询感知，为阶段2「一起刷视频」铺路） */
+    private fun writeFgFile(pkg: String) {
+        try {
+            val f = File(FG_FILE)
+            f.parentFile?.mkdirs()
+            f.writeText("$pkg\n${System.currentTimeMillis()}\n")
+        } catch (_: Exception) {
+        }
+    }
+
     private fun handleAiMessage(content: String) {
         val parts = content.split("|")
         val action = parts.getOrElse(0) { "" }.trim()
         val text = if (parts.size > 1) parts[1].trim() else action
+        // 触发词响应：聊天文本含触发词 → 升级/附加对应动作（累→心疼、想你→cute、生气→哄…）
+        val triggerAction = triggerActionFor(text)
+        val finalAction = if (triggerAction.isNotEmpty()) triggerAction else action
         val jsCall = if (parts.size > 1) {
-            "window.petEngine && window.petEngine.onAiSay(${escapeJs(text)}, '${escapeJs(action)}')"
+            "window.petEngine && window.petEngine.onAiSay(${escapeJs(text)}, '${escapeJs(finalAction)}')"
         } else {
             "window.petEngine && window.petEngine.onAiSay(${escapeJs(text)}, 'none')"
         }
@@ -875,6 +1082,21 @@ class PetOverlayService : Service() {
         // AI 消息的气泡由 pet.html 的 onAiSay → say() → JS 桥统一弹出（避免双重触发）
         hideHandler.removeCallbacks(hideRunnable)
         if (docked) undock()
+    }
+
+    /** 触发词 → 动作映射（聊天里出现这些词，桌宠给出对应情绪动作） */
+    private fun triggerActionFor(text: String): String {
+        val t = text
+        return when {
+            t.contains("累") || t.contains("困") || t.contains("辛苦") -> "sleepy"
+            t.contains("想你") || t.contains("想我") -> "cute"
+            t.contains("生气") || t.contains("气死") || t.contains("烦") -> "angry"
+            t.contains("晚安") || t.contains("睡了") || t.contains("睡觉") -> "sleepy"
+            t.contains("开心") || t.contains("高兴") || t.contains("哈哈") -> "happy"
+            t.contains("哭了") || t.contains("难过") || t.contains("伤心") -> "cry"
+            t.contains("惊") -> "shock"
+            else -> ""
+        }
     }
 
     private fun escapeJs(s: String): String =
