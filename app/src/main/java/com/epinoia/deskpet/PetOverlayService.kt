@@ -42,6 +42,9 @@ import java.net.Socket
 import java.net.URL
 import java.net.URLDecoder
 import java.util.Locale
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -88,6 +91,15 @@ class PetOverlayService : Service() {
         private const val FLING_TIME_MS = 400L
 
         private const val PREFS_NAME = "deskpet_prefs"
+
+        // 亲密度阈值（累计互动次数 → Lv2/Lv3/Lv4）
+        private const val INTIMACY_LV2 = 30
+        private const val INTIMACY_LV3 = 100
+        private const val INTIMACY_LV4 = 300
+
+        /** 运行中的服务实例：设置页改完形象后即时重载用（null = 没在跑） */
+        @Volatile
+        var instance: PetOverlayService? = null
         private const val MSG_FILE = "/sdcard/Deskpet/messages.txt"
         // 对话回路（阶段2「一起刷视频」）：agent 可读可写的对话流水
         private const val CHAT_LOG_FILE = "/sdcard/Deskpet/chat_log.txt"
@@ -228,6 +240,7 @@ class PetOverlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         // 全局崩溃捕获：任何线程崩溃都写 /sdcard/Deskpet/crash.log，便于诊断
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             try {
@@ -295,6 +308,7 @@ class PetOverlayService : Service() {
 
     override fun onDestroy() {
         logLifecycle("onDestroy")
+        if (instance === this) instance = null
         handler.removeCallbacks(idleRunnable)
         handler.removeCallbacks(lonelyRunnable)
         edgeRunHandler.removeCallbacksAndMessages(null)
@@ -454,6 +468,12 @@ class PetOverlayService : Service() {
     inner class AndroidBridge {
         @JavascriptInterface
         fun getPref(key: String, def: Boolean): Boolean = prefBool(key, def)
+
+        @JavascriptInterface
+        fun getPrefStr(key: String, def: String): String = prefStr(key, def)
+
+        @JavascriptInterface
+        fun getPrefInt(key: String, def: Int): Int = prefInt(key, def)
 
         @JavascriptInterface
         fun peekOut() {
@@ -624,31 +644,37 @@ class PetOverlayService : Service() {
 
     private fun onTap() {
         js("onTap()")
+        bumpIntimacy()
         maybeAiSpeak("宝宝刚刚戳了我一下，回应一句想说的话")
     }
 
     private fun onDoubleTap() {
         js("onDoubleTap()")
+        bumpIntimacy()
         maybeAiSpeak("宝宝刚刚双击了我，回应一句开心的")
     }
 
     private fun onLongPress() {
         js("onLongPress()")
+        bumpIntimacy()
         maybeAiSpeak("宝宝刚刚长按了我，回应一句")
     }
 
     private fun onCombo3() {
         js("onCombo3()")
+        bumpIntimacy(3)
         maybeAiSpeak("宝宝刚刚连戳了我三下，回应一句")
     }
 
     private fun onCombo5() {
         js("onCombo5()")
+        bumpIntimacy(5)
         maybeAiSpeak("宝宝刚刚连戳了我五下，回应一句")
     }
 
     private fun onCombo8() {
         js("onCombo8()")
+        bumpIntimacy(8)
         maybeAiSpeak("宝宝刚刚连戳了我八下，回应一句又惊又气的话")
     }
 
@@ -1094,6 +1120,9 @@ class PetOverlayService : Service() {
     private fun triggerActionFor(text: String): String {
         val t = text
         return when {
+            t.contains("可爱") || t.contains("喜欢") || t.contains("害羞") -> "blush"
+            t.contains("笑死") || t.contains("哈哈哈") -> "firework"
+            t.contains("好厉害") || t.contains("崇拜") || t.contains("太棒") -> "stareyes"
             t.contains("累") || t.contains("困") || t.contains("辛苦") -> "sleepy"
             t.contains("想你") || t.contains("想我") -> "cute"
             t.contains("生气") || t.contains("气死") || t.contains("烦") -> "angry"
@@ -1464,6 +1493,37 @@ class PetOverlayService : Service() {
                 if (text.isNotEmpty()) appendChatLog("宝宝", text)
                 responseBody = "{\"ok\":true}"
             }
+            // 调试用：在桌宠 WebView 里跑一段 JS 并回结果（仅本机 127.0.0.1，用来确认形象/状态真的生效）
+            method == "POST" && path == "/eval" -> {
+                val jsExpr = try {
+                    JSONObject(body).optString("js", "")
+                } catch (_: Exception) {
+                    ""
+                }
+                if (jsExpr.isEmpty()) {
+                    responseBody = "{\"ok\":false,\"error\":\"empty js\"}"
+                } else {
+                    val latch = CountDownLatch(1)
+                    val result = AtomicReference<String>("")
+                    handler.post {
+                        val wv = overlayView
+                        if (wv == null) {
+                            latch.countDown()
+                        } else {
+                            try {
+                                wv.evaluateJavascript(jsExpr) { v ->
+                                    result.set(v)
+                                    latch.countDown()
+                                }
+                            } catch (_: Exception) {
+                                latch.countDown()
+                            }
+                        }
+                    }
+                    latch.await(3, TimeUnit.SECONDS)
+                    responseBody = "{\"ok\":true,\"result\":${escapeJs(result.get())}}"
+                }
+            }
             else -> {
                 status = "404 Not Found"
                 responseBody = "{\"ok\":false,\"error\":\"not found\"}"
@@ -1639,6 +1699,52 @@ class PetOverlayService : Service() {
 
     private fun prefBool(key: String, def: Boolean): Boolean =
         getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getBoolean(key, def)
+
+    private fun prefStr(key: String, def: String): String =
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(key, def) ?: def
+
+    private fun prefInt(key: String, def: Int): Int =
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getInt(key, def)
+
+    // ===== 亲密度（互动次数累计 → Lv1~4，桌宠身上会长出新特征）=====
+    // 阈值：Lv2 ≥30 次、Lv3 ≥100 次、Lv4 ≥300 次互动
+    private fun bumpIntimacy(times: Int = 1) {
+        try {
+            val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+            val count = prefs.getInt("pref_intimacy_count", 0) + times
+            val level = when {
+                count >= INTIMACY_LV4 -> 4
+                count >= INTIMACY_LV3 -> 3
+                count >= INTIMACY_LV2 -> 2
+                else -> 1
+            }
+            val old = prefs.getInt("pref_intimacy_level", 1)
+            prefs.edit()
+                .putInt("pref_intimacy_count", count)
+                .putInt("pref_intimacy_level", level)
+                .apply()
+            if (level != old) {
+                logLifecycle("intimacy level up $old -> $level (count=$count)")
+                handler.post {
+                    overlayView?.evaluateJavascript(
+                        "window.petEngine && window.petEngine.setIntimacy($level);" +
+                            "window.petEngine && window.petEngine.onLevelUp($level)", null
+                    )
+                }
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    /** 设置里改完形象后即时重载（不用杀进程重启桌宠） */
+    fun reloadPetView() {
+        handler.post {
+            try {
+                overlayView?.loadUrl("file:///android_asset/pet.html")
+            } catch (_: Exception) {
+            }
+        }
+    }
 
     private fun dpToPx(dp: Int): Int =
         (dp * resources.displayMetrics.density).toInt()

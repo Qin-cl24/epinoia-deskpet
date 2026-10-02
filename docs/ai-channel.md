@@ -75,6 +75,7 @@ App 内已内置本地 HTTP 服务（`PetOverlayService.startLocalServer()`，�
 | POST | `/say` 或 `/message` | 推一条消息给桌宠（JSON：`{"text":"...","action":"cute"}`，也兼容表单） |
 | GET | `/status` | 查桌宠状态 + **拿情境上下文**（见下） |
 | POST | `/log` | 只记流水不出声：把「用户说的话」写进 `/sdcard/Deskpet/chat_log.txt`，供下一轮当上下文 |
+| POST | `/eval` | 调试用：在桌宠 WebView 里跑一段 JS 并回结果（`{"js":"..."}`），用来确认形象/状态真的生效 |
 
 `/status` 返回（阶段2「一起刷视频」对话回路用）：
 

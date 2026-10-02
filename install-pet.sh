@@ -47,7 +47,9 @@ fi
 
 # ── 3. 安装 ───────────────────────────────────────────────
 echo "📦 覆盖安装中..."
-if ! adb -s "$DEV" install -r "$APK" 2>&1 | tail -3; then
+# 用 --no-streaming：先 push 到设备再装。无线调试下 streamed install 偶发卡死，
+# 这条道稳定得多（本地设备 push 速度约 175MB/s，几乎无额外开销）。
+if ! timeout 150 adb -s "$DEV" install -r --no-streaming "$APK" 2>&1 | tail -3; then
   echo "❌ 安装失败（签名不一致？那就得先卸载旧版，设置会丢）"; exit 1
 fi
 

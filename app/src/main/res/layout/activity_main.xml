@@ -189,6 +189,135 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
+            android:text="🎨 桌宠形象"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="皮肤"
+            android:textColor="#666666"
+            android:textSize="12sp" />
+
+        <Spinner
+            android:id="@+id/sp_skin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="配件（可多选，手动穿戴）"
+            android:textColor="#666666"
+            android:textSize="12sp" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_cap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🧢 棒球帽" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_sleepcap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="😴 睡帽" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_xmascap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎄 圣诞帽" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_scarf"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🧣 围巾" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_phones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎧 耳机" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_glasses"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="👓 眼镜" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="待机微动作"
+            android:textColor="#666666"
+            android:textSize="12sp" />
+
+        <CheckBox
+            android:id="@+id/cb_idle_blink"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="眨眼" />
+
+        <CheckBox
+            android:id="@+id/cb_idle_breathe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="呼吸起伏" />
+
+        <CheckBox
+            android:id="@+id/cb_idle_music"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="跟音乐晃" />
+
+        <CheckBox
+            android:id="@+id/cb_idle_hop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="轻跳" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="活跃度（自言自语 / 小动作频率）"
+            android:textColor="#666666"
+            android:textSize="12sp" />
+
+        <Spinner
+            android:id="@+id/sp_act"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tv_intimacy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="#333333"
+            android:textSize="13sp"
+            android:text="亲密度：读取中…" />
+
+        <Button
+            android:id="@+id/btn_intimacy_reset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="↺ 重置亲密度（回到 Lv1）" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:text="🤖 AI 服务配置（可选）"
             android:textColor="#333333"
             android:textSize="16sp"

@@ -31,7 +31,7 @@
   /* 主体：横向长方形 52×24（气泡已独立成悬浮窗，不再留头顶空间） */
   .body {
     position: relative;
-    width: 52px; height: 24px; background: #e67e22;
+    width: 52px; height: 24px; background: var(--pet-body, #e67e22);
     margin: 4px auto 0;
   }
   /* 眼睛（两只） */
@@ -39,10 +39,10 @@
   .eye-left { left: 10px; } .eye-right { right: 10px; }
   .pet.blink .eye { height: 2px; }
   /* 手：小正方形、与身体同色、垂直居中、紧贴身体两侧无缝隙 */
-  .arm { position: absolute; width: 8px; height: 8px; background: #e67e22; top: 8px; }
+  .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 8px; }
   .arm-left { left: -8px; } .arm-right { right: -8px; }
   /* 腿：两条，分开在下方 */
-  .leg { position: absolute; width: 8px; height: 6px; background: #d35400; bottom: -6px; border-radius: 0 0 4px 4px; }
+  .leg { position: absolute; width: 8px; height: 6px; background: var(--pet-leg, #d35400); bottom: -6px; border-radius: 0 0 4px 4px; }
   .leg-left { left: 10px; } .leg-right { right: 10px; }
 
   /* ===== 自主小动作特效 ===== */
@@ -109,12 +109,72 @@
   /* 翻滚动作 */
   .act-roll { animation: roll .6s ease 1; }
   @keyframes roll { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+  /* ===== 皮肤（CSS 变量，设置页可切）===== */
+  .pet[data-skin="peach"] { --pet-body:#f48fb1; --pet-leg:#ec407a; --pet-accent:#f06292; }
+  .pet[data-skin="mint"]  { --pet-body:#66bb6a; --pet-leg:#388e3c; --pet-accent:#4caf50; }
+  .pet[data-skin="night"] { --pet-body:#5c6bc0; --pet-leg:#303f9f; --pet-accent:#7986cb; }
+  .pet[data-skin="latte"] { --pet-body:#bcaaa4; --pet-leg:#795548; --pet-accent:#8d6e63; }
+  .pet[data-skin="grape"] { --pet-body:#ab47bc; --pet-leg:#7b1fa2; --pet-accent:#ba68c8; }
+
+  /* ===== 配件（设置页手动选，可叠加）===== */
+  .acc { position: absolute; display: none; }
+  .pet[data-acc~="cap"] .acc.cap { display: block; }
+  .pet[data-acc~="sleepcap"] .acc.sleepcap { display: block; }
+  .pet[data-acc~="xmascap"] .acc.xmascap { display: block; }
+  .pet[data-acc~="scarf"] .acc.scarf { display: block; }
+  .pet[data-acc~="phones"] .acc.phones { display: block; }
+  .pet[data-acc~="glasses"] .acc.glasses { display: block; }
+  .pet[data-acc~="antenna"] .acc.antenna { display: block; }
+  .pet[data-acc~="halo"] .acc.halo { display: block; }
+  .cap { left: 6px; top: -12px; width: 40px; height: 13px; background: var(--pet-accent, #e67e22); border-radius: 18px 18px 3px 3px; }
+  .cap::after { content: ''; position: absolute; right: -8px; bottom: 1px; width: 18px; height: 4px; background: var(--pet-accent, #e67e22); border-radius: 3px; }
+  .scarf { left: -3px; top: 17px; width: 58px; height: 8px; background: #e74c3c; border-radius: 4px; }
+  .scarf::after { content: ''; position: absolute; left: 8px; top: 6px; width: 9px; height: 13px; background: #e74c3c; border-radius: 3px; }
+  .phones { left: -6px; right: -6px; top: -4px; height: 14px; border: 3px solid #455a64; border-bottom: none; border-radius: 20px 20px 0 0; }
+  .phones::before, .phones::after { content: ''; position: absolute; bottom: -3px; width: 9px; height: 9px; background: #455a64; border-radius: 50%; }
+  .phones::before { left: -4px; } .phones::after { right: -4px; }
+  .glasses { left: 5px; top: 2px; width: 42px; height: 13px; }
+  .glasses::before, .glasses::after { content: ''; position: absolute; top: 0; width: 12px; height: 12px; border: 2px solid #263238; border-radius: 50%; box-sizing: border-box; background: rgba(255,255,255,.18); }
+  .glasses::before { left: 0; } .glasses::after { right: 0; }
+  .sleepcap { left: 9px; top: -14px; width: 0; height: 0; border-left: 17px solid transparent; border-right: 17px solid transparent; border-bottom: 16px solid #7986cb; }
+  .sleepcap::after { content: ''; position: absolute; left: -5px; top: -8px; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
+  .xmascap { left: 9px; top: -14px; width: 0; height: 0; border-left: 17px solid transparent; border-right: 17px solid transparent; border-bottom: 16px solid #e53935; }
+  .xmascap::after { content: ''; position: absolute; left: -5px; top: -8px; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
+  .xmascap::before { content: ''; position: absolute; left: -17px; top: 11px; width: 34px; height: 5px; background: #fff; border-radius: 3px; }
+  /* 成长特征 */
+  .antenna { left: 24px; top: -11px; width: 2px; height: 9px; background: var(--pet-leg, #d35400); }
+  .antenna::after { content: ''; position: absolute; left: -2px; top: -5px; width: 6px; height: 6px; border-radius: 50%; background: var(--pet-accent, #e67e22); box-shadow: 0 0 5px var(--pet-accent, #e67e22); }
+  .halo { left: 12px; top: -15px; width: 28px; height: 8px; border: 2px solid #ffd54f; border-radius: 50%; box-shadow: 0 0 7px #ffd54f; }
+  .pet.blush .body::before, .pet.blush .body::after { content: ''; position: absolute; top: 11px; width: 8px; height: 4px; background: #ff8a80; border-radius: 50%; opacity: .85; }
+  .pet.blush .body::before { left: 1px; } .pet.blush .body::after { right: 1px; }
+  .pet.stareyes .eye { background: transparent; }
+  .pet.stareyes .eye::after { content: '★'; position: absolute; left: -2px; top: -4px; font-size: 9px; color: #ffb300; line-height: 1; }
+
+  /* ===== 待机微动作（设置页可开关）===== */
+  .pet.idle-breathe .body { animation: breathe 3.2s ease-in-out infinite; }
+  @keyframes breathe { 0%,100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(1px) scaleY(.95); } }
+  .pet.idle-music { animation: petwig .5s ease-in-out infinite; }
+  @keyframes petwig { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+  .pet.idle-hop { animation: pethop .9s ease-in-out infinite; }
+  @keyframes pethop { 0%,100% { transform: translateY(0); } 35% { transform: translateY(-5px); } 60% { transform: translateY(0); } }
+
+  /* ===== 新特效粒子层（汗滴/爱心爆裂/烟花/音符）===== */
+  .fxlayer { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+  .fxlayer .p { position: absolute; font-size: 9px; line-height: 1; animation: rise 1.15s ease-out forwards; }
+  @keyframes rise { 0% { opacity: 1; transform: translate(0,0) scale(.7); } 100% { opacity: 0; transform: translate(var(--dx, 0), var(--dy, -14px)) scale(1.5); } }
 </style>
 </head>
 <body>
   <div class="pet" id="pet">
     <span class="bubble" id="bubble"></span>
     <span class="handle" id="handle">❯</span>
+    <span class="acc halo"></span>
+    <span class="acc antenna"></span>
+    <span class="acc cap"></span>
+    <span class="acc sleepcap"></span>
+    <span class="acc xmascap"></span>
+    <div class="fxlayer" id="fxlayer"></div>
     <span class="fx fx-heart">❤</span>
     <span class="fx fx-tear">💧</span>
     <span class="fx fx-tear r">💧</span>
@@ -138,6 +198,9 @@
       <div class="arm arm-right"></div>
       <div class="leg leg-left"></div>
       <div class="leg leg-right"></div>
+      <span class="acc glasses"></span>
+      <span class="acc scarf"></span>
+      <span class="acc phones"></span>
     </div>
   </div>
 
@@ -162,10 +225,22 @@
   function bounce() {
     pet.classList.remove('bounce'); void pet.offsetWidth; pet.classList.add('bounce');
   }
-  setInterval(() => {
-    pet.classList.add('blink');
-    setTimeout(() => pet.classList.remove('blink'), 130);
-  }, 3000);
+  // 设置读取（字符串/整数），桥不可用时用默认值
+  function getPrefStr(key, def) {
+    try { return window.AndroidBridge ? AndroidBridge.getPrefStr(key, def) : def; } catch (e) { return def; }
+  }
+  function getPrefInt(key, def) {
+    try { return window.AndroidBridge ? AndroidBridge.getPrefInt(key, def) : def; } catch (e) { return def; }
+  }
+
+  // 眨眼（设置可关）
+  if (getPref('pref_blink', true)) {
+    setInterval(() => {
+      if (pet.classList.contains('asleep')) return;
+      pet.classList.add('blink');
+      setTimeout(() => pet.classList.remove('blink'), 130);
+    }, 3000 + Math.random() * 1500);
+  }
 
   window.petEngine = {
     onTap: function() {
@@ -228,7 +303,25 @@
         var hold = (action === 'think' || action === 'run' || action === 'shock' || action === 'sleepy')
           ? 8000 : 2500;
         setTimeout(function() { pet.classList.remove('act-' + action); clearFx(); }, hold);
+      } else if (action && FEELS.indexOf(action) >= 0) {
+        wakeUp();
+        playFeels(action);
       }
+    },
+    // 亲密度热更新（原生层数完互动次数后调用）：Lv2 冒触角、Lv3 带红晕、Lv4 顶光环
+    setIntimacy: function(lv) {
+      var accs = (pet.dataset.acc || '').split(/\s+/).filter(Boolean)
+        .filter(function(x) { return x !== 'antenna' && x !== 'halo'; });
+      if (lv >= 2) accs.push('antenna');
+      if (lv >= 4) accs.push('halo');
+      pet.dataset.acc = accs.join(' ');
+      pet.classList.toggle('blush', lv >= 3);
+    },
+    // 亲密度升级时的一次性庆祝
+    onLevelUp: function(lv) {
+      playFeels('firework');
+      bounce();
+      say(['', '嘿嘿…有点想黏着你', '我们熟起来啦！', '你还挺喜欢我的嘛', '我一直都在哦✨'][lv] || '嘿嘿');
     }
   };
 
@@ -291,6 +384,70 @@
 
   // ===== 自主小动作：参考相册表情图，随机自觉做 =====
   var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll'];
+  // ===== 情绪特效（新）：agent 可直接推 action=stareyes/blush/sweat/heartburst/firework/note =====
+  var FEELS = ['stareyes','blush','sweat','heartburst','firework','note'];
+
+  function tempClass(cls, ms) {
+    pet.classList.add(cls);
+    setTimeout(function() { pet.classList.remove(cls); }, ms || 2000);
+  }
+  function spawnFx(emoji, n, opts) {
+    opts = opts || {};
+    var layer = document.getElementById('fxlayer');
+    if (!layer) return;
+    for (var i = 0; i < n; i++) {
+      var s = document.createElement('span');
+      s.className = 'p';
+      s.textContent = emoji;
+      s.style.left = (opts.left != null ? opts.left : 20 + Math.random() * 26) + 'px';
+      s.style.top = (opts.top != null ? opts.top : 4) + 'px';
+      s.style.setProperty('--dx', (opts.dx != null ? opts.dx : Math.random() * 30 - 15).toFixed(1) + 'px');
+      s.style.setProperty('--dy', (opts.dy != null ? opts.dy : -(10 + Math.random() * 14)).toFixed(1) + 'px');
+      s.style.animationDelay = (i * 0.07) + 's';
+      layer.appendChild(s);
+      (function(el) { setTimeout(function() { el.remove(); }, 1700); })(s);
+    }
+  }
+  function playFeels(a) {
+    switch (a) {
+      case 'stareyes': tempClass('stareyes', 2200); break;
+      case 'blush': tempClass('blush', 2200); break;
+      case 'sweat': spawnFx('💧', 2, { left: 52, top: 2, dx: 4, dy: -12 }); break;
+      case 'heartburst': spawnFx('❤', 5, { top: 6, dy: -16 }); break;
+      case 'note': spawnFx('♪', 3, { top: 4, dy: -13 }); spawnFx('♫', 2, { top: 2, dy: -16 }); break;
+      case 'firework':
+        ['✨','🎆','✨','★','🎇','✨','·','✦'].forEach(function(e, i) {
+          spawnFx(e, 1, { left: 26, top: 8, dx: Math.cos(i / 8 * 6.28) * 16, dy: Math.sin(i / 8 * 6.28) * 16 });
+        });
+        break;
+    }
+  }
+
+  // ===== 形象装配：皮肤 / 配件 / 待机微动作 / 亲密度成长特征（都读设置）=====
+  (function applyLook() {
+    var SKINS = ['orange', 'peach', 'mint', 'night', 'latte', 'grape'];
+    var skin = getPrefStr('pref_skin', 'orange');
+    pet.dataset.skin = (SKINS.indexOf(skin) >= 0) ? skin : 'orange';
+
+    var accs = [];
+    // 手动选的配件（设置页勾选，可叠加；帽子类自己别同时勾两个）
+    if (getPref('pref_acc_cap', false)) accs.push('cap');
+    if (getPref('pref_acc_sleepcap', false)) accs.push('sleepcap');
+    if (getPref('pref_acc_xmascap', false)) accs.push('xmascap');
+    if (getPref('pref_acc_scarf', false)) accs.push('scarf');
+    if (getPref('pref_acc_phones', false)) accs.push('phones');
+    if (getPref('pref_acc_glasses', false)) accs.push('glasses');
+    // 亲密度长出来的特征（Lv2 触角 / Lv3 红晕 / Lv4 光环）
+    var lv = getPrefInt('pref_intimacy_level', 1);
+    if (lv >= 2) accs.push('antenna');
+    if (lv >= 4) accs.push('halo');
+    if (lv >= 3) pet.classList.add('blush');
+    pet.dataset.acc = accs.join(' ');
+
+    if (getPref('pref_idle_breathe', true)) pet.classList.add('idle-breathe');
+    if (getPref('pref_idle_music', false)) pet.classList.add('idle-music');
+    if (getPref('pref_idle_hop', false)) pet.classList.add('idle-hop');
+  })();
   var FX = {
     happy: ['.fx-heart'],
     sleepy: ['.fx-zzz'],
@@ -329,14 +486,18 @@
     if (Math.random() < 0.25) {
       say(MUTTERS[PERIOD][Math.floor(Math.random() * MUTTERS[PERIOD].length)]);
     }
+    // 偶尔顺带来个情绪特效（星星眼/脸红/汗滴/爱心/烟花/音符）
+    if (Math.random() < 0.22) playFeels(FEELS[Math.floor(Math.random() * FEELS.length)]);
     setTimeout(function() {
       pet.classList.remove('act-' + a);
       clearFx();
     }, 2500);
   }
+  // 活跃度：设置页三档（话痨 8 秒 / 正常 45 秒 / 安静 150 秒）
+  var ACT_BASE_SEC = Math.max(4, getPrefInt('pref_act_sec', 45));
   setTimeout(function schedule() {
     runAction();
-    setTimeout(schedule, 5000 + Math.random() * 5000); // 每 5~10 秒随机一个小动作
+    setTimeout(schedule, ACT_BASE_SEC * 1000 * (0.7 + Math.random() * 0.6));
   }, 4000);
 
   // ===== 尺寸缩放：AndroidBridge.getPetScale() 返回 1.0~2.5（52×24 ↔ 130×60）=====

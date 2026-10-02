@@ -10,9 +10,14 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.SeekBar
+import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
@@ -64,6 +69,63 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
+        // ===== 🎨 桌宠形象：皮肤 / 配件 / 待机微动作 / 活跃度 / 亲密度 =====
+        // 注意：Spinner 在挂载到窗口时会派发一次「当前选中项」回调，若此时就把值写回 prefs，
+        // 会把用户上次的选择重置掉（踩过：打开设置页 → 皮肤被打回原版橙）。所以用 initGuard 挡住首次回调。
+        val skinKeys = listOf("orange", "peach", "mint", "night", "latte", "grape")
+        val skinNames = listOf("原版橙", "蜜桃粉", "薄荷绿", "夜空蓝", "奶咖", "紫葡萄")
+        var skinInit = true
+        val spSkin = findViewById<Spinner>(R.id.sp_skin)
+        spSkin.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, skinNames)
+        spSkin.setSelection(skinKeys.indexOf(prefs.getString("pref_skin", "orange")).coerceAtLeast(0))
+        spSkin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p: AdapterView<*>?, v: View?, position: Int, id: Long) {
+                if (skinInit) { skinInit = false; return }
+                prefs.edit().putString("pref_skin", skinKeys[position]).apply()
+                applyLookLive()
+            }
+
+            override fun onNothingSelected(p: AdapterView<*>?) {}
+        }
+        spSkin.post { skinInit = false }
+
+        bindLookBox(R.id.cb_acc_cap, "pref_acc_cap")
+        bindLookBox(R.id.cb_acc_sleepcap, "pref_acc_sleepcap")
+        bindLookBox(R.id.cb_acc_xmascap, "pref_acc_xmascap")
+        bindLookBox(R.id.cb_acc_scarf, "pref_acc_scarf")
+        bindLookBox(R.id.cb_acc_phones, "pref_acc_phones")
+        bindLookBox(R.id.cb_acc_glasses, "pref_acc_glasses")
+
+        bindLookBox(R.id.cb_idle_blink, "pref_blink", true)
+        bindLookBox(R.id.cb_idle_breathe, "pref_idle_breathe", true)
+        bindLookBox(R.id.cb_idle_music, "pref_idle_music", false)
+        bindLookBox(R.id.cb_idle_hop, "pref_idle_hop", false)
+
+        val actSecs = listOf(8, 45, 150)
+        val actNames = listOf("话痨（约 8 秒一次）", "正常（约 45 秒一次）", "安静（约 2.5 分钟一次）")
+        var actInit = true
+        val spAct = findViewById<Spinner>(R.id.sp_act)
+        spAct.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, actNames)
+        spAct.setSelection(actSecs.indexOf(prefs.getInt("pref_act_sec", 45)).coerceAtLeast(0))
+        spAct.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p: AdapterView<*>?, v: View?, position: Int, id: Long) {
+                if (actInit) { actInit = false; return }
+                prefs.edit().putInt("pref_act_sec", actSecs[position]).apply()
+                applyLookLive()
+            }
+
+            override fun onNothingSelected(p: AdapterView<*>?) {}
+        }
+        spAct.post { actInit = false }
+
+        findViewById<Button>(R.id.btn_intimacy_reset).setOnClickListener {
+            prefs.edit().putInt("pref_intimacy_count", 0).putInt("pref_intimacy_level", 1).apply()
+            applyLookLive()
+            updateIntimacyText()
+            Toast.makeText(this, "亲密度已重置为 Lv1", Toast.LENGTH_SHORT).show()
+        }
+        updateIntimacyText()
+
         val etUrl = findViewById<EditText>(R.id.et_ai_url)
         val etKey = findViewById<EditText>(R.id.et_ai_key)
         etUrl.setText(prefs.getString("pref_ai_url", ""))
@@ -102,6 +164,40 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refreshPermButtons()
+        updateIntimacyText()
+    }
+
+    /** 形象类勾选项（配件/待机微动作）：改完立刻重载桌宠，不用重启 */
+    private fun bindLookBox(id: Int, key: String, def: Boolean = false) {
+        val cb = findViewById<CheckBox>(id)
+        cb.isChecked = prefs.getBoolean(key, def)
+        cb.setOnCheckedChangeListener { _, checked ->
+            prefs.edit().putBoolean(key, checked).apply()
+            applyLookLive()
+        }
+    }
+
+    /** 桌宠在跑就直接重载 WebView（形象类设置即时生效）；没跑则下次启动生效 */
+    private fun applyLookLive() {
+        PetOverlayService.instance?.reloadPetView()
+    }
+
+    /** 亲密度文案：Lv1~4 + 距下一级还差几次互动 */
+    private fun updateIntimacyText() {
+        val count = prefs.getInt("pref_intimacy_count", 0)
+        val lv = prefs.getInt("pref_intimacy_level", 1)
+        val next = when (lv) {
+            1 -> 30
+            2 -> 100
+            3 -> 300
+            else -> -1
+        }
+        val tv = findViewById<TextView>(R.id.tv_intimacy)
+        tv.text = if (next > 0) {
+            "亲密度 Lv$lv · 已互动 $count 次（再 ${(next - count).coerceAtLeast(0)} 次升 Lv${lv + 1}）"
+        } else {
+            "亲密度 Lv4 · 已互动 $count 次（满级，触角+光环都在啦）"
+        }
     }
 
     private fun bindSwitch(id: Int, key: String, def: Boolean) {
