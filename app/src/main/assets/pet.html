@@ -125,7 +125,6 @@
   .pet[data-acc~="scarf"] .acc.scarf { display: block; }
   .pet[data-acc~="phones"] .acc.phones { display: block; }
   .pet[data-acc~="glasses"] .acc.glasses { display: block; }
-  .pet[data-acc~="antenna"] .acc.antenna { display: block; }
   .pet[data-acc~="halo"] .acc.halo { display: block; }
   .cap { left: 6px; top: -9px; width: 40px; height: 13px; background: var(--pet-accent, #e67e22); border-radius: 18px 18px 3px 3px; }
   .cap::after { content: ''; position: absolute; right: -8px; bottom: 1px; width: 18px; height: 4px; background: var(--pet-accent, #e67e22); border-radius: 3px; }
@@ -143,9 +142,20 @@
   .xmascap::after { content: ''; position: absolute; left: -5px; top: -8px; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
   .xmascap::before { content: ''; position: absolute; left: -17px; top: 11px; width: 34px; height: 5px; background: #fff; border-radius: 3px; }
   /* 成长特征 */
-  /* Lv2 光圈：只留头顶的发光光圈，去掉下面那根"把手"竖杆 */
-  .antenna { left: 24px; top: -9px; width: 6px; height: 6px; background: transparent; }
-  .antenna::after { content: ''; position: absolute; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--pet-accent, #e67e22); box-shadow: 0 0 6px var(--pet-accent, #e67e22); }
+  /* 玩具球：原来头顶那个小圆圈，挪到地上当玩具，自娱自乐时滚出来玩 */
+  .toy { position: absolute; left: 14px; bottom: 1px; width: 9px; height: 9px; border-radius: 50%; background: var(--pet-accent, #e67e22); box-shadow: 0 0 6px var(--pet-accent, #e67e22), inset -1px -1px 2px rgba(0,0,0,.22); display: none; z-index: 7; }
+  .pet.play-ball .toy { display: block; animation: ballplay 2.8s cubic-bezier(.32,.62,.6,1) forwards; }
+  @keyframes ballplay {
+    0%   { transform: translate(26px, 3px) scale(.3); opacity: 0; }
+    12%  { transform: translate(26px, -12px) scale(1); opacity: 1; }
+    26%  { transform: translate(22px, 0) scale(1, .86); }
+    40%  { transform: translate(16px, -8px); }
+    54%  { transform: translate(10px, 0) scale(1, .88); }
+    68%  { transform: translate(4px, -4px); }
+    82%  { transform: translate(-2px, 0); }
+    92%  { transform: translate(-7px, 0) rotate(-180deg); }
+    100% { transform: translate(-13px, 0) scale(.4) rotate(-360deg); opacity: 0; }
+  }
   .halo { left: 12px; top: -15px; width: 28px; height: 8px; border: 2px solid #ffd54f; border-radius: 50%; box-shadow: 0 0 7px #ffd54f; }
   .pet.blush .body::before, .pet.blush .body::after { content: ''; position: absolute; top: 11px; width: 8px; height: 4px; background: #ff8a80; border-radius: 50%; opacity: .85; }
   .pet.blush .body::before { left: 1px; } .pet.blush .body::after { right: 1px; }
@@ -171,7 +181,7 @@
     <span class="bubble" id="bubble"></span>
     <span class="handle" id="handle">❯</span>
     <span class="acc halo"></span>
-    <span class="acc antenna"></span>
+    <span class="toy" id="toy"></span>
     <span class="acc cap"></span>
     <span class="acc sleepcap"></span>
     <span class="acc xmascap"></span>
@@ -309,11 +319,10 @@
         playFeels(action);
       }
     },
-    // 亲密度热更新（原生层数完互动次数后调用）：Lv2 冒触角、Lv3 带红晕、Lv4 顶光环
+    // 亲密度热更新（原生层数完互动次数后调用）：Lv3 带红晕、Lv4 顶光环
     setIntimacy: function(lv) {
       var accs = (pet.dataset.acc || '').split(/\s+/).filter(Boolean)
-        .filter(function(x) { return x !== 'antenna' && x !== 'halo'; });
-      if (lv >= 2) accs.push('antenna');
+        .filter(function(x) { return x !== 'halo'; });
       if (lv >= 4) accs.push('halo');
       pet.dataset.acc = accs.join(' ');
       pet.classList.toggle('blush', lv >= 3);
@@ -439,9 +448,8 @@
     if (getPref('pref_acc_phones', false)) accs.push('phones');
     if (getPref('pref_acc_glasses', false)) accs.push('glasses');
     if (getPref('pref_acc_halo', false)) accs.push('halo');
-    // 亲密度长出来的特征（Lv2 触角 / Lv3 红晕 / Lv4 光环）
+    // 亲密度长出来的特征（Lv3 红晕 / Lv4 光环）
     var lv = getPrefInt('pref_intimacy_level', 1);
-    if (lv >= 2) accs.push('antenna');
     if (lv >= 4) accs.push('halo');
     if (lv >= 3) pet.classList.add('blush');
     pet.dataset.acc = accs.join(' ');
@@ -469,9 +477,27 @@
   function clearFx() {
     document.querySelectorAll('.fx').forEach(function(el) { el.classList.remove('show'); });
   }
+  // ===== 玩具球：自娱自乐时滚出来玩一下（设置页可关）=====
+  var BALL_SAYS = ['接住！⚽', '球球～⚽', '看我颠球！', '嘿嘿 好圆'];
+  function playBall() {
+    if (pet.classList.contains('asleep')) return;
+    if (!getPref('pref_toy_ball', true)) return;
+    pet.classList.remove('blink');
+    ACTIONS.forEach(function(a) { pet.classList.remove('act-' + a); });
+    clearFx();
+    pet.classList.add('play-ball', 'act-happy');
+    spawnFx('❤', 2, { top: 4, dy: -12 });
+    if (Math.random() < 0.5) randomSay(BALL_SAYS);
+    setTimeout(function() {
+      pet.classList.remove('play-ball', 'act-happy');
+      clearFx();
+    }, 2850);
+  }
   function runAction() {
     if (pet.classList.contains('asleep')) return;
     if (!getPref('pref_idle_actions', true)) return;
+    // 自娱自乐：约 1/5 概率改成自己玩球
+    if (getPref('pref_toy_ball', true) && Math.random() < 0.22) { playBall(); return; }
     // 做小动作时通知原生层从贴边弹出，刷存在感
     try { window.AndroidBridge && window.AndroidBridge.peekOut(); } catch (e) {}
     pet.classList.remove('blink');

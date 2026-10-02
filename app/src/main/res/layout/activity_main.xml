@@ -301,6 +301,13 @@
             android:textColor="#333333"
             android:text="轻跳" />
 
+        <CheckBox
+            android:id="@+id/cb_toy_ball"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:text="🎾 玩具球（自娱自乐时滚出来玩）" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

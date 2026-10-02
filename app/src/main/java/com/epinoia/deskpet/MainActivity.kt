@@ -101,6 +101,7 @@ class MainActivity : AppCompatActivity() {
         bindLookBox(R.id.cb_idle_breathe, "pref_idle_breathe", true)
         bindLookBox(R.id.cb_idle_music, "pref_idle_music", false)
         bindLookBox(R.id.cb_idle_hop, "pref_idle_hop", false)
+        bindLookBox(R.id.cb_toy_ball, "pref_toy_ball", true)
 
         val actSecs = listOf(8, 45, 150)
         val actNames = listOf("话痨（约 8 秒一次）", "正常（约 45 秒一次）", "安静（约 2.5 分钟一次）")
@@ -215,7 +216,7 @@ class MainActivity : AppCompatActivity() {
         tv.text = if (next > 0) {
             "亲密度 Lv$lv · 已互动 $count 次（再 ${(next - count).coerceAtLeast(0)} 次升 Lv${lv + 1}）"
         } else {
-            "亲密度 Lv4 · 已互动 $count 次（满级，触角+光环都在啦）"
+            "亲密度 Lv4 · 已互动 $count 次（满级，红晕+光环都在啦）"
         }
     }
 
