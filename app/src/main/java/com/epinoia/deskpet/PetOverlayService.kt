@@ -108,14 +108,14 @@ class PetOverlayService : Service() {
         private val WHISPERS_MORNING = arrayOf("早安呀～新的一天☀️", "起床气消了吗？", "今天也要元气满满！", "早！我一直在等你哦")
         private val WHISPERS_NOON = arrayOf("午饭吃了吗？🍚", "该吃饭啦～", "下午别犯困哦", "好想喝奶茶")
         private val WHISPERS_NIGHT = arrayOf("今天辛苦啦～", "晚上好呀🌙", "夜深了，眼睛累吗", "今天过得怎么样？")
-        private val WHISPERS_DAY = arrayOf("在呢～随时找我", "想我了吗？", "我趴在这儿陪你", "主人今天开心吗？")
+        private val WHISPERS_DAY = arrayOf("在呢～随时找我", "想我了吗？", "我趴在这儿陪你", "宝宝今天开心吗？")
 
         // ===== 前台 app 感知（阶段1：先做抖音专属反应）=====
         private const val FG_POLL_MS = 3000L             // 每 3 秒轮询前台 app
         private const val FG_FILE = "/sdcard/Deskpet/foreground.txt"  // 当前前台 app（agent 可读，阶段2铺路）
         private const val DOUYIN_PKG = "com.ss.android.ugc.aweme"     // 抖音
         private const val FG_SWITCH_KEY = "pref_fg_sense"            // 开关
-        private const val DOUYIN_LONG_MS = 90 * 60 * 1000L   // 刷抖音超过 1.5 小时 → 提醒「刷太久」（主人中度近视+网瘾，别刷太狠）
+        private const val DOUYIN_LONG_MS = 90 * 60 * 1000L   // 刷抖音超过 1.5 小时 → 提醒「刷太久」（护眼考虑，别刷太狠）
         private const val DOUYIN_LONG_COOLDOWN_MS = 30 * 60 * 1000L // 提醒后冷却 30 分钟再提醒
 
         // 敏感 app 列表：前台是这些时，桌宠自动贴边让位（不挡屏幕内容，隐私保护靠「不看」）
@@ -618,32 +618,32 @@ class PetOverlayService : Service() {
 
     private fun onTap() {
         js("onTap()")
-        maybeAiSpeak("主人刚刚戳了我一下，回应一句想说的话")
+        maybeAiSpeak("宝宝刚刚戳了我一下，回应一句想说的话")
     }
 
     private fun onDoubleTap() {
         js("onDoubleTap()")
-        maybeAiSpeak("主人刚刚双击了我，回应一句开心的")
+        maybeAiSpeak("宝宝刚刚双击了我，回应一句开心的")
     }
 
     private fun onLongPress() {
         js("onLongPress()")
-        maybeAiSpeak("主人刚刚长按了我，回应一句")
+        maybeAiSpeak("宝宝刚刚长按了我，回应一句")
     }
 
     private fun onCombo3() {
         js("onCombo3()")
-        maybeAiSpeak("主人刚刚连戳了我三下，回应一句")
+        maybeAiSpeak("宝宝刚刚连戳了我三下，回应一句")
     }
 
     private fun onCombo5() {
         js("onCombo5()")
-        maybeAiSpeak("主人刚刚连戳了我五下，回应一句")
+        maybeAiSpeak("宝宝刚刚连戳了我五下，回应一句")
     }
 
     private fun onCombo8() {
         js("onCombo8()")
-        maybeAiSpeak("主人刚刚连戳了我八下，回应一句又惊又气的话")
+        maybeAiSpeak("宝宝刚刚连戳了我八下，回应一句又惊又气的话")
     }
 
     private fun onDragEnd() = js("onDragEnd()")
@@ -684,7 +684,7 @@ class PetOverlayService : Service() {
                 hour >= 22 -> "夜晚"
                 else -> "白天"
             }
-            maybeAiSpeak("现在是$period，主人可能在忙，主动说一句想说的话（关心/撒娇/自言自语都行）")
+            maybeAiSpeak("现在是$period，宝宝可能在忙，主动说一句想说的话（关心/撒娇/自言自语都行）")
             scheduleBrainTick()
         }, 20 * 60 * 1000L + (Math.random() * 20 * 60 * 1000).toLong())
     }
@@ -844,7 +844,7 @@ class PetOverlayService : Service() {
         overlayView?.evaluateJavascript(
             "window.petEngine && window.petEngine.onLonely$lonelyStage()", null
         )
-        maybeAiSpeak("主人好久没理我了（孤独第${lonelyStage}级），主动说一句撒娇或抱怨的话")
+        maybeAiSpeak("宝宝好久没理我了（孤独第${lonelyStage}级），主动说一句撒娇或抱怨的话")
         if (lonelyStage < 4) {
             handler.postDelayed(lonelyRunnable, LONELY_INTERVAL_MS)
         }
