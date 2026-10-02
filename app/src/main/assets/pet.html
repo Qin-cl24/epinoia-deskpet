@@ -49,7 +49,7 @@
   .fx { position: absolute; display: none; pointer-events: none; z-index: 5; font-size: 9px; }
   .fx.show { display: block; animation: fxrise 1.2s ease-out forwards; }
   @keyframes fxrise { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-14px) scale(1.4); } }
-  .fx-heart { top: -6px; left: 30px; }
+  .fx-heart { top: -6px; left: 30px; color: #ff2d55; filter: drop-shadow(0 0 3px rgba(255,45,85,.55)); }
   .fx-tear  { top: 22px; left: 13px; }
   .fx-tear.r{ top: 22px; left: auto; right: 13px; }
   .fx-star  { top: -6px; left: 46px; }
@@ -205,7 +205,7 @@
     <span class="acc sleepcap"></span>
     <span class="acc xmascap"></span>
     <div class="fxlayer" id="fxlayer"></div>
-    <span class="fx fx-heart">❤</span>
+    <span class="fx fx-heart">❤️</span>
     <span class="fx fx-tear">💧</span>
     <span class="fx fx-tear r">💧</span>
     <span class="fx fx-star">✨</span>
@@ -448,7 +448,7 @@
       case 'stareyes': tempClass('stareyes', 2200); blushFor(1800); break;
       case 'blush': blushFor(2200); break;
       case 'sweat': spawnFx('💧', 2, { left: 52, top: 2, dx: 4, dy: -12 }); break;
-      case 'heartburst': spawnFx('❤', 5, { top: 6, dy: -16 }); blushFor(2200); break;
+      case 'heartburst': spawnFx('❤️', 5, { top: 6, dy: -16 }); blushFor(2200); break;
       case 'note': spawnFx('♪', 3, { top: 4, dy: -13 }); spawnFx('♫', 2, { top: 2, dy: -16 }); break;
       case 'firework':
         ['✨','🎆','✨','★','🎇','✨','·','✦'].forEach(function(e, i) {
@@ -512,7 +512,7 @@
     ACTIONS.forEach(function(a) { pet.classList.remove('act-' + a); });
     clearFx(); clearProps(); clearArm();
     pet.classList.add('play-ball', 'act-happy', 'arm-wave');
-    spawnFx('❤', 2, { top: 4, dy: -12 });
+    spawnFx('❤️', 2, { top: 4, dy: -12 });
     if (Math.random() < 0.5) randomSay(BALL_SAYS);
     setTimeout(function() {
       pet.classList.remove('play-ball', 'act-happy');
