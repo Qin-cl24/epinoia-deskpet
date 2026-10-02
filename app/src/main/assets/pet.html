@@ -277,7 +277,7 @@
       if (waterLv > 0) { waterLv = 0; say('咕嘟咕嘟... 喝了！💧'); return; }
       randomSay(GREETS[PERIOD]);
     },
-    onDoubleTap: function() { bounce(); say('嘿嘿!'); },
+    onDoubleTap: function() { bounce(); say('嘿嘿!'); blushFor(1200); },
     onLongPress: function() { say('唔...'); },
     onDragEnd: function() { say('嘿咻~'); },
     onFling: function() { say('哇!'); },
@@ -285,9 +285,10 @@
     onCombo3: function() {
       say('三连击！嘿嘿~');
       pet.classList.add('act-happy');
+      blushFor(1500);
       setTimeout(function() { pet.classList.remove('act-happy'); }, 1200);
     },
-    onCombo5: function() { say('五连击！！哇哦'); bounce(); },
+    onCombo5: function() { say('五连击！！哇哦'); bounce(); blushFor(1800); },
     onCombo8: function() {
       say('八连击！！要被戳坏了🌚');
       pet.classList.add('act-angry');
@@ -338,18 +339,15 @@
         playFeels(action);
       }
     },
-    // 亲密度热更新（原生层数完互动次数后调用）：Lv3 带红晕、Lv4 顶光环
+    // 亲密度热更新（原生层数完互动次数后调用）：只记录等级，不再自动戴光环/常驻腮红
     setIntimacy: function(lv) {
-      var accs = (pet.dataset.acc || '').split(/\s+/).filter(Boolean)
-        .filter(function(x) { return x !== 'halo'; });
-      if (lv >= 4) accs.push('halo');
-      pet.dataset.acc = accs.join(' ');
-      pet.classList.toggle('blush', lv >= 3);
+      pet.dataset.lv = lv;
     },
     // 亲密度升级时的一次性庆祝
     onLevelUp: function(lv) {
       playFeels('firework');
       bounce();
+      blushFor(2600);
       say(['', '嘿嘿…有点想黏着你', '我们熟起来啦！', '你还挺喜欢我的嘛', '我一直都在哦✨'][lv] || '嘿嘿');
     },
     // 对外触发：玩球 / 生活小动作（agent 桥与调试可用）
@@ -423,6 +421,11 @@
     pet.classList.add(cls);
     setTimeout(function() { pet.classList.remove(cls); }, ms || 2000);
   }
+  // 腮红：只在特定时刻短暂浮现（Lv3 起解锁），不再常驻挂在脸上
+  function blushFor(ms) {
+    if (getPrefInt('pref_intimacy_level', 1) < 3) return;
+    tempClass('blush', ms || 2000);
+  }
   function spawnFx(emoji, n, opts) {
     opts = opts || {};
     var layer = document.getElementById('fxlayer');
@@ -442,10 +445,10 @@
   }
   function playFeels(a) {
     switch (a) {
-      case 'stareyes': tempClass('stareyes', 2200); break;
-      case 'blush': tempClass('blush', 2200); break;
+      case 'stareyes': tempClass('stareyes', 2200); blushFor(1800); break;
+      case 'blush': blushFor(2200); break;
       case 'sweat': spawnFx('💧', 2, { left: 52, top: 2, dx: 4, dy: -12 }); break;
-      case 'heartburst': spawnFx('❤', 5, { top: 6, dy: -16 }); break;
+      case 'heartburst': spawnFx('❤', 5, { top: 6, dy: -16 }); blushFor(2200); break;
       case 'note': spawnFx('♪', 3, { top: 4, dy: -13 }); spawnFx('♫', 2, { top: 2, dy: -16 }); break;
       case 'firework':
         ['✨','🎆','✨','★','🎇','✨','·','✦'].forEach(function(e, i) {
@@ -470,10 +473,9 @@
     if (getPref('pref_acc_phones', false)) accs.push('phones');
     if (getPref('pref_acc_glasses', false)) accs.push('glasses');
     if (getPref('pref_acc_halo', false)) accs.push('halo');
-    // 亲密度长出来的特征（Lv3 红晕 / Lv4 光环）
+    // 亲密度只记录等级：光环改为纯手动配件、腮红改为特定时刻触发（都不再常驻）
     var lv = getPrefInt('pref_intimacy_level', 1);
-    if (lv >= 4) accs.push('halo');
-    if (lv >= 3) pet.classList.add('blush');
+    pet.dataset.lv = lv;
     pet.dataset.acc = accs.join(' ');
 
     if (getPref('pref_idle_breathe', true)) pet.classList.add('idle-breathe');
@@ -521,9 +523,9 @@
   // ===== 生活化自娱自乐：参考相册生活场景图（敲代码/吃煎蛋/玩游戏/喝饮料/种植物/洗衣服/存粮）=====
   var LIFE_ACTS = [
     { prop: '💻', left: 20, top: 19, act: 'act-think',     arm: 'arm-type',  say: ['写代码中…💻', '这个 bug 好难', '（噼里啪啦）'] },
-    { prop: '🍳', left: 48, top: 11, act: 'act-happy',     arm: 'arm-hold',  say: ['好吃！🍳', '煎蛋嘿嘿', '再来一份～'] },
+    { prop: '🍳', left: 48, top: 11, act: 'act-happy',     arm: 'arm-hold',  blush: 1, say: ['好吃！🍳', '煎蛋嘿嘿', '再来一份～'] },
     { prop: '🎮', left: 26, top: 18, act: 'act-celebrate', arm: 'arm-shake', say: ['通关啦！🎮', '再来一局嘛', '赢了赢了！'] },
-    { prop: '🥤', left: 52, top: 9,  act: 'act-cute',      arm: 'arm-hold',  say: ['咕嘟咕嘟🥤', '快乐水！', '好喝～'] },
+    { prop: '🥤', left: 52, top: 9,  act: 'act-cute',      arm: 'arm-hold',  blush: 1, say: ['咕嘟咕嘟🥤', '快乐水！', '好喝～'] },
     { prop: '🪴', left: 50, top: 19, act: 'act-proud',     arm: 'arm-wave',  say: ['长高一点～🌱', '今天也浇水了', '我的小盆栽'] },
     { prop: '🧺', left: 1,  top: 18, act: 'act-wiggle',    arm: 'arm-shake', say: ['洗衣服好累🧺', '晾起来～', '好多泡泡'] },
     { prop: '🍖', left: 2,  top: 11, act: 'act-happy',     arm: 'arm-wave',  say: ['存粮！🍖', '够吃三天了', '嘿嘿 好香'] }
@@ -559,6 +561,7 @@
     clearFx(); clearProps(); clearArm();
     pet.classList.add(L.act, L.arm);
     showProp(L.prop, L.left, L.top, 3200);
+    if (L.blush) blushFor(2000);
     if (Math.random() < 0.5) randomSay(L.say[Math.floor(Math.random() * L.say.length)]);
     setTimeout(function() { pet.classList.remove(L.act); clearArm(); }, 3500);
   }

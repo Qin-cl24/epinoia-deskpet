@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity() {
         tv.text = if (next > 0) {
             "亲密度 Lv$lv · 已互动 $count 次（再 ${(next - count).coerceAtLeast(0)} 次升 Lv${lv + 1}）"
         } else {
-            "亲密度 Lv4 · 已互动 $count 次（满级，红晕+光环都在啦）"
+            "亲密度 Lv4 · 已互动 $count 次（满级，会时不时脸红哦）"
         }
     }
 
