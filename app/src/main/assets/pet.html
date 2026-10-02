@@ -156,6 +156,12 @@
     92%  { transform: translate(-7px, 0) rotate(-180deg); }
     100% { transform: translate(-13px, 0) scale(.4) rotate(-360deg); opacity: 0; }
   }
+
+  /* 生活化小道具：敲代码/吃煎蛋/玩游戏/喝饮料时出现在手边（参考相册生活场景图）*/
+  .prop { position: absolute; font-size: 13px; line-height: 1; z-index: 6; pointer-events: none; opacity: 0; transition: opacity .25s ease; }
+  .prop.show { opacity: 1; }
+  .prop.bob { animation: propbob 1.3s ease-in-out infinite; }
+  @keyframes propbob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
   .halo { left: 12px; top: -15px; width: 28px; height: 8px; border: 2px solid #ffd54f; border-radius: 50%; box-shadow: 0 0 7px #ffd54f; }
   .pet.blush .body::before, .pet.blush .body::after { content: ''; position: absolute; top: 11px; width: 8px; height: 4px; background: #ff8a80; border-radius: 50%; opacity: .85; }
   .pet.blush .body::before { left: 1px; } .pet.blush .body::after { right: 1px; }
@@ -332,7 +338,10 @@
       playFeels('firework');
       bounce();
       say(['', '嘿嘿…有点想黏着你', '我们熟起来啦！', '你还挺喜欢我的嘛', '我一直都在哦✨'][lv] || '嘿嘿');
-    }
+    },
+    // 对外触发：玩球 / 生活小动作（agent 桥与调试可用）
+    playBall: function() { playBall(); },
+    playLife: function() { playLife(); }
   };
 
   // 互动时唤醒
@@ -486,7 +495,7 @@
     if (!ballUnlocked()) return;
     pet.classList.remove('blink');
     ACTIONS.forEach(function(a) { pet.classList.remove('act-' + a); });
-    clearFx();
+    clearFx(); clearProps();
     pet.classList.add('play-ball', 'act-happy');
     spawnFx('❤', 2, { top: 4, dy: -12 });
     if (Math.random() < 0.5) randomSay(BALL_SAYS);
@@ -495,11 +504,53 @@
       clearFx();
     }, 3450);
   }
+  // ===== 生活化自娱自乐：参考相册生活场景图（敲代码/吃煎蛋/玩游戏/喝饮料/种植物/洗衣服/存粮）=====
+  var LIFE_ACTS = [
+    { prop: '💻', left: 20, top: 19, act: 'act-think',     say: ['写代码中…💻', '这个 bug 好难', '（噼里啪啦）'] },
+    { prop: '🍳', left: 48, top: 11, act: 'act-happy',     say: ['好吃！🍳', '煎蛋嘿嘿', '再来一份～'] },
+    { prop: '🎮', left: 26, top: 18, act: 'act-celebrate', say: ['通关啦！🎮', '再来一局嘛', '赢了赢了！'] },
+    { prop: '🥤', left: 52, top: 9,  act: 'act-cute',      say: ['咕嘟咕嘟🥤', '快乐水！', '好喝～'] },
+    { prop: '🪴', left: 50, top: 19, act: 'act-proud',     say: ['长高一点～🌱', '今天也浇水了', '我的小盆栽'] },
+    { prop: '🧺', left: 1,  top: 18, act: 'act-wiggle',    say: ['洗衣服好累🧺', '晾起来～', '好多泡泡'] },
+    { prop: '🍖', left: 2,  top: 11, act: 'act-happy',     say: ['存粮！🍖', '够吃三天了', '嘿嘿 好香'] }
+  ];
+  function clearProps() {
+    var ps = pet.querySelectorAll('.prop');
+    for (var i = ps.length - 1; i >= 0; i--) { if (ps[i].parentNode) ps[i].parentNode.removeChild(ps[i]); }
+  }
+  function showProp(emoji, left, top, ms) {
+    var el = document.createElement('span');
+    el.className = 'prop';
+    el.textContent = emoji;
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
+    pet.appendChild(el);
+    void el.offsetWidth;
+    el.classList.add('show', 'bob');
+    setTimeout(function() {
+      el.classList.remove('show');
+      setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 400);
+    }, ms || 3200);
+  }
+  function playLife() {
+    if (pet.classList.contains('asleep')) return;
+    if (!getPref('pref_life_acts', true)) return;
+    var L = LIFE_ACTS[Math.floor(Math.random() * LIFE_ACTS.length)];
+    pet.classList.remove('blink');
+    ACTIONS.forEach(function(a) { pet.classList.remove('act-' + a); });
+    clearFx(); clearProps();
+    pet.classList.add(L.act);
+    showProp(L.prop, L.left, L.top, 3200);
+    if (Math.random() < 0.5) randomSay(L.say[Math.floor(Math.random() * L.say.length)]);
+    setTimeout(function() { pet.classList.remove(L.act); }, 3500);
+  }
   function runAction() {
     if (pet.classList.contains('asleep')) return;
     if (!getPref('pref_idle_actions', true)) return;
     // 自娱自乐：约 1/3 概率改成自己玩球（Lv2 解锁后）
     if (ballUnlocked() && getPref('pref_toy_ball', true) && Math.random() < 0.35) { playBall(); return; }
+    // 约 1/3 概率做生活化小动作（敲代码/吃煎蛋/玩游戏/喝饮料/种植物/洗衣服/存粮）
+    if (getPref('pref_life_acts', true) && Math.random() < 0.33) { playLife(); return; }
     // 做小动作时通知原生层从贴边弹出，刷存在感
     try { window.AndroidBridge && window.AndroidBridge.peekOut(); } catch (e) {}
     pet.classList.remove('blink');

@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity() {
         bindLookBox(R.id.cb_idle_music, "pref_idle_music", false)
         bindLookBox(R.id.cb_idle_hop, "pref_idle_hop", false)
         bindLookBox(R.id.cb_toy_ball, "pref_toy_ball", true)
+        bindLookBox(R.id.cb_life_acts, "pref_life_acts", true)
 
         val actSecs = listOf(8, 45, 150)
         val actNames = listOf("话痨（约 8 秒一次）", "正常（约 45 秒一次）", "安静（约 2.5 分钟一次）")
