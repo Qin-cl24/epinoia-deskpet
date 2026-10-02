@@ -127,7 +127,7 @@
   .pet[data-acc~="glasses"] .acc.glasses { display: block; }
   .pet[data-acc~="antenna"] .acc.antenna { display: block; }
   .pet[data-acc~="halo"] .acc.halo { display: block; }
-  .cap { left: 6px; top: -12px; width: 40px; height: 13px; background: var(--pet-accent, #e67e22); border-radius: 18px 18px 3px 3px; }
+  .cap { left: 6px; top: -9px; width: 40px; height: 13px; background: var(--pet-accent, #e67e22); border-radius: 18px 18px 3px 3px; }
   .cap::after { content: ''; position: absolute; right: -8px; bottom: 1px; width: 18px; height: 4px; background: var(--pet-accent, #e67e22); border-radius: 3px; }
   .scarf { left: -3px; top: 17px; width: 58px; height: 8px; background: #e74c3c; border-radius: 4px; }
   .scarf::after { content: ''; position: absolute; left: 8px; top: 6px; width: 9px; height: 13px; background: #e74c3c; border-radius: 3px; }
@@ -143,8 +143,9 @@
   .xmascap::after { content: ''; position: absolute; left: -5px; top: -8px; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
   .xmascap::before { content: ''; position: absolute; left: -17px; top: 11px; width: 34px; height: 5px; background: #fff; border-radius: 3px; }
   /* 成长特征 */
-  .antenna { left: 24px; top: -11px; width: 2px; height: 9px; background: var(--pet-leg, #d35400); }
-  .antenna::after { content: ''; position: absolute; left: -2px; top: -5px; width: 6px; height: 6px; border-radius: 50%; background: var(--pet-accent, #e67e22); box-shadow: 0 0 5px var(--pet-accent, #e67e22); }
+  /* Lv2 光圈：只留头顶的发光光圈，去掉下面那根"把手"竖杆 */
+  .antenna { left: 24px; top: -9px; width: 6px; height: 6px; background: transparent; }
+  .antenna::after { content: ''; position: absolute; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--pet-accent, #e67e22); box-shadow: 0 0 6px var(--pet-accent, #e67e22); }
   .halo { left: 12px; top: -15px; width: 28px; height: 8px; border: 2px solid #ffd54f; border-radius: 50%; box-shadow: 0 0 7px #ffd54f; }
   .pet.blush .body::before, .pet.blush .body::after { content: ''; position: absolute; top: 11px; width: 8px; height: 4px; background: #ff8a80; border-radius: 50%; opacity: .85; }
   .pet.blush .body::before { left: 1px; } .pet.blush .body::after { right: 1px; }
@@ -437,6 +438,7 @@
     if (getPref('pref_acc_scarf', false)) accs.push('scarf');
     if (getPref('pref_acc_phones', false)) accs.push('phones');
     if (getPref('pref_acc_glasses', false)) accs.push('glasses');
+    if (getPref('pref_acc_halo', false)) accs.push('halo');
     // 亲密度长出来的特征（Lv2 触角 / Lv3 红晕 / Lv4 光环）
     var lv = getPrefInt('pref_intimacy_level', 1);
     if (lv >= 2) accs.push('antenna');

@@ -95,6 +95,7 @@ class MainActivity : AppCompatActivity() {
         bindLookBox(R.id.cb_acc_scarf, "pref_acc_scarf")
         bindLookBox(R.id.cb_acc_phones, "pref_acc_phones")
         bindLookBox(R.id.cb_acc_glasses, "pref_acc_glasses")
+        bindLookBox(R.id.cb_acc_halo, "pref_acc_halo")
 
         bindLookBox(R.id.cb_idle_blink, "pref_blink", true)
         bindLookBox(R.id.cb_idle_breathe, "pref_idle_breathe", true)

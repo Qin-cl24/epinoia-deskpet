@@ -258,6 +258,13 @@
             android:textColor="#333333"
             android:text="👓 眼镜" />
 
+        <CheckBox
+            android:id="@+id/cb_acc_halo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:text="😇 光环" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
