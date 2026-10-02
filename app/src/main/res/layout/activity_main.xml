@@ -265,6 +265,34 @@
             android:textColor="#333333"
             android:text="😇 光环" />
 
+        <CheckBox
+            android:id="@+id/cb_acc_cowboy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:text="🤠 牛仔帽" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_helmet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:text="🏎️ 赛车头盔" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_dive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:text="🤿 潜水镜" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_tutu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:text="🩰 芭蕾裙" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
