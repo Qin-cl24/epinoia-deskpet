@@ -89,6 +89,9 @@ class PetOverlayService : Service() {
 
         private const val PREFS_NAME = "deskpet_prefs"
         private const val MSG_FILE = "/sdcard/Deskpet/messages.txt"
+        // 对话回路（阶段2「一起刷视频」）：agent 可读可写的对话流水
+        private const val CHAT_LOG_FILE = "/sdcard/Deskpet/chat_log.txt"
+        private const val RECENT_SAID_MAX = 8      // /status 回带的最近发言条数
         private const val LOCAL_PORT = 9001
 
         // ===== 独立气泡窗口（跟随文字长短自适应）=====
@@ -145,6 +148,9 @@ class PetOverlayService : Service() {
     // 前台 app 感知：轮询 + 上次前台包名 + 抖音吃醋冷却
     private val fgHandler = Handler(Looper.getMainLooper())
     private var lastFgPkg = ""
+    // 最近说过的话（内存环形缓冲，供 /status 给 agent 当上下文）
+    private val recentSaid = ArrayDeque<String>()
+    private var lastSaidAt = 0L
     private var lastJealousAt = 0L
     private var douyinStartAt = 0L        // 本次连续刷抖音的开始时间（0=没在刷）
     private var lastLongRemindAt = 0L     // 上次「刷太久」提醒时间
@@ -1102,6 +1108,85 @@ class PetOverlayService : Service() {
     private fun escapeJs(s: String): String =
         "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
+    // ============ 对话回路上下文（阶段2「一起刷视频」）============
+    // 眼睛是宝宝的、嘴是桌宠的、脑子是 agent：agent 通过 /status 拿情境，
+    // 生成贴合当下的反应后用 /say 推回来，并把宝宝说的话用 /log 记进流水。
+
+    /** 记录桌宠说过的话：内存环形缓冲（给 /status）+ 追加到 chat_log.txt（给 agent 读） */
+    private fun rememberSaid(text: String) {
+        val t = text.trim()
+        if (t.isEmpty()) return
+        synchronized(recentSaid) {
+            recentSaid.addLast(t)
+            while (recentSaid.size > RECENT_SAID_MAX) recentSaid.removeFirst()
+        }
+        lastSaidAt = System.currentTimeMillis()
+        appendChatLog("pet", t)
+    }
+
+    /** 追加一行对话流水：`时间\t说话人\t内容`（说话人：pet / 宝宝 / agent） */
+    private fun appendChatLog(who: String, text: String) {
+        try {
+            val f = File(CHAT_LOG_FILE)
+            f.parentFile?.mkdirs()
+            val stamp = java.text.SimpleDateFormat("MM-dd HH:mm:ss", Locale.ROOT)
+                .format(java.util.Date())
+            f.appendText("$stamp\t$who\t${text.replace("\n", " ")}\n")
+        } catch (_: Exception) {
+        }
+    }
+
+    /** 包名 → 好念的名字（给 agent 当上下文用） */
+    private fun appFriendlyName(pkg: String): String = when (pkg) {
+        "com.ss.android.ugc.aweme" -> "抖音"
+        "com.tencent.mm" -> "微信"
+        "com.eg.android.AlipayGphone" -> "支付宝"
+        "com.taobao.taobao" -> "淘宝"
+        "com.taobao.idlefish" -> "闲鱼"
+        "com.jingdong.app.mall" -> "京东"
+        "com.miui.gallery" -> "相册"
+        "com.termux" -> "Termux"
+        "" -> "未知"
+        else -> pkg.substringAfterLast(".")
+    }
+
+    /** 时段（和主动说话同一套口径） */
+    private fun periodName(): String {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        return when {
+            hour < 6 -> "深夜"
+            hour < 9 -> "早晨"
+            hour in 11..13 -> "中午"
+            hour >= 22 -> "夜晚"
+            else -> "白天"
+        }
+    }
+
+    /** /status 的完整情境（agent 靠它知道桌宠此刻在看什么、心情如何、刚说过什么） */
+    private fun statusJson(): String {
+        val now = System.currentTimeMillis()
+        val douyinMin = if (douyinStartAt > 0) ((now - douyinStartAt) / 60000L).toInt() else 0
+        val recent = synchronized(recentSaid) { recentSaid.toList() }
+        val recentJson = recent.joinToString(",") { escapeJs(it) }
+        val saidAgoSec = if (lastSaidAt > 0) ((now - lastSaidAt) / 1000L).toInt() else -1
+        return buildString {
+            append("{\"ok\":true,\"status\":\"running\",\"port\":$LOCAL_PORT")
+            append(",\"pet\":{")
+            append("\"name\":\"Epinoia\"")
+            append(",\"period\":${escapeJs(periodName())}")
+            append(",\"foreground\":${escapeJs(appFriendlyName(lastFgPkg))}")
+            append(",\"foregroundPkg\":${escapeJs(lastFgPkg)}")
+            append(",\"douyinMinutes\":$douyinMin")
+            append(",\"lonelyStage\":$lonelyStage")
+            append(",\"scale\":${String.format(Locale.ROOT, "%.1f", 1f + 1.5f * petSizeRatio())}")
+            append(",\"lastSaidSecondsAgo\":$saidAgoSec")
+            append("}")
+            append(",\"recentSaid\":[$recentJson]")
+            append(",\"chatLog\":\"$CHAT_LOG_FILE\"")
+            append("}")
+        }
+    }
+
     // ============ 独立气泡窗口（文字自适应宽度）============
 
     /** 显示气泡：独立悬浮窗，宽度按文字长度自适应，锚定桌宠窗口上方居中。
@@ -1110,6 +1195,7 @@ class PetOverlayService : Service() {
      *  durationMs<=0 时按字数自动算每条时长。 */
     private fun showBubble(text: String, durationMs: Long = 0) {
         handler.post {
+            rememberSaid(text)
             // 新消息打断旧队列
             bubbleQueue.clear()
             handler.removeCallbacks(bubbleShowRunnable)
@@ -1370,7 +1456,13 @@ class PetOverlayService : Service() {
                 responseBody = "{\"ok\":true}"
             }
             method == "GET" && path == "/status" -> {
-                responseBody = "{\"ok\":true,\"status\":\"running\",\"port\":$LOCAL_PORT}"
+                responseBody = statusJson()
+            }
+            // agent 把「宝宝说的话」记进对话流水（不进气泡、不出声，只做上下文）
+            method == "POST" && path == "/log" -> {
+                val (text, _) = parseSayBody(body)
+                if (text.isNotEmpty()) appendChatLog("宝宝", text)
+                responseBody = "{\"ok\":true}"
             }
             else -> {
                 status = "404 Not Found"

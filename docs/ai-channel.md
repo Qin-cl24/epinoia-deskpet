@@ -73,7 +73,26 @@ App 内已内置本地 HTTP 服务（`PetOverlayService.startLocalServer()`，�
 | 方法 | 路径 | 作用 |
 |------|------|------|
 | POST | `/say` 或 `/message` | 推一条消息给桌宠（JSON：`{"text":"...","action":"cute"}`，也兼容表单） |
-| GET | `/status` | 查桌宠是否活着（返回 `{"ok":true,"status":"running"}`） |
+| GET | `/status` | 查桌宠状态 + **拿情境上下文**（见下） |
+| POST | `/log` | 只记流水不出声：把「用户说的话」写进 `/sdcard/Deskpet/chat_log.txt`，供下一轮当上下文 |
+
+`/status` 返回（阶段2「一起刷视频」对话回路用）：
+
+```json
+{
+  "ok": true, "status": "running", "port": 9001,
+  "pet": {
+    "name": "Epinoia", "period": "夜晚", "foreground": "抖音",
+    "foregroundPkg": "com.ss.android.ugc.aweme", "douyinMinutes": 37,
+    "lonelyStage": 0, "scale": 2.0, "lastSaidSecondsAgo": 12
+  },
+  "recentSaid": ["又刷抖音！都不理我…", "宝宝今天开心吗？"],
+  "chatLog": "/sdcard/Deskpet/chat_log.txt"
+}
+```
+
+对话流水 `chat_log.txt` 每行 `时间\t说话人\t内容`，说话人为 `pet`（桌宠说的）或 `宝宝`（用户说的），
+agent 可直接读文件接上下文，也可用 `POST /log` 追加用户那侧的内容。
 
 消息格式：`动作名|文本` 或纯文本；动作可选 `happy/sleepy/angry/cry/proud/jump/wiggle/music/shock/think/celebrate/cute/run/roll`。
 
