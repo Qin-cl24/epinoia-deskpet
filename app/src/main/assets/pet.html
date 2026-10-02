@@ -162,6 +162,19 @@
   .prop.show { opacity: 1; }
   .prop.bob { animation: propbob 1.3s ease-in-out infinite; }
   @keyframes propbob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+
+  /* ===== 手臂动作：手原本是静止方块，现在配合动作动起来 ===== */
+  @keyframes armtype  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+  @keyframes armhold  { 0%,100% { transform: translate(0,0) rotate(0); } 50% { transform: translate(-1px,-4px) rotate(-10deg); } }
+  @keyframes armwave  { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-4px) rotate(-14deg); } }
+  @keyframes armshake { 0%,100% { transform: translate(0,0); } 25% { transform: translate(-2px,0); } 75% { transform: translate(2px,0); } }
+  .pet.arm-type .arm { animation: armtype .32s ease-in-out infinite; }
+  .pet.arm-type .arm-right { animation-delay: .16s; }              /* 双手交替敲键盘 */
+  .pet.arm-hold .arm { animation: armhold 1.1s ease-in-out infinite; }
+  .pet.arm-hold .arm-right { animation-delay: .3s; }                /* 举着东西 */
+  .pet.arm-wave .arm { animation: armwave .7s ease-in-out infinite; }
+  .pet.arm-wave .arm-right { animation-delay: .12s; }               /* 举手挥舞 */
+  .pet.arm-shake .arm { animation: armshake .3s ease-in-out infinite; }  /* 搓洗/握着手柄抖 */
   .halo { left: 12px; top: -15px; width: 28px; height: 8px; border: 2px solid #ffd54f; border-radius: 50%; box-shadow: 0 0 7px #ffd54f; }
   .pet.blush .body::before, .pet.blush .body::after { content: ''; position: absolute; top: 11px; width: 8px; height: 4px; background: #ff8a80; border-radius: 50%; opacity: .85; }
   .pet.blush .body::before { left: 1px; } .pet.blush .body::after { right: 1px; }
@@ -495,25 +508,30 @@
     if (!ballUnlocked()) return;
     pet.classList.remove('blink');
     ACTIONS.forEach(function(a) { pet.classList.remove('act-' + a); });
-    clearFx(); clearProps();
-    pet.classList.add('play-ball', 'act-happy');
+    clearFx(); clearProps(); clearArm();
+    pet.classList.add('play-ball', 'act-happy', 'arm-wave');
     spawnFx('❤', 2, { top: 4, dy: -12 });
     if (Math.random() < 0.5) randomSay(BALL_SAYS);
     setTimeout(function() {
       pet.classList.remove('play-ball', 'act-happy');
+      clearArm();
       clearFx();
     }, 3450);
   }
   // ===== 生活化自娱自乐：参考相册生活场景图（敲代码/吃煎蛋/玩游戏/喝饮料/种植物/洗衣服/存粮）=====
   var LIFE_ACTS = [
-    { prop: '💻', left: 20, top: 19, act: 'act-think',     say: ['写代码中…💻', '这个 bug 好难', '（噼里啪啦）'] },
-    { prop: '🍳', left: 48, top: 11, act: 'act-happy',     say: ['好吃！🍳', '煎蛋嘿嘿', '再来一份～'] },
-    { prop: '🎮', left: 26, top: 18, act: 'act-celebrate', say: ['通关啦！🎮', '再来一局嘛', '赢了赢了！'] },
-    { prop: '🥤', left: 52, top: 9,  act: 'act-cute',      say: ['咕嘟咕嘟🥤', '快乐水！', '好喝～'] },
-    { prop: '🪴', left: 50, top: 19, act: 'act-proud',     say: ['长高一点～🌱', '今天也浇水了', '我的小盆栽'] },
-    { prop: '🧺', left: 1,  top: 18, act: 'act-wiggle',    say: ['洗衣服好累🧺', '晾起来～', '好多泡泡'] },
-    { prop: '🍖', left: 2,  top: 11, act: 'act-happy',     say: ['存粮！🍖', '够吃三天了', '嘿嘿 好香'] }
+    { prop: '💻', left: 20, top: 19, act: 'act-think',     arm: 'arm-type',  say: ['写代码中…💻', '这个 bug 好难', '（噼里啪啦）'] },
+    { prop: '🍳', left: 48, top: 11, act: 'act-happy',     arm: 'arm-hold',  say: ['好吃！🍳', '煎蛋嘿嘿', '再来一份～'] },
+    { prop: '🎮', left: 26, top: 18, act: 'act-celebrate', arm: 'arm-shake', say: ['通关啦！🎮', '再来一局嘛', '赢了赢了！'] },
+    { prop: '🥤', left: 52, top: 9,  act: 'act-cute',      arm: 'arm-hold',  say: ['咕嘟咕嘟🥤', '快乐水！', '好喝～'] },
+    { prop: '🪴', left: 50, top: 19, act: 'act-proud',     arm: 'arm-wave',  say: ['长高一点～🌱', '今天也浇水了', '我的小盆栽'] },
+    { prop: '🧺', left: 1,  top: 18, act: 'act-wiggle',    arm: 'arm-shake', say: ['洗衣服好累🧺', '晾起来～', '好多泡泡'] },
+    { prop: '🍖', left: 2,  top: 11, act: 'act-happy',     arm: 'arm-wave',  say: ['存粮！🍖', '够吃三天了', '嘿嘿 好香'] }
   ];
+  var ARM_CLASSES = ['arm-type', 'arm-hold', 'arm-wave', 'arm-shake'];
+  function clearArm() {
+    for (var i = 0; i < ARM_CLASSES.length; i++) pet.classList.remove(ARM_CLASSES[i]);
+  }
   function clearProps() {
     var ps = pet.querySelectorAll('.prop');
     for (var i = ps.length - 1; i >= 0; i--) { if (ps[i].parentNode) ps[i].parentNode.removeChild(ps[i]); }
@@ -538,11 +556,11 @@
     var L = LIFE_ACTS[Math.floor(Math.random() * LIFE_ACTS.length)];
     pet.classList.remove('blink');
     ACTIONS.forEach(function(a) { pet.classList.remove('act-' + a); });
-    clearFx(); clearProps();
-    pet.classList.add(L.act);
+    clearFx(); clearProps(); clearArm();
+    pet.classList.add(L.act, L.arm);
     showProp(L.prop, L.left, L.top, 3200);
     if (Math.random() < 0.5) randomSay(L.say[Math.floor(Math.random() * L.say.length)]);
-    setTimeout(function() { pet.classList.remove(L.act); }, 3500);
+    setTimeout(function() { pet.classList.remove(L.act); clearArm(); }, 3500);
   }
   function runAction() {
     if (pet.classList.contains('asleep')) return;
