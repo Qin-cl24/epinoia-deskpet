@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         val skinNames = listOf("原版橙", "蜜桃粉", "薄荷绿", "夜空蓝", "奶咖", "紫葡萄")
         var skinInit = true
         val spSkin = findViewById<Spinner>(R.id.sp_skin)
-        spSkin.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, skinNames)
+        styleSpinner(spSkin, skinNames)
         spSkin.setSelection(skinKeys.indexOf(prefs.getString("pref_skin", "orange")).coerceAtLeast(0))
         spSkin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, position: Int, id: Long) {
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         val actNames = listOf("话痨（约 8 秒一次）", "正常（约 45 秒一次）", "安静（约 2.5 分钟一次）")
         var actInit = true
         val spAct = findViewById<Spinner>(R.id.sp_act)
-        spAct.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, actNames)
+        styleSpinner(spAct, actNames)
         spAct.setSelection(actSecs.indexOf(prefs.getInt("pref_act_sec", 45)).coerceAtLeast(0))
         spAct.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, position: Int, id: Long) {
@@ -165,6 +165,24 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         refreshPermButtons()
         updateIntimacyText()
+    }
+
+    /** 下拉框：强制深色文字 + 白色弹窗底色。
+     *  原因：App 主题是 Theme.AppCompat（深色主题，默认文字偏白），页面底色却是 #fff8f0 浅色，
+     *  不显式定色就会「白字白底」看不清；而下拉弹窗本身自带深色底，两边都要定死，才不依赖主题。 */
+    private fun styleSpinner(sp: Spinner, items: List<String>) {
+        sp.adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, items) {
+            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View =
+                super.getView(position, convertView, parent).apply {
+                    (this as? TextView)?.setTextColor(0xFF333333.toInt())
+                }
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: android.view.ViewGroup): View =
+                super.getDropDownView(position, convertView, parent).apply {
+                    (this as? TextView)?.setTextColor(0xFF333333.toInt())
+                }
+        }
+        sp.setPopupBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFFFFFFFF.toInt()))
     }
 
     /** 形象类勾选项（配件/待机微动作）：改完立刻重载桌宠，不用重启 */

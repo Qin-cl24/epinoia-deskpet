@@ -220,36 +220,42 @@
             android:id="@+id/cb_acc_cap"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="🧢 棒球帽" />
 
         <CheckBox
             android:id="@+id/cb_acc_sleepcap"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="😴 睡帽" />
 
         <CheckBox
             android:id="@+id/cb_acc_xmascap"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="🎄 圣诞帽" />
 
         <CheckBox
             android:id="@+id/cb_acc_scarf"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="🧣 围巾" />
 
         <CheckBox
             android:id="@+id/cb_acc_phones"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="🎧 耳机" />
 
         <CheckBox
             android:id="@+id/cb_acc_glasses"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="👓 眼镜" />
 
         <TextView
@@ -264,24 +270,28 @@
             android:id="@+id/cb_idle_blink"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="眨眼" />
 
         <CheckBox
             android:id="@+id/cb_idle_breathe"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="呼吸起伏" />
 
         <CheckBox
             android:id="@+id/cb_idle_music"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="跟音乐晃" />
 
         <CheckBox
             android:id="@+id/cb_idle_hop"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#333333"
             android:text="轻跳" />
 
         <TextView
