@@ -118,7 +118,8 @@
   .pet[data-skin="grape"] { --pet-body:#ab47bc; --pet-leg:#7b1fa2; --pet-accent:#ba68c8; }
 
   /* ===== 配件（设置页手动选，可叠加）===== */
-  .acc { position: absolute; display: none; }
+  /* 配件要在身体上层：.body 在 DOM 里排在配件之后，不给 z-index 会把配件盖住 */
+  .acc { position: absolute; display: none; z-index: 9; }
   .pet[data-acc~="cap"] .acc.cap { display: block; }
   .pet[data-acc~="sleepcap"] .acc.sleepcap { display: block; }
   .pet[data-acc~="xmascap"] .acc.xmascap { display: block; }
@@ -183,7 +184,7 @@
   /* 参考像素小人图的新配件（牛仔帽/潜水镜/赛车头盔/芭蕾裙）*/
   .cowboy { left: 4px; top: -10px; width: 44px; height: 11px; background: #8d6e63; border-radius: 8px 8px 2px 2px; }
   .cowboy::after { content: ''; position: absolute; left: -6px; bottom: -3px; width: 56px; height: 4px; background: #6d4c41; border-radius: 4px; }
-  .dive { left: 6px; top: 4px; width: 40px; height: 11px; border: 3px solid #26c6da; border-radius: 9px; background: rgba(38,198,218,.22); }
+  .dive { left: 6px; top: 7px; width: 40px; height: 11px; border: 3px solid #26c6da; border-radius: 9px; background: rgba(38,198,218,.22); }
   .dive::after { content: ''; position: absolute; right: -9px; top: 2px; width: 7px; height: 3px; background: #0097a7; border-radius: 2px; }
   .helmet { left: 3px; top: -13px; width: 46px; height: 20px; background: #e53935; border-radius: 23px 23px 4px 4px; }
   .helmet::after { content: ''; position: absolute; left: 5px; top: 9px; width: 36px; height: 7px; background: rgba(255,255,255,.8); border-radius: 4px; }
