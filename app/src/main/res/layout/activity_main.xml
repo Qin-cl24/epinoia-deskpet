@@ -306,7 +306,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#333333"
-            android:text="🎾 玩具球（自娱自乐时滚出来玩）" />
+            android:text="🎾 玩具球（Lv2 解锁，自娱自乐时玩）" />
 
         <TextView
             android:layout_width="wrap_content"
