@@ -39,7 +39,12 @@
     margin: 4px auto 0;
   }
   /* 眼睛（两只） */
-  .eye { position: absolute; width: 6px; height: 6px; background: #000; top: 11px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
+  /* 眼睛（两只）：竖长方形（像素小宠物的标准眼型），左上带一点白色高光 */
+  .eye { position: absolute; width: 5px; height: 8px; background: #000; top: 10px; border-radius: 2px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
+  .eye::after { content: ''; position: absolute; left: 1px; top: 1px; width: 2px; height: 2px; border-radius: 50%; background: rgba(255,255,255,.9); }
+  /* 眯眼/弯眼类动作没有高光（眼睛已经压扁了）*/
+  .pet.act-happy .eye::after, .pet.act-sleepy .eye::after, .pet.act-cry .eye::after,
+  .pet.act-proud .eye::after, .pet.blink .eye::after, .pet.stareyes .eye::after { display: none; }
   .eye-left { left: 12px; } .eye-right { right: 12px; }
   /* ===== 面部表情层：嘴 + 眉毛（默认无嘴，只在做表情时画出来）=====
      全部用 CSS 画，切换带 .18s 过渡，表情是"长在脸上"的而不是贴 emoji */
@@ -146,7 +151,7 @@
   .act-think { animation: thinkbob 1s ease-in-out infinite; }
   @keyframes thinkbob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
   .act-celebrate { animation: wiggle .3s ease-in-out 6; }
-  .act-cute .eye { width: 8px; height: 8px; border-radius: 50%; }
+  .act-cute .eye { width: 7px; height: 9px; border-radius: 50%; }
   .act-run { animation: run .15s linear infinite; }
   @keyframes run { 0%,100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-1px) rotate(-4deg); } 75% { transform: translateY(1px) rotate(4deg); } }
   /* 趴键盘 */
