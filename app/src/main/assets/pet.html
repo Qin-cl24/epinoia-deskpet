@@ -21,7 +21,7 @@
 
   /* ===== 桌宠形象 ===== */
   .pet {
-    position: relative; width: 68px; height: 36px;
+    position: relative; width: 72px; height: 46px;
     animation: idle 2.5s ease-in-out infinite;
   }
   @keyframes idle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
@@ -29,25 +29,26 @@
   @keyframes bounce { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
 
   /* 主体：横向长方形 52×24（气泡已独立成悬浮窗，不再留头顶空间） */
+  /* 主体：更方的方块（56×32，接近方形；之前 52×24 太扁） */
   .body {
     position: relative;
-    width: 52px; height: 24px; background: var(--pet-body, #e67e22);
-    border-radius: 5px;
+    width: 56px; height: 32px; background: var(--pet-body, #e67e22);
+    border-radius: 6px;
     /* 立体方块：顶部高光 + 底部暗边，让它看起来是个有厚度的方块 */
     box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -3px 0 rgba(0,0,0,.10);
     margin: 4px auto 0;
   }
   /* 眼睛（两只） */
-  .eye { position: absolute; width: 6px; height: 6px; background: #000; top: 6px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
-  .eye-left { left: 10px; } .eye-right { right: 10px; }
+  .eye { position: absolute; width: 6px; height: 6px; background: #000; top: 11px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
+  .eye-left { left: 12px; } .eye-right { right: 12px; }
   .pet.blink .eye { height: 2px; }
   /* 手：小正方形、与身体同色、垂直居中、紧贴身体两侧无缝隙 */
-  .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 8px; }
+  .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 12px; }
   .arm-left { left: -8px; } .arm-right { right: -8px; }
   /* 腿：两条，分开在下方 */
   /* 腿：四条（细一点、左右各两条靠近且对称）*/
   .leg { position: absolute; width: 5px; height: 6px; background: var(--pet-leg, #d35400); bottom: -6px; border-radius: 0 0 4px 4px; }
-  .leg-l1 { left: 7px; } .leg-l2 { left: 15px; } .leg-r2 { right: 15px; } .leg-r1 { right: 7px; }
+  .leg-l1 { left: 8px; } .leg-l2 { left: 17px; } .leg-r2 { right: 17px; } .leg-r1 { right: 8px; }
   /* 走路步态：对角腿一起抬（像猫狗小跑），拖动/边缘跑时生效 */
   @keyframes walkA { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
   @keyframes walkB { 0%,100% { transform: translateY(-3px); } 50% { transform: translateY(0); } }
@@ -55,7 +56,7 @@
   .pet.walking .leg-l2, .pet.walking .leg-r1 { animation: walkB .32s ease-in-out infinite; }
   .pet.walking { animation: none; }   /* 走路时用腿部表现，别和整体 idle 上下浮动打架 */
   /* 地面影子：垫在身体和腿之下 */
-  .shadow { position: absolute; left: 11px; bottom: 0; width: 46px; height: 6px; background: rgba(0,0,0,.24); border-radius: 50%; filter: blur(.8px); pointer-events: none; }
+  .shadow { position: absolute; left: 12px; bottom: 2px; width: 50px; height: 6px; background: rgba(0,0,0,.24); border-radius: 50%; filter: blur(.8px); pointer-events: none; }
   /* 杂耍：三个彩色小球，走杂技式抛接弧线（左手上抛→空中画弧→落回），错峰接力 */
   .ball { position: absolute; top: 8px; width: 7px; height: 7px; border-radius: 50%; display: none; z-index: 8; }
   .pet.juggling .ball { display: block; }
@@ -157,19 +158,19 @@
   .pet[data-acc~="tophat"] .acc.tophat { display: block; }
   .pet[data-acc~="partyhat"] .acc.partyhat { display: block; }
   .pet[data-acc~="wizhat"] .acc.wizhat { display: block; }
-  .cap { left: 6px; top: -6px; width: 40px; height: 13px; background: var(--pet-accent, #e67e22); border-radius: 18px 18px 3px 3px; }
+  .cap { left: 8px; top: -6px; width: 40px; height: 13px; background: var(--pet-accent, #e67e22); border-radius: 18px 18px 3px 3px; }
   .cap::after { content: ''; position: absolute; right: -8px; bottom: 1px; width: 18px; height: 4px; background: var(--pet-accent, #e67e22); border-radius: 3px; }
-  .scarf { left: -3px; top: 17px; width: 58px; height: 8px; background: #e74c3c; border-radius: 4px; }
+  .scarf { left: -3px; top: 24px; width: 62px; height: 8px; background: #e74c3c; border-radius: 4px; }
   .scarf::after { content: ''; position: absolute; left: 8px; top: 6px; width: 9px; height: 13px; background: #e74c3c; border-radius: 3px; }
   .phones { left: -6px; right: -6px; top: -4px; height: 14px; border: 3px solid #455a64; border-bottom: none; border-radius: 20px 20px 0 0; }
   .phones::before, .phones::after { content: ''; position: absolute; bottom: -3px; width: 9px; height: 9px; background: #455a64; border-radius: 50%; }
   .phones::before { left: -4px; } .phones::after { right: -4px; }
-  .glasses { left: 5px; top: 2px; width: 42px; height: 13px; }
+  .glasses { left: 7px; top: 8px; width: 42px; height: 13px; }
   .glasses::before, .glasses::after { content: ''; position: absolute; top: 0; width: 12px; height: 12px; border: 2px solid #263238; border-radius: 50%; box-sizing: border-box; background: rgba(255,255,255,.18); }
   .glasses::before { left: 0; } .glasses::after { right: 0; }
-  .sleepcap { left: 9px; top: -11px; width: 0; height: 0; border-left: 17px solid transparent; border-right: 17px solid transparent; border-bottom: 16px solid #7986cb; }
+  .sleepcap { left: 11px; top: -11px; width: 0; height: 0; border-left: 17px solid transparent; border-right: 17px solid transparent; border-bottom: 16px solid #7986cb; }
   .sleepcap::after { content: ''; position: absolute; left: -5px; top: -8px; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
-  .xmascap { left: 9px; top: -11px; width: 0; height: 0; border-left: 17px solid transparent; border-right: 17px solid transparent; border-bottom: 16px solid #e53935; }
+  .xmascap { left: 11px; top: -9px; width: 0; height: 0; border-left: 17px solid transparent; border-right: 17px solid transparent; border-bottom: 16px solid #e53935; }
   .xmascap::after { content: ''; position: absolute; left: -5px; top: -8px; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
   .xmascap::before { content: ''; position: absolute; left: -17px; top: 11px; width: 34px; height: 5px; background: #fff; border-radius: 3px; }
   /* 成长特征 */
@@ -219,27 +220,26 @@
   .pet.juggling .arm-left { left: -4px; } .pet.juggling .arm-right { right: -4px; }
   .pet.juggling .arm-right { animation-delay: .35s; }
   @keyframes armcatch { 0%,100% { transform: translateY(3px) rotate(0); } 50% { transform: translateY(-8px) rotate(-12deg); } }
-  .halo { left: 12px; top: -15px; width: 28px; height: 8px; border: 2px solid #ffd54f; border-radius: 50%; box-shadow: 0 0 7px #ffd54f; }
+  .halo { left: 16px; top: -15px; width: 28px; height: 8px; border: 2px solid #ffd54f; border-radius: 50%; box-shadow: 0 0 7px #ffd54f; }
   /* 参考像素小人图的新配件（牛仔帽/潜水镜/赛车头盔/芭蕾裙）*/
-  .cowboy { left: 4px; top: -7px; width: 44px; height: 11px; background: #8d6e63; border-radius: 8px 8px 2px 2px; }
+  .cowboy { left: 6px; top: -7px; width: 44px; height: 11px; background: #8d6e63; border-radius: 8px 8px 2px 2px; }
   .cowboy::after { content: ''; position: absolute; left: -6px; bottom: -3px; width: 56px; height: 4px; background: #6d4c41; border-radius: 4px; }
-  .dive { left: 6px; top: 7px; width: 40px; height: 11px; border: 3px solid #26c6da; border-radius: 9px; background: rgba(38,198,218,.22); }
+  .dive { left: 12px; top: 13px; width: 40px; height: 11px; border: 3px solid #26c6da; border-radius: 9px; background: rgba(38,198,218,.22); }
   .dive::after { content: ''; position: absolute; right: -9px; top: 2px; width: 7px; height: 3px; background: #0097a7; border-radius: 2px; }
-  .helmet { left: 3px; top: -10px; width: 46px; height: 20px; background: #e53935; border-radius: 23px 23px 4px 4px; }
+  .helmet { left: 5px; top: -10px; width: 46px; height: 22px; background: #e53935; border-radius: 23px 23px 4px 4px; }
   .helmet::after { content: ''; position: absolute; left: 5px; top: 9px; width: 36px; height: 7px; background: rgba(255,255,255,.8); border-radius: 4px; }
   .tutu { left: -8px; top: 21px; width: 68px; height: 10px; background: #f8bbd0; border-radius: 50%; box-shadow: inset 0 2px 0 rgba(244,143,177,.9); }
   /* 礼帽 / 派对帽 / 巫师帽（灵感来自 clawd-on-desk 的配件清单，自己用 CSS 重画）*/
-  .tophat { left: 12px; top: -10px; width: 28px; height: 15px; background: #212121; border-radius: 2px 2px 0 0; }
+  .tophat { left: 14px; top: -10px; width: 28px; height: 15px; background: #212121; border-radius: 2px 2px 0 0; }
   .tophat::after { content: ''; position: absolute; left: -7px; bottom: -3px; width: 42px; height: 4px; background: #212121; border-radius: 3px; }
-  .partyhat { left: 14px; top: -15px; width: 0; height: 0; border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 20px solid #ff7043; }
+  .partyhat { left: 16px; top: -15px; width: 0; height: 0; border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 20px solid #ff7043; }
   .partyhat::after { content: ''; position: absolute; left: -4px; top: -6px; width: 8px; height: 8px; border-radius: 50%; background: #ffd54f; }
-  /* 巫师帽：尖顶带一点弯钩 + 金色星星装饰 + 宽帽檐 */
-  .wizhat { left: 13px; top: -17px; width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-bottom: 22px solid #5e35b1; }
-  .wizhat::before { content: ''; position: absolute; left: -4px; top: -13px; width: 8px; height: 6px; background: #5e35b1; border-radius: 60% 40% 0 0; transform: rotate(-22deg); }  /* 弯钩尖 */
-  .wizhat::after { content: ''; position: absolute; left: -9px; bottom: -4px; width: 46px; height: 4px; background: #4527a0; border-radius: 3px; }  /* 帽檐 */
-  .wizstar { position: absolute; left: 4px; top: -1px; font-size: 7px; color: #ffd54f; line-height: 1; text-shadow: 0 0 3px rgba(255,213,79,.8); display: none; }
+  /* 巫师帽：整体用一个多边形画出（尖顶向右上弯 + 宽帽檐），不再是拼接的三角+补丁 */
+  .wizhat { left: 12px; top: -22px; width: 34px; height: 26px; background: linear-gradient(175deg, #7e57c2 0%, #5e35b1 60%, #4a2a94 100%); clip-path: polygon(46% 0%, 56% 4%, 66% 16%, 78% 52%, 90% 88%, 100% 100%, 0% 100%, 8% 86%, 20% 46%); }
+  .wizhat::after { content: ''; position: absolute; left: -6px; bottom: -3px; width: 46px; height: 4px; background: #4527a0; border-radius: 3px; }  /* 帽檐 */
+  .wizstar { position: absolute; left: 6px; top: -4px; font-size: 8px; color: #ffd54f; line-height: 1; text-shadow: 0 0 3px rgba(255,213,79,.8); display: none; }
   .pet[data-acc~="wizhat"] .wizstar { display: block; }
-  .pet.blush .body::before, .pet.blush .body::after { content: ''; position: absolute; top: 11px; width: 8px; height: 4px; background: #ff8a80; border-radius: 50%; opacity: .85; }
+  .pet.blush .body::before, .pet.blush .body::after { content: ''; position: absolute; top: 20px; width: 8px; height: 4px; background: #ff8a80; border-radius: 50%; opacity: .85; }
   .pet.blush .body::before { left: 1px; } .pet.blush .body::after { right: 1px; }
   .pet.stareyes .eye { background: transparent; }
   .pet.stareyes .eye::after { content: '★'; position: absolute; left: -2px; top: -4px; font-size: 9px; color: #ffb300; line-height: 1; }

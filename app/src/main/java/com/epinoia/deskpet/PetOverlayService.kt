@@ -59,8 +59,8 @@ class PetOverlayService : Service() {
         private const val CHANNEL_ID = "deskpet_overlay"
         private const val NOTIFICATION_ID = 1
 
-        private const val PET_WIDTH_DP = 90    // 透明活动空间（比形象本身大一圈，方便点击/拖动）
-        private const val PET_HEIGHT_DP = 62   // pet.html 36px 高 + 顶部给帽子/杂耍球留余量
+        private const val PET_WIDTH_DP = 96    // 透明活动空间（比形象本身大一圈，方便点击/拖动）
+        private const val PET_HEIGHT_DP = 72   // pet.html 46px 高 + 顶部给帽子/杂耍球留余量
         private const val MAX_PET_WIDTH_DP = 180   // 尺寸最大档（对应 pet.html 130×60 放大 2.5 倍）
         private const val MAX_PET_HEIGHT_DP = 100
         private const val HANDLE_W_DP = 26
@@ -72,8 +72,8 @@ class PetOverlayService : Service() {
 
         // 贴边露出量：主体滑出屏幕外，但留一条可见的桌宠身体（悬浮球式半透明条）
         private const val VISIBLE_EDGE_DP = 14
-        // body 在窗口内的宽度占比（52/90，zoom 放大时同比例，恒成立）
-        private const val BODY_WINDOW_RATIO = 0.578f
+        // body 在窗口内的宽度占比（56/96，zoom 放大时同比例，恒成立）
+        private const val BODY_WINDOW_RATIO = 0.583f
 
         private const val IDLE_TIMEOUT_MS = 10_000L       // 无操作 10s → 贴边
         private const val HIDE_DELAY_MS = 60_000L         // 贴边 60s → 缩成手柄
