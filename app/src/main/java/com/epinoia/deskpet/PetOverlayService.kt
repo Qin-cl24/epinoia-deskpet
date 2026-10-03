@@ -59,8 +59,8 @@ class PetOverlayService : Service() {
         private const val CHANNEL_ID = "deskpet_overlay"
         private const val NOTIFICATION_ID = 1
 
-        private const val PET_WIDTH_DP = 72
-        private const val PET_HEIGHT_DP = 48   // 贴合桌宠（pet.html 36px 高 + 顶部动画余量），不再留气泡空间
+        private const val PET_WIDTH_DP = 90    // 透明活动空间（比形象本身大一圈，方便点击/拖动）
+        private const val PET_HEIGHT_DP = 62   // pet.html 36px 高 + 顶部给帽子/杂耍球留余量
         private const val MAX_PET_WIDTH_DP = 180   // 尺寸最大档（对应 pet.html 130×60 放大 2.5 倍）
         private const val MAX_PET_HEIGHT_DP = 100
         private const val HANDLE_W_DP = 26
@@ -72,8 +72,8 @@ class PetOverlayService : Service() {
 
         // 贴边露出量：主体滑出屏幕外，但留一条可见的桌宠身体（悬浮球式半透明条）
         private const val VISIBLE_EDGE_DP = 14
-        // body 在窗口内的宽度占比（52/72，zoom 放大时同比例，恒成立）
-        private const val BODY_WINDOW_RATIO = 0.722f
+        // body 在窗口内的宽度占比（52/90，zoom 放大时同比例，恒成立）
+        private const val BODY_WINDOW_RATIO = 0.578f
 
         private const val IDLE_TIMEOUT_MS = 10_000L       // 无操作 10s → 贴边
         private const val HIDE_DELAY_MS = 60_000L         // 贴边 60s → 缩成手柄
@@ -561,6 +561,7 @@ class PetOverlayService : Service() {
                     true
                 }
                 MotionEvent.ACTION_UP -> {
+                    stopWalking()
                     if (hidden) {
                         if (hasMoved) snapHandle() else toPetMode()
                         return@OnTouchListener true
@@ -628,6 +629,7 @@ class PetOverlayService : Service() {
                         return@OnTouchListener true
                     }
                     hasMoved = true
+                    startWalking()
                     params?.let { p ->
                         p.x = (initialX + dx).coerceIn(0, getScreenW() - p.width)
                         p.y = (initialY + dy).coerceIn(0, getScreenH() - p.height)
@@ -679,6 +681,19 @@ class PetOverlayService : Service() {
     }
 
     private fun onDragEnd() = js("onDragEnd()")
+
+    // 走路状态：拖动窗口时让四条腿走对角步态（像猫狗小跑）
+    private var walking = false
+    private fun startWalking() {
+        if (walking) return
+        walking = true
+        js("setWalking(true)")
+    }
+    private fun stopWalking() {
+        if (!walking) return
+        walking = false
+        js("setWalking(false)")
+    }
     private fun onFling() = js("onFling()")
 
     private fun js(call: String) {
