@@ -42,13 +42,13 @@
   .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 8px; }
   .arm-left { left: -8px; } .arm-right { right: -8px; }
   /* 腿：两条，分开在下方 */
-  /* 腿：四条（参考图的像素小人是四足，之前只有两条显得空）*/
-  .leg { position: absolute; width: 8px; height: 6px; background: var(--pet-leg, #d35400); bottom: -6px; border-radius: 0 0 4px 4px; }
-  .leg-l1 { left: 4px; } .leg-l2 { left: 16px; } .leg-r2 { right: 16px; } .leg-r1 { right: 4px; }
+  /* 腿：四条（细一点、左右各两条靠近且对称）*/
+  .leg { position: absolute; width: 5px; height: 6px; background: var(--pet-leg, #d35400); bottom: -6px; border-radius: 0 0 4px 4px; }
+  .leg-l1 { left: 7px; } .leg-l2 { left: 15px; } .leg-r2 { right: 15px; } .leg-r1 { right: 7px; }
   /* 地面影子：垫在身体和腿之下 */
-  .shadow { position: absolute; left: 10px; bottom: 0; width: 48px; height: 5px; background: rgba(0,0,0,.16); border-radius: 50%; filter: blur(1.2px); pointer-events: none; }
+  .shadow { position: absolute; left: 11px; bottom: 0; width: 46px; height: 6px; background: rgba(0,0,0,.24); border-radius: 50%; filter: blur(.8px); pointer-events: none; }
   /* 杂耍：三个小球轮流抛接（灵感来自 clawd-on-desk 的 juggling）*/
-  .ball { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--pet-accent, #e67e22); box-shadow: 0 0 4px var(--pet-accent, #e67e22); display: none; z-index: 8; }
+  .ball { position: absolute; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--pet-accent, #e67e22); box-shadow: 0 0 4px var(--pet-accent, #e67e22); display: none; z-index: 8; }
   .pet.juggling .ball { display: block; }
   .ball.b1 { left: 14px; animation: jug 1.05s ease-in-out infinite; }
   .ball.b2 { left: 30px; animation: jug 1.05s ease-in-out infinite .35s; }
@@ -121,6 +121,8 @@
   @keyframes roll { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
   /* ===== 皮肤（CSS 变量，设置页可切）===== */
+  /* 默认橙调粉一档（主人要求整体偏粉）*/
+  .pet[data-skin="orange"] { --pet-body:#f39a80; --pet-leg:#dc7a5c; --pet-accent:#f7ac95; }
   .pet[data-skin="peach"] { --pet-body:#f48fb1; --pet-leg:#ec407a; --pet-accent:#f06292; }
   .pet[data-skin="mint"]  { --pet-body:#66bb6a; --pet-leg:#388e3c; --pet-accent:#4caf50; }
   .pet[data-skin="night"] { --pet-body:#5c6bc0; --pet-leg:#303f9f; --pet-accent:#7986cb; }
@@ -193,6 +195,19 @@
   .pet.arm-wave .arm { animation: armwave .7s ease-in-out infinite; }
   .pet.arm-wave .arm-right { animation-delay: .12s; }               /* 举手挥舞 */
   .pet.arm-shake .arm { animation: armshake .3s ease-in-out infinite; }  /* 搓洗/握着手柄抖 */
+  /* 手与道具的交互：按动作把手移到道具该在的位置（高度 + 横向收拢）*/
+  .pet.arm-type .arm { top: 7px; }        /* 敲键盘：手放低在键位上 */
+  .pet.arm-type .arm-left { left: -4px; } .pet.arm-type .arm-right { right: -4px; }
+  .pet.arm-hold .arm { top: 5px; }        /* 举着东西：手抬一点 */
+  .pet.arm-hold .arm-right { right: -4px; }
+  .pet.arm-shake .arm { top: 7px; }       /* 握手柄/搓洗 */
+  .pet.arm-shake .arm-left { left: -3px; } .pet.arm-shake .arm-right { right: -3px; }
+  .pet.arm-wave .arm { top: 4px; }        /* 举手挥舞：手抬起来 */
+  /* 杂耍专用接球手势：手举到最高，跟着球的节奏上下托 */
+  .pet.juggling .arm { top: 1px; animation: armcatch 1.05s ease-in-out infinite; }
+  .pet.juggling .arm-left { left: -4px; } .pet.juggling .arm-right { right: -4px; }
+  .pet.juggling .arm-right { animation-delay: .35s; }
+  @keyframes armcatch { 0%,100% { transform: translateY(3px) rotate(0); } 50% { transform: translateY(-8px) rotate(-12deg); } }
   .halo { left: 12px; top: -15px; width: 28px; height: 8px; border: 2px solid #ffd54f; border-radius: 50%; box-shadow: 0 0 7px #ffd54f; }
   /* 参考像素小人图的新配件（牛仔帽/潜水镜/赛车头盔/芭蕾裙）*/
   .cowboy { left: 4px; top: -10px; width: 44px; height: 11px; background: #8d6e63; border-radius: 8px 8px 2px 2px; }
