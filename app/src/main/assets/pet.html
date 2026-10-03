@@ -50,36 +50,47 @@
      全部用 CSS 画，切换带 .18s 过渡，表情是"长在脸上"的而不是贴 emoji */
   .mouth {
     position: absolute; left: 50%; top: 22px; transform: translateX(-50%);
-    width: 10px; height: 5px; opacity: 0;
+    width: 8px; height: 4px; opacity: 0;
     border: 2px solid #000; border-top: none; border-radius: 0 0 9px 9px;
     transition: all .18s ease;
   }
   .brow { position: absolute; width: 8px; height: 2px; background: #000; opacity: 0; top: 7px; transition: all .18s ease; }
   .brow-left { left: 11px; } .brow-right { right: 11px; }
   /* 开心：张嘴笑 */
-  .pet.act-happy .mouth { opacity: 1; width: 13px; height: 8px; background: #000; border: none; border-radius: 0 0 13px 13px; }
+  .pet.act-happy .mouth { opacity: 1; width: 10px; height: 6px; background: #000; border: none; border-radius: 0 0 10px 10px; }
   /* 得意：上扬的嘴 */
-  .pet.act-proud .mouth, .pet.act-celebrate .mouth { opacity: 1; width: 13px; height: 6px; }
-  /* 惊讶：O 型嘴 */
-  .pet.act-shock .mouth { opacity: 1; width: 7px; height: 9px; background: #000; border: none; border-radius: 50%; top: 21px; }
+  .pet.act-proud .mouth, .pet.act-celebrate .mouth { opacity: 1; width: 10px; height: 5px; }
+  /* 惊讶：小 O 型嘴 + 眼睛瞪大 */
+  .pet.act-shock .mouth { opacity: 1; width: 6px; height: 7px; background: #000; border: none; border-radius: 50%; top: 21px; }
+  .pet.act-shock .eye { width: 6px; height: 10px; }
   /* 生气：倒 V 嘴 + 倒八眉 */
-  .pet.act-angry .mouth { opacity: 1; width: 12px; height: 5px; background: none; border: 2px solid #000; border-bottom: none; border-radius: 9px 9px 0 0; }
+  .pet.act-angry .mouth { opacity: 1; width: 9px; height: 4px; background: none; border: 2px solid #000; border-bottom: none; border-radius: 7px 7px 0 0; }
   .pet.act-angry .brow { opacity: 1; }
   .pet.act-angry .brow-left { transform: rotate(18deg); }
   .pet.act-angry .brow-right { transform: rotate(-18deg); }
+  /* 生气：脸颊红色竖条纹（素材里的细节）*/
+  .pet.act-angry::before, .pet.act-angry::after {
+    content: ''; position: absolute; width: 3px; height: 8px; border-radius: 1px;
+    background: repeating-linear-gradient(180deg, #e53935 0 2px, transparent 2px 4px);
+    top: 19px;
+  }
+  .pet.act-angry::before { left: 13px; }
+  .pet.act-angry::after { right: 13px; }
   /* 难过/哭：下弯嘴 + 八字眉 */
-  .pet.act-cry .mouth { opacity: 1; width: 11px; height: 5px; background: none; border: 2px solid #000; border-bottom: none; border-radius: 9px 9px 0 0; top: 23px; }
+  .pet.act-cry .mouth { opacity: 1; width: 9px; height: 4px; background: none; border: 2px solid #000; border-bottom: none; border-radius: 7px 7px 0 0; top: 23px; }
+  /* 哭：眼睛下方挂蓝色泪滴（配合原有 💧 特效）*/
+  .pet.act-cry .eye::before { content: ''; position: absolute; left: 1px; top: 8px; width: 3px; height: 6px; background: #81d4fa; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; }
   .pet.act-cry .brow { opacity: 1; }
   .pet.act-cry .brow-left { transform: rotate(-16deg); }
   .pet.act-cry .brow-right { transform: rotate(16deg); }
   /* 撒娇：小小的 w 嘴 */
-  .pet.act-cute .mouth { opacity: 1; width: 7px; height: 4px; border-radius: 0 0 7px 7px; }
+  .pet.act-cute .mouth { opacity: 1; width: 6px; height: 3px; border-radius: 0 0 6px 6px; }
   /* 唱歌/听音乐：小圆嘴 */
-  .pet.act-music .mouth { opacity: 1; width: 7px; height: 7px; background: #000; border: none; border-radius: 50%; }
+  .pet.act-music .mouth { opacity: 1; width: 6px; height: 6px; background: #000; border: none; border-radius: 50%; }
   /* 犯困：打哈欠的小圆 */
-  .pet.act-sleepy .mouth { opacity: 1; width: 6px; height: 7px; background: #000; border: none; border-radius: 50%; top: 22px; }
+  .pet.act-sleepy .mouth { opacity: 1; width: 5px; height: 6px; background: #000; border: none; border-radius: 50%; top: 22px; }
   /* 思考：抿嘴一条线 */
-  .pet.act-think .mouth { opacity: 1; width: 9px; height: 2px; background: #000; border: none; border-radius: 1px; }
+  .pet.act-think .mouth { opacity: 1; width: 7px; height: 2px; background: #000; border: none; border-radius: 1px; }
   .pet.blink .eye { height: 2px; }
   /* 手：小正方形、与身体同色、垂直居中、紧贴身体两侧无缝隙 */
   .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 12px; }

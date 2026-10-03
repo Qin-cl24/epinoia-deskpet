@@ -108,6 +108,7 @@ class MainActivity : AppCompatActivity() {
         // 折叠分组：点标题展开/收起（▶ 收起 / ▼ 展开），默认收起让面板清爽
         bindCollapsible(R.id.tv_group_acc, R.id.group_acc, "配件（可多选，手动穿戴）")
         bindCollapsible(R.id.tv_group_idle, R.id.group_idle, "待机微动作")
+        bindCollapsible(R.id.tv_group_switch, R.id.group_switch, "🎛️ 功能开关")
 
         bindLookBox(R.id.cb_idle_blink, "pref_blink", true)
         bindLookBox(R.id.cb_idle_breathe, "pref_idle_breathe", true)
