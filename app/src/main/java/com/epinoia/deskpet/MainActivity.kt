@@ -19,6 +19,7 @@ import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.Switch
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -103,6 +104,10 @@ class MainActivity : AppCompatActivity() {
         bindLookBox(R.id.cb_acc_tophat, "pref_acc_tophat")
         bindLookBox(R.id.cb_acc_partyhat, "pref_acc_partyhat")
         bindLookBox(R.id.cb_acc_wizhat, "pref_acc_wizhat")
+
+        // 折叠分组：点标题展开/收起（▶ 收起 / ▼ 展开），默认收起让面板清爽
+        bindCollapsible(R.id.tv_group_acc, R.id.group_acc, "配件（可多选，手动穿戴）")
+        bindCollapsible(R.id.tv_group_idle, R.id.group_idle, "待机微动作")
 
         bindLookBox(R.id.cb_idle_blink, "pref_blink", true)
         bindLookBox(R.id.cb_idle_breathe, "pref_idle_breathe", true)
@@ -203,6 +208,18 @@ class MainActivity : AppCompatActivity() {
             prefs.edit().putBoolean(key, checked).apply()
             applyLookLive()
         }
+    }
+
+    /** 折叠分组：点标题展开/收起（▶ 收起 / ▼ 展开） */
+    private fun bindCollapsible(headerId: Int, contentId: Int, title: String) {
+        val header = findViewById<TextView>(headerId)
+        val content = findViewById<LinearLayout>(contentId)
+        fun render(open: Boolean) {
+            header.text = (if (open) "▼ " else "▶ ") + title
+            content.visibility = if (open) View.VISIBLE else View.GONE
+        }
+        render(false)
+        header.setOnClickListener { render(content.visibility != View.VISIBLE) }
     }
 
     /** 桌宠在跑就直接重载 WebView（形象类设置即时生效）；没跑则下次启动生效 */

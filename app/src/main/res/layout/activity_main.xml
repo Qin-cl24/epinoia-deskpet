@@ -209,12 +209,23 @@
             android:layout_marginTop="4dp" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tv_group_acc"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="配件（可多选，手动穿戴）"
-            android:textColor="#666666"
-            android:textSize="12sp" />
+            android:layout_marginTop="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="▶ 配件（可多选，手动穿戴）"
+            android:textColor="#444444"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/group_acc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
 
         <CheckBox
             android:id="@+id/cb_acc_cap"
@@ -314,13 +325,26 @@
             android:textColor="#333333"
             android:text="🧙 巫师帽" />
 
+        </LinearLayout>
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tv_group_idle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="待机微动作"
-            android:textColor="#666666"
-            android:textSize="12sp" />
+            android:layout_marginTop="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="▶ 待机微动作"
+            android:textColor="#444444"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/group_idle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
 
         <CheckBox
             android:id="@+id/cb_idle_blink"
@@ -363,6 +387,8 @@
             android:layout_height="wrap_content"
             android:textColor="#333333"
             android:text="🍳 生活小动作（敲代码·吃煎蛋·玩游戏…）" />
+
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"

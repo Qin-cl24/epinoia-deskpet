@@ -234,11 +234,11 @@
   .tophat::after { content: ''; position: absolute; left: -7px; bottom: -3px; width: 42px; height: 4px; background: #212121; border-radius: 3px; }
   .partyhat { left: 16px; top: -15px; width: 0; height: 0; border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 20px solid #ff7043; }
   .partyhat::after { content: ''; position: absolute; left: -4px; top: -6px; width: 8px; height: 8px; border-radius: 50%; background: #ffd54f; }
-  /* 巫师帽：整体用一个多边形画出（尖顶向右上弯 + 宽帽檐），不再是拼接的三角+补丁 */
+  /* 巫师帽：整体用一个多边形画出（尖顶向右上弯 + 宽帽檐），不再是拼接的三角+补丁
+     注意：帽子本身不带星星 —— 星星是「情绪」用的特效（见 .fx-star / proud 动作）*/
   .wizhat { left: 12px; top: -22px; width: 34px; height: 26px; background: linear-gradient(175deg, #7e57c2 0%, #5e35b1 60%, #4a2a94 100%); clip-path: polygon(46% 0%, 56% 4%, 66% 16%, 78% 52%, 90% 88%, 100% 100%, 0% 100%, 8% 86%, 20% 46%); }
   .wizhat::after { content: ''; position: absolute; left: -6px; bottom: -3px; width: 46px; height: 4px; background: #4527a0; border-radius: 3px; }  /* 帽檐 */
-  .wizstar { position: absolute; left: 6px; top: -4px; font-size: 8px; color: #ffd54f; line-height: 1; text-shadow: 0 0 3px rgba(255,213,79,.8); display: none; }
-  .pet[data-acc~="wizhat"] .wizstar { display: block; }
+  .wizstar { display: none; }   /* 已废弃：星星属于情绪特效，不作为帽子装饰 */
   .pet.blush .body::before, .pet.blush .body::after { content: ''; position: absolute; top: 20px; width: 8px; height: 4px; background: #ff8a80; border-radius: 50%; opacity: .85; }
   .pet.blush .body::before { left: 1px; } .pet.blush .body::after { right: 1px; }
   .pet.stareyes .eye { background: transparent; }
@@ -270,7 +270,6 @@
     <span class="acc tophat"></span>
     <span class="acc partyhat"></span>
     <span class="acc wizhat"></span>
-    <span class="wizstar">✦</span>
     <span class="toy" id="toy"></span>
     <span class="acc cap"></span>
     <span class="acc sleepcap"></span>
