@@ -293,6 +293,27 @@
             android:textColor="#333333"
             android:text="🩰 芭蕾裙" />
 
+        <CheckBox
+            android:id="@+id/cb_acc_tophat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:text="🎩 礼帽" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_partyhat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:text="🥳 派对帽" />
+
+        <CheckBox
+            android:id="@+id/cb_acc_wizhat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:text="🧙 巫师帽" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
