@@ -57,10 +57,11 @@
     background: repeating-linear-gradient(180deg, #e53935 0 2px, transparent 2px 4px);
     top: 19px; left: 13px;
   }
-  /* 哭：两滴眼泪挂在外八字眯眼的「外侧正下方」（左眼左下、右眼右下），不遮住眼睛本身 */
-  .pet.act-cry .eye::before { content: ''; position: absolute; top: 9px; width: 3px; height: 6px; background: #81d4fa; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; }
-  .pet.act-cry .eye-left::before { left: -3px; }
-  .pet.act-cry .eye-right::before { right: -3px; }
+  /* 哭：两滴眼泪贴在眼睛正下方（外侧一格），并且朝向互换 —— 反向旋转抵消眼睛的外八字，
+     让水滴是「竖直往下掉」的，而不是跟着斜眼一起歪着 */
+  .pet.act-cry .eye::before { content: ''; position: absolute; top: 3px; width: 3px; height: 6px; background: #81d4fa; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; }
+  .pet.act-cry .eye-left::before { left: -3px; transform: rotate(16deg); }
+  .pet.act-cry .eye-right::before { right: -3px; transform: rotate(-16deg); }
   .pet.blink .eye { height: 2px; }
   /* 手：小正方形、与身体同色、垂直居中、紧贴身体两侧无缝隙 */
   .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 12px; }
@@ -287,12 +288,17 @@
   .pet.arm-shake .arm { top: 7px; }       /* 握手柄/搓洗 */
   .pet.arm-shake .arm-left { left: -3px; } .pet.arm-shake .arm-right { right: -3px; }
   .pet.arm-wave .arm { top: 4px; }        /* 举手挥舞：手抬起来 */
-  /* 看书专用手势：两只手（小方块）从身体两侧收拢到书的左右边缘捧着。
-     坐标是相对 .body 的 —— 书的身体坐标是 x18~38 / y19~30，手压在书外侧边缘正好"拿住"。
-     右手每 3.4 秒抬起一下，和右页的 pageflip 同步（都在周期 58%~86% 之间），看起来像在翻页。*/
-  .pet.act-read .arm { top: 18px; width: 7px; height: 10px; border-radius: 2px; animation: armread 3.4s ease-in-out infinite; }
-  .pet.act-read .arm-left { left: 10px; }
-  .pet.act-read .arm-right { right: 10px; animation: armflip 3.4s ease-in-out infinite; }
+  /* 看书专用手势：两只手（小方块）捧在书的左右两侧外沿、且比书略低一点。
+     关键点：手和身体同色，缩进身体里就完全看不见（会像没手），所以
+       ① 手横跨书的外沿 2px（"捏住"书边）② 加 1px 暗轮廓 + 底部暗边，让它从身体上"浮"出来。
+     坐标相对 .body：书占 x18~38 / y19~30；左手 x12~20、右手 x36~44，正好各压住书外沿。
+     右手每 3.4 秒抬起一下，和右页 pageflip 同步（都在周期 58%~86%），看起来像在翻页。*/
+  .pet.act-read .arm {
+    top: 21px; width: 8px; height: 9px; border-radius: 3px; animation: armread 3.4s ease-in-out infinite;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.20), 0 0 0 1px rgba(0,0,0,.13);
+  }
+  .pet.act-read .arm-left { left: 12px; }
+  .pet.act-read .arm-right { right: 12px; animation: armflip 3.4s ease-in-out infinite; }
   @keyframes armread { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-1px) rotate(-4deg); } }
   @keyframes armflip { 0%,58%,100% { transform: translateY(0) rotate(0); } 72% { transform: translateY(-3px) rotate(-9deg); } 86% { transform: translateY(0) rotate(0); } }
   /* 杂耍专用接球手势：手举到最高，跟着球的节奏上下托 */
@@ -656,7 +662,8 @@
     happy: ['.fx-heart'],
     sleepy: ['.fx-zzz'],
     angry: ['.fx-smoke'],
-    cry: ['.fx-tear', '.fx-tear.r'],
+    // 哭：眼泪已改成画在眼睛正下方的两滴（.eye::before），不再叠 emoji 泪滴，避免一排四滴太乱
+    cry: [],
     proud: ['.fx-star'],
     jump: [],
     wiggle: [],
