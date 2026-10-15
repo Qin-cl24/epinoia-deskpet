@@ -42,32 +42,18 @@
   /* 眼睛（两只）：竖长方形（像素小宠物的标准眼型），左上带一点白色高光 */
   .eye { position: absolute; width: 5px; height: 8px; background: #000; top: 9px; border-radius: 2px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
   .eye::after { content: ''; position: absolute; left: 1px; top: 1px; width: 2px; height: 2px; border-radius: 50%; background: rgba(255,255,255,.9); }
-  /* 眯眼/弯眼类动作没有高光（眼睛已经压扁了）*/
+  /* 眯眼/弯眼类动作没有高光（眼睛已经压扁了，再点高光会糊成一团）*/
   .pet.act-happy .eye::after, .pet.act-sleepy .eye::after, .pet.act-cry .eye::after,
-  .pet.act-proud .eye::after, .pet.blink .eye::after, .pet.stareyes .eye::after { display: none; }
+  .pet.act-music .eye::after, .pet.act-think .eye::after,
+  .pet.blink .eye::after, .pet.stareyes .eye::after { display: none; }
   .eye-left { left: 12px; } .eye-right { right: 12px; }
-  /* ===== 面部表情层：嘴 + 眉毛（默认无嘴，只在做表情时画出来）=====
-     全部用 CSS 画，切换带 .18s 过渡，表情是"长在脸上"的而不是贴 emoji */
-  .mouth {
-    position: absolute; left: 50%; top: 20px; transform: translateX(-50%);
-    width: 7px; height: 3px; opacity: 0;
-    border: 2px solid #000; border-top: none; border-radius: 0 0 7px 7px;
-    transition: all .18s ease;
-  }
-  .brow { position: absolute; width: 8px; height: 2px; background: #000; opacity: 0; top: 7px; transition: all .18s ease; }
-  .brow-left { left: 11px; } .brow-right { right: 11px; }
-  /* 开心：张嘴笑 */
-  .pet.act-happy .mouth { opacity: 1; width: 8px; height: 5px; background: #000; border: none; border-radius: 0 0 8px 8px; top: 20px; }
-  /* 得意：上扬的嘴 */
-  .pet.act-proud .mouth, .pet.act-celebrate .mouth { opacity: 1; width: 8px; height: 4px; top: 20px; }
-  /* 惊讶：小 O 型嘴 + 眼睛变圆 */
-  .pet.act-shock .mouth { opacity: 1; width: 5px; height: 6px; background: #000; border: none; border-radius: 50%; top: 19px; }
-  .pet.act-shock .eye { width: 7px; height: 7px; border-radius: 50%; }
-  /* 生气：倒 V 嘴 + 倒八眉 */
-  .pet.act-angry .mouth { opacity: 1; width: 8px; height: 3px; background: none; border: 2px solid #000; border-bottom: none; border-radius: 6px 6px 0 0; top: 20px; }
-  .pet.act-angry .brow { opacity: 1; }
-  .pet.act-angry .brow-left { transform: rotate(18deg); }
-  .pet.act-angry .brow-right { transform: rotate(-18deg); }
+  /* ===== 面部表情层：只用眼睛说话（2026-10-15 定稿）=====
+     主人判断：萌系小宠物「没有嘴、没有眉毛」最可爱 —— 整套嘴（.mouth）与眉毛（.brow）
+     规则已全部删除，情绪改由四种手段表达：
+       ① 眼型（竖条 / 圆 / 上拱弯顶 / 下垂弧 / 半眯）
+       ② 眼神（平移、扫动）  ③ 角度（斜眼、外八字）  ④ 脸部特效（泪滴、生气红纹）
+     眼型定义集中放在下面「动作表情」段；这里只留不依赖眼型的脸部特效。
+     历史：嘴眉方案见 commit 71688b9 / 540ee67 / 0c9ccad，想回退对比可从那里取。*/
   /* 生气：脸颊红色竖条纹（素材里的细节）*/
   .pet.act-angry::before, .pet.act-angry::after {
     content: ''; position: absolute; width: 3px; height: 8px; border-radius: 1px;
@@ -76,21 +62,8 @@
   }
   .pet.act-angry::before { left: 13px; }
   .pet.act-angry::after { right: 13px; }
-  /* 难过/哭：下弯嘴 + 八字眉 */
-  .pet.act-cry .mouth { opacity: 1; width: 8px; height: 3px; background: none; border: 2px solid #000; border-bottom: none; border-radius: 6px 6px 0 0; top: 21px; }
-  /* 哭：眼睛下方挂蓝色泪滴（配合原有 💧 特效）*/
+  /* 哭：眼睛下方挂蓝色泪滴（配合原有 💧 特效）—— 没有嘴之后，哭 = 外八字眯眼 + 泪滴 */
   .pet.act-cry .eye::before { content: ''; position: absolute; left: 1px; top: 8px; width: 3px; height: 6px; background: #81d4fa; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; }
-  .pet.act-cry .brow { opacity: 1; }
-  .pet.act-cry .brow-left { transform: rotate(-16deg); }
-  .pet.act-cry .brow-right { transform: rotate(16deg); }
-  /* 撒娇：小小的 w 嘴 */
-  .pet.act-cute .mouth { opacity: 1; width: 5px; height: 3px; border-radius: 0 0 5px 5px; top: 20px; }
-  /* 唱歌/听音乐：小圆嘴 */
-  .pet.act-music .mouth { opacity: 1; width: 5px; height: 5px; background: #000; border: none; border-radius: 50%; top: 20px; }
-  /* 犯困：打哈欠的小圆 */
-  .pet.act-sleepy .mouth { opacity: 1; width: 4px; height: 5px; background: #000; border: none; border-radius: 50%; top: 20px; }
-  /* 思考：抿嘴一条线 */
-  .pet.act-think .mouth { opacity: 1; width: 6px; height: 2px; background: #000; border: none; border-radius: 1px; top: 20px; }
   .pet.blink .eye { height: 2px; }
   /* 手：小正方形、与身体同色、垂直居中、紧贴身体两侧无缝隙 */
   .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 12px; }
@@ -140,19 +113,42 @@
   .fx-confetti.c2 { top: -2px; left: 56px; animation-delay: .2s; }
   .fx-confetti.c3 { top: -8px; left: 30px; animation-delay: .4s; }
 
-  /* 动作表情 */
-  .act-happy .eye { height: 2px; border-radius: 50%; }
-  .act-sleepy .eye { height: 2px; }
-  .act-sleepy { animation: yawn 2.4s ease-in-out infinite; }
-  @keyframes yawn { 0%,100% { transform: translateY(0) scaleY(1); } 25% { transform: translateY(-3px) scaleY(1.1); } 50% { transform: translateY(0) scaleY(1); } }
+  /* ===== 动作表情 ① 眼型：没有嘴和眉之后，眼睛要一个人撑起全部情绪 ===== */
+  /* 开心 / 庆祝：∩ 形上拱弯眼（笑眼）*/
+  .act-happy .eye, .act-celebrate .eye { height: 4px; border-radius: 3px 3px 0 0; }
+  /* 得意：眼睛整体上移 1px + 高光放大（眼里有光，比"眯眼"更贴得意）*/
+  .act-proud .eye { top: 8px; }
+  .act-proud .eye::after { width: 3px; height: 3px; }
+  /* 犯困：∪ 形下垂眼（眼睛往下弯）*/
+  .act-sleepy .eye { height: 4px; border-radius: 0 0 3px 3px; }
+  /* 惊讶：瞪成圆眼（最重要的情绪档）*/
+  .act-shock .eye { width: 7px; height: 7px; border-radius: 50%; }
+  /* 撒娇：大圆眼 */
+  .act-cute .eye { width: 7px; height: 9px; border-radius: 50%; }
+  /* 生气：斜眼（双眼朝内下压） + 脸颊红纹 */
   .act-angry .eye-left { transform: rotate(-45deg); }
   .act-angry .eye-right { transform: rotate(45deg); }
+  /* 哭：压成细线 + 外八字下垂（配合泪滴，与"笑眼"彻底区分开）*/
+  .act-cry .eye { height: 2px; border-radius: 1px; }
+  .act-cry .eye-left { transform: rotate(-16deg); }
+  .act-cry .eye-right { transform: rotate(16deg); }
+  /* 思考：半眯 + 眼神偏右上（想事情时眼神会往上飘）*/
+  .act-think .eye { height: 6px; transform: translate(1px, -1px); }
+  /* 听歌 / 唱歌：左右眼交替眨动（跟着节拍打拍子）*/
+  @keyframes winkbeat { 0%,100% { height: 2px; } 42%,58% { height: 8px; border-radius: 2px; } }
+  .act-music .eye-left { animation: winkbeat .9s ease-in-out infinite; }
+  .act-music .eye-right { animation: winkbeat .9s ease-in-out infinite .45s; }
+  /* 看书：半眯 + 眼睛左右扫行（一行一行读下去）*/
+  @keyframes readscan { 0%,100% { transform: translate(-1px, 0); } 50% { transform: translate(1px, 0); } }
+  .act-read .eye { height: 6px; animation: readscan 2.6s ease-in-out infinite; }
+
+  /* ===== 动作表情 ② 身体动画 ===== */
+  .act-sleepy { animation: yawn 2.4s ease-in-out infinite; }
+  @keyframes yawn { 0%,100% { transform: translateY(0) scaleY(1); } 25% { transform: translateY(-3px) scaleY(1.1); } 50% { transform: translateY(0) scaleY(1); } }
   .act-angry { animation: shake .3s ease-in-out 6; }
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
-  .act-cry .eye { height: 2px; border-radius: 50%; }
   .act-cry { animation: crybob 1.2s ease-in-out infinite; }
   @keyframes crybob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(1px); } }
-  .act-proud .eye { height: 2px; }
   .act-proud { animation: proudbob .8s ease-in-out infinite; }
   @keyframes proudbob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
   .act-wiggle { animation: wiggle .5s ease-in-out 4; }
@@ -162,7 +158,9 @@
   .act-think { animation: thinkbob 1s ease-in-out infinite; }
   @keyframes thinkbob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
   .act-celebrate { animation: wiggle .3s ease-in-out 6; }
-  .act-cute .eye { width: 7px; height: 9px; border-radius: 50%; }
+  /* 看书：身体轻微起伏（像呼吸着读），别用大动作，专心才有读书味 */
+  @keyframes readbob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+  .pet.act-read .body { animation: readbob 3.2s ease-in-out infinite; }
   .act-run { animation: run .15s linear infinite; }
   @keyframes run { 0%,100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-1px) rotate(-4deg); } 75% { transform: translateY(1px) rotate(4deg); } }
   /* 趴键盘 */
@@ -244,6 +242,25 @@
   .prop.show { opacity: 1; }
   .prop.bob { animation: propbob 1.3s ease-in-out infinite; }
   @keyframes propbob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+
+  /* ===== 看书：CSS 手绘的摊开小书（刻意不用 emoji，和另外 13 个 emoji 道具区分开）=====
+     两页纸 + 淡淡的字行纹理 + 中间书脊暗缝 + 右页轻微翻动。
+     位置在胸前下缘（y23，刚好是去掉嘴之后空出来的那块），配 arm-hold 像双手举着读。
+     与身体同步做 readbob 起伏，手和书不会分离。*/
+  .book { position: absolute; left: 26px; top: 23px; width: 20px; height: 11px; z-index: 7; display: none; pointer-events: none; }
+  .pet.act-read .book { display: block; animation: readbob 3.2s ease-in-out infinite; }
+  .bk {
+    position: absolute; bottom: 0; width: 10px; height: 11px; box-sizing: border-box;
+    background-color: #fffdf3; border: 1px solid #c9b79a;
+    /* 淡淡的字行：只在页面内侧画几条横线，远看像排好版的字 */
+    background-image: repeating-linear-gradient(180deg, #d9cdb6 0 1px, transparent 1px 3px);
+    background-size: 6px 9px; background-repeat: no-repeat; background-position: 2px 2px;
+  }
+  .bk-l { left: 0; border-radius: 2px 1px 1px 2px; transform: perspective(30px) rotateY(16deg); transform-origin: right center; }
+  .bk-r { right: 0; border-radius: 1px 2px 2px 1px; transform: perspective(30px) rotateY(-16deg); transform-origin: left center; animation: pageflip 3.4s ease-in-out infinite; }
+  @keyframes pageflip { 0%,62%,100% { transform: perspective(30px) rotateY(-16deg); } 80% { transform: perspective(30px) rotateY(-3deg); } }
+  /* 书脊：两页中间的暗缝，做出"摊开"的立体感 */
+  .book::after { content: ''; position: absolute; left: 9px; top: 1px; width: 2px; height: 9px; background: rgba(0,0,0,.16); border-radius: 1px; }
 
   /* ===== 手臂动作：手原本是静止方块，现在配合动作动起来 ===== */
   @keyframes armtype  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
@@ -348,9 +365,6 @@
     <div class="body">
       <div class="eye eye-left"></div>
       <div class="eye eye-right"></div>
-      <div class="brow brow-left"></div>
-      <div class="brow brow-right"></div>
-      <div class="mouth"></div>
       <div class="arm arm-left"></div>
       <div class="arm arm-right"></div>
       <div class="leg leg-l1"></div>
@@ -361,6 +375,8 @@
       <span class="acc scarf"></span>
       <span class="acc phones"></span>
     </div>
+    <!-- 看书道具：CSS 手绘的摊开小书（不是 emoji），act-read 时显示 -->
+    <span class="book"><span class="bk bk-l"></span><span class="bk bk-r"></span></span>
   </div>
 
 <script>
@@ -460,8 +476,8 @@
         (FX[action] || []).forEach(function(sel) {
           var el = document.querySelector(sel); if (el) el.classList.add('show');
         });
-        // 状态类动作（思考/干活/惊讶/睡觉）持续更久，普通动作短一点
-        var hold = (action === 'think' || action === 'run' || action === 'shock' || action === 'sleepy')
+        // 状态类动作（思考/干活/惊讶/睡觉/看书）持续更久，普通动作短一点
+        var hold = (action === 'think' || action === 'run' || action === 'shock' || action === 'sleepy' || action === 'read')
           ? 8000 : 2500;
         setTimeout(function() { pet.classList.remove('act-' + action); clearFx(); }, hold);
       } else if (action && FEELS.indexOf(action) >= 0) {
@@ -547,7 +563,7 @@
   }
 
   // ===== 自主小动作：参考相册表情图，随机自觉做 =====
-  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll'];
+  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read'];
   // ===== 情绪特效（新）：agent 可直接推 action=stareyes/blush/sweat/heartburst/firework/note =====
   var FEELS = ['stareyes','blush','sweat','heartburst','firework','note'];
 
@@ -637,7 +653,8 @@
     celebrate: ['.fx-confetti.c1', '.fx-confetti.c2', '.fx-confetti.c3'],
     cute: ['.fx-heart'],
     run: [],
-    roll: []
+    roll: [],
+    read: []
   };
   function clearFx() {
     document.querySelectorAll('.fx').forEach(function(el) { el.classList.remove('show'); });
@@ -664,6 +681,8 @@
   // ===== 生活化自娱自乐：参考相册生活场景图（敲代码/吃煎蛋/玩游戏/喝饮料/种植物/洗衣服/存粮）=====
   var LIFE_ACTS = [
     { prop: '💻', left: 20, top: 19, act: 'act-think',     arm: 'arm-type',  say: ['写代码中…💻', '这个 bug 好难', '（噼里啪啦）'] },
+    /* 看书：没有 emoji 道具（prop:null），书是 CSS 手绘的 .book，靠 act-read 显示 */
+    { prop: null, act: 'act-read', arm: 'arm-hold', say: ['看会儿书📖', '这页好有意思…', '安静看会儿书', '（一边看一边点头）'] },
     { prop: '🍳', left: 48, top: 11, act: 'act-happy',     arm: 'arm-hold',  blush: 1, say: ['好吃！🍳', '煎蛋嘿嘿', '再来一份～'] },
     { prop: '🎮', left: 26, top: 18, act: 'act-celebrate', arm: 'arm-shake', say: ['通关啦！🎮', '再来一局嘛', '赢了赢了！'] },
     { prop: '🥤', left: 52, top: 9,  act: 'act-cute',      arm: 'arm-hold',  blush: 1, say: ['咕嘟咕嘟🥤', '快乐水！', '好喝～'] },
@@ -707,7 +726,7 @@
     ACTIONS.forEach(function(a) { pet.classList.remove('act-' + a); });
     clearFx(); clearProps(); clearArm();
     pet.classList.add(L.act, L.arm);
-    showProp(L.prop, L.left, L.top, 3200);
+    if (L.prop) showProp(L.prop, L.left, L.top, 3200);
     if (L.blush) blushFor(2000);
     if (Math.random() < 0.5) randomSay(L.say[Math.floor(Math.random() * L.say.length)]);
     setTimeout(function() { pet.classList.remove(L.act); clearArm(); }, 3500);
@@ -743,6 +762,8 @@
     var a = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
     pet.classList.add('act-' + a);
     if (a === 'jump') bounce();
+    // 随机抽到"看书"时：手也要举起来捧着（书由 act-read 自己显示），并且读久一点
+    if (a === 'read') pet.classList.add('arm-hold');
     (FX[a] || []).forEach(function(sel) {
       var el = document.querySelector(sel);
       if (el) el.classList.add('show');
@@ -755,8 +776,9 @@
     if (Math.random() < 0.22) playFeels(FEELS[Math.floor(Math.random() * FEELS.length)]);
     setTimeout(function() {
       pet.classList.remove('act-' + a);
+      if (a === 'read') clearArm();
       clearFx();
-    }, 2500);
+    }, a === 'read' ? 3600 : 2500);
   }
   // 活跃度：设置页三档（话痨 8 秒 / 正常 45 秒 / 安静 150 秒）
   var ACT_BASE_SEC = Math.max(4, getPrefInt('pref_act_sec', 45));
