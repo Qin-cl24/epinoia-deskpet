@@ -38,14 +38,10 @@
     box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -3px 0 rgba(0,0,0,.10);
     margin: 4px auto 0;
   }
-  /* 眼睛（两只） */
-  /* 眼睛（两只）：竖长方形（像素小宠物的标准眼型），左上带一点白色高光 */
+  /* 眼睛（两只）：竖长方形（像素小宠物的标准眼型）
+     2026-10-15：白色高光点已移除（主人要求，纯黑眼更干净可爱）——原来靠高光撑的"得意"
+     改成眨眼表达，见下面「动作表情」。*/
   .eye { position: absolute; width: 5px; height: 8px; background: #000; top: 9px; border-radius: 2px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
-  .eye::after { content: ''; position: absolute; left: 1px; top: 1px; width: 2px; height: 2px; border-radius: 50%; background: rgba(255,255,255,.9); }
-  /* 眯眼/弯眼类动作没有高光（眼睛已经压扁了，再点高光会糊成一团）*/
-  .pet.act-happy .eye::after, .pet.act-sleepy .eye::after, .pet.act-cry .eye::after,
-  .pet.act-music .eye::after, .pet.act-think .eye::after,
-  .pet.blink .eye::after, .pet.stareyes .eye::after { display: none; }
   .eye-left { left: 12px; } .eye-right { right: 12px; }
   /* ===== 面部表情层：只用眼睛说话（2026-10-15 定稿）=====
      主人判断：萌系小宠物「没有嘴、没有眉毛」最可爱 —— 整套嘴（.mouth）与眉毛（.brow）
@@ -54,16 +50,17 @@
        ② 眼神（平移、扫动）  ③ 角度（斜眼、外八字）  ④ 脸部特效（泪滴、生气红纹）
      眼型定义集中放在下面「动作表情」段；这里只留不依赖眼型的脸部特效。
      历史：嘴眉方案见 commit 71688b9 / 540ee67 / 0c9ccad，想回退对比可从那里取。*/
-  /* 生气：脸颊红色竖条纹（素材里的细节）*/
-  .pet.act-angry::before, .pet.act-angry::after {
+  /* 生气：脸颊红色竖条纹 —— 只保留左脸（2026-10-15 主人要求去掉右脸那两个红点：
+     恼怒 💢 标记要放到方块右上角，右脸再画红纹就和它撞位了）*/
+  .pet.act-angry::before {
     content: ''; position: absolute; width: 3px; height: 8px; border-radius: 1px;
     background: repeating-linear-gradient(180deg, #e53935 0 2px, transparent 2px 4px);
-    top: 19px;
+    top: 19px; left: 13px;
   }
-  .pet.act-angry::before { left: 13px; }
-  .pet.act-angry::after { right: 13px; }
-  /* 哭：眼睛下方挂蓝色泪滴（配合原有 💧 特效）—— 没有嘴之后，哭 = 外八字眯眼 + 泪滴 */
-  .pet.act-cry .eye::before { content: ''; position: absolute; left: 1px; top: 8px; width: 3px; height: 6px; background: #81d4fa; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; }
+  /* 哭：两滴眼泪挂在外八字眯眼的「外侧正下方」（左眼左下、右眼右下），不遮住眼睛本身 */
+  .pet.act-cry .eye::before { content: ''; position: absolute; top: 9px; width: 3px; height: 6px; background: #81d4fa; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; }
+  .pet.act-cry .eye-left::before { left: -3px; }
+  .pet.act-cry .eye-right::before { right: -3px; }
   .pet.blink .eye { height: 2px; }
   /* 手：小正方形、与身体同色、垂直居中、紧贴身体两侧无缝隙 */
   .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 12px; }
@@ -95,11 +92,15 @@
   .fx.show { display: block; animation: fxrise 1.2s ease-out forwards; }
   @keyframes fxrise { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-14px) scale(1.4); } }
   .fx-heart { top: -6px; left: 30px; color: #ff2d55; filter: drop-shadow(0 0 3px rgba(255,45,85,.55)); }
-  .fx-tear  { top: 22px; left: 13px; }
-  .fx-tear.r{ top: 22px; left: auto; right: 13px; }
+  /* 眼泪 emoji（配合哭的 CSS 泪滴）：落到眼睛外侧更下方，四滴连成"眼泪往下掉"的一条线 */
+  .fx-tear  { top: 25px; left: 3px; }
+  .fx-tear.r{ top: 25px; left: auto; right: 3px; }
   .fx-star  { top: -6px; left: 46px; }
   .fx-zzz   { top: -9px; left: 42px; font-size: 7px; }
-  .fx-smoke { top: -9px; left: 8px; }
+  /* 恼怒 💢：挪到方块右上角（主人 2026-10-15 要求），而且生气期间一直脉动，不再一闪就没 */
+  .fx-smoke { top: -7px; right: 2px; font-size: 11px; }
+  @keyframes angermark { 0%,100% { opacity: .55; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.15); } }
+  .pet.act-angry .fx-smoke { display: block; animation: angermark .7s ease-in-out infinite; }
   .fx-bubble { top: 6px; left: 6px; font-size: 7px; }
   .fx-music { top: -8px; left: 27px; font-size: 10px; }
   .fx-note { font-size: 7px; }
@@ -116,15 +117,19 @@
   /* ===== 动作表情 ① 眼型：没有嘴和眉之后，眼睛要一个人撑起全部情绪 ===== */
   /* 开心 / 庆祝：∩ 形上拱弯眼（笑眼）*/
   .act-happy .eye, .act-celebrate .eye { height: 4px; border-radius: 3px 3px 0 0; }
-  /* 得意：眼睛整体上移 1px + 高光放大（眼里有光，比"眯眼"更贴得意）*/
-  .act-proud .eye { top: 8px; }
-  .act-proud .eye::after { width: 3px; height: 3px; }
+  /* 得意：一只眼得意地眨（左眼睁开盯着你 + 右眼上拱眯起）+ ✨ —— 高光去掉后这是最不撞脸的做法 */
+  .act-proud .eye-left { top: 8px; }
+  .act-proud .eye-right { height: 4px; border-radius: 3px 3px 0 0; }
   /* 犯困：∪ 形下垂眼（眼睛往下弯）*/
   .act-sleepy .eye { height: 4px; border-radius: 0 0 3px 3px; }
   /* 惊讶：瞪成圆眼（最重要的情绪档）*/
   .act-shock .eye { width: 7px; height: 7px; border-radius: 50%; }
   /* 撒娇：大圆眼 */
   .act-cute .eye { width: 7px; height: 9px; border-radius: 50%; }
+  /* 菱形眼（心动 / 兴奋 / 闪亮）：用 clip-path 切成 ◆，比圆眼更有"眼睛里冒星星"的味道 */
+  .act-diamond .eye { width: 8px; height: 10px; top: 8px; border-radius: 0; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+  .act-diamond .eye-left { left: 11px; }
+  .act-diamond .eye-right { right: 11px; }
   /* 生气：斜眼（双眼朝内下压） + 脸颊红纹 */
   .act-angry .eye-left { transform: rotate(-45deg); }
   .act-angry .eye-right { transform: rotate(45deg); }
@@ -282,6 +287,14 @@
   .pet.arm-shake .arm { top: 7px; }       /* 握手柄/搓洗 */
   .pet.arm-shake .arm-left { left: -3px; } .pet.arm-shake .arm-right { right: -3px; }
   .pet.arm-wave .arm { top: 4px; }        /* 举手挥舞：手抬起来 */
+  /* 看书专用手势：两只手（小方块）从身体两侧收拢到书的左右边缘捧着。
+     坐标是相对 .body 的 —— 书的身体坐标是 x18~38 / y19~30，手压在书外侧边缘正好"拿住"。
+     右手每 3.4 秒抬起一下，和右页的 pageflip 同步（都在周期 58%~86% 之间），看起来像在翻页。*/
+  .pet.act-read .arm { top: 18px; width: 7px; height: 10px; border-radius: 2px; animation: armread 3.4s ease-in-out infinite; }
+  .pet.act-read .arm-left { left: 10px; }
+  .pet.act-read .arm-right { right: 10px; animation: armflip 3.4s ease-in-out infinite; }
+  @keyframes armread { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-1px) rotate(-4deg); } }
+  @keyframes armflip { 0%,58%,100% { transform: translateY(0) rotate(0); } 72% { transform: translateY(-3px) rotate(-9deg); } 86% { transform: translateY(0) rotate(0); } }
   /* 杂耍专用接球手势：手举到最高，跟着球的节奏上下托 */
   .pet.juggling .arm { top: 1px; animation: armcatch 1.05s ease-in-out infinite; }
   .pet.juggling .arm-left { left: -4px; } .pet.juggling .arm-right { right: -4px; }
@@ -563,7 +576,7 @@
   }
 
   // ===== 自主小动作：参考相册表情图，随机自觉做 =====
-  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read'];
+  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond'];
   // ===== 情绪特效（新）：agent 可直接推 action=stareyes/blush/sweat/heartburst/firework/note =====
   var FEELS = ['stareyes','blush','sweat','heartburst','firework','note'];
 
@@ -654,7 +667,8 @@
     cute: ['.fx-heart'],
     run: [],
     roll: [],
-    read: []
+    read: [],
+    diamond: ['.fx-star', '.fx-heart']
   };
   function clearFx() {
     document.querySelectorAll('.fx').forEach(function(el) { el.classList.remove('show'); });
