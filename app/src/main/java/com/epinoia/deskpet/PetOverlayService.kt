@@ -1115,13 +1115,17 @@ class PetOverlayService : Service() {
 
     private fun handleAiMessage(content: String) {
         val parts = content.split("|")
-        val action = parts.getOrElse(0) { "" }.trim()
+        // 防御：动作名两侧可能被误加引号（历史 bug 见下面 jsCall 注释），统一剥掉
+        val action = parts.getOrElse(0) { "" }.trim().trim('"', '\'')
         val text = if (parts.size > 1) parts[1].trim() else action
         // 触发词响应：聊天文本含触发词 → 升级/附加对应动作（累→心疼、想你→cute、生气→哄…）
         val triggerAction = triggerActionFor(text)
         val finalAction = if (triggerAction.isNotEmpty()) triggerAction else action
+        // ⚠️ 这里曾经写成 '${escapeJs(finalAction)}'，而 escapeJs 自己已经补了双引号 →
+        // 拼出来是 onAiSay("", '"angry"')，动作名变成带引号的 7 字符串，
+        // ACTIONS.indexOf() 永远 -1 —— 于是 agent 经 /say 与 messages.txt 推的动作全部失效（2026-10-15 修）。
         val jsCall = if (parts.size > 1) {
-            "window.petEngine && window.petEngine.onAiSay(${escapeJs(text)}, '${escapeJs(finalAction)}')"
+            "window.petEngine && window.petEngine.onAiSay(${escapeJs(text)}, ${escapeJs(finalAction)})"
         } else {
             "window.petEngine && window.petEngine.onAiSay(${escapeJs(text)}, 'none')"
         }
