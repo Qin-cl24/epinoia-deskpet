@@ -127,13 +127,15 @@
     border-top: 2px solid #000; border-right: 2px solid #000;
     transform: rotate(-45deg);
   }
-  /* 害羞：> < 线条眼（同一个折角转 45° 指向右、转 135° 指向左，就是两个朝内的尖角）*/
+  /* 害羞：> < 线条眼（同一个折角，转 45° 顶点朝右 = > ；转 225° 顶点朝左 = <）
+     踩坑：右眼一开始写成 135°，那是**朝下**的 ∨（折角顶点方向 = 未旋转时的「右上」随旋转角一起转），
+     135°+90°=225° 才是朝左的 <。主人一眼看出来的，记在这里免得以后再错。*/
   .act-shy .eye {
     width: 6px; height: 6px; top: 10px; background: none; border-radius: 1px;
     border-top: 2px solid #000; border-right: 2px solid #000;
   }
-  .act-shy .eye-left { transform: rotate(45deg); }    /* 左眼 ">" */
-  .act-shy .eye-right { transform: rotate(135deg); }  /* 右眼 "<" */
+  .act-shy .eye-left { transform: rotate(45deg); }    /* 左眼 ">"（顶点朝右） */
+  .act-shy .eye-right { transform: rotate(225deg); }  /* 右眼 "<"（顶点朝左） */
   /* 得意：一只眼得意地眨（左眼睁开盯着你 + 右眼上拱眯起）+ ✨ —— 高光去掉后这是最不撞脸的做法 */
   .act-proud .eye-left { top: 8px; }
   .act-proud .eye-right { height: 4px; border-radius: 3px 3px 0 0; }
