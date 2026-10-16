@@ -1139,7 +1139,8 @@ class PetOverlayService : Service() {
     private fun triggerActionFor(text: String): String {
         val t = text
         return when {
-            t.contains("可爱") || t.contains("喜欢") || t.contains("害羞") -> "blush"
+            t.contains("害羞") || t.contains("不好意思") || t.contains("羞") -> "shy"
+            t.contains("可爱") || t.contains("喜欢") -> "blush"
             t.contains("笑死") || t.contains("哈哈哈") -> "firework"
             t.contains("好厉害") || t.contains("崇拜") || t.contains("太棒") -> "stareyes"
             t.contains("累") || t.contains("困") || t.contains("辛苦") -> "sleepy"

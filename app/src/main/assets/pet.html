@@ -98,10 +98,13 @@
   .fx-tear.r{ top: 25px; left: auto; right: 3px; }
   .fx-star  { top: -6px; left: 46px; }
   .fx-zzz   { top: -9px; left: 42px; font-size: 7px; }
-  /* 恼怒 💢：挪到方块右上角（主人 2026-10-15 要求），而且生气期间一直脉动，不再一闪就没 */
-  .fx-smoke { top: -7px; right: 2px; font-size: 11px; }
+  /* 恼怒 💢：主标记在方块右上角（2026-10-16 下移贴角），生气期间一直脉动 */
+  .fx-smoke { top: -3px; right: 2px; font-size: 11px; }
+  /* 第二个小一点的 💢：放在「另一侧那只手的正上方」，和主标记错开半拍脉动 —— 气到冒两个火 */
+  .fx-smoke2 { top: 4px; left: 0px; font-size: 8px; }
   @keyframes angermark { 0%,100% { opacity: .55; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.15); } }
   .pet.act-angry .fx-smoke { display: block; animation: angermark .7s ease-in-out infinite; }
+  .pet.act-angry .fx-smoke2 { display: block; animation: angermark .7s ease-in-out infinite .35s; }
   .fx-bubble { top: 6px; left: 6px; font-size: 7px; }
   .fx-music { top: -8px; left: 27px; font-size: 10px; }
   .fx-note { font-size: 7px; }
@@ -116,8 +119,21 @@
   .fx-confetti.c3 { top: -8px; left: 30px; animation-delay: .4s; }
 
   /* ===== 动作表情 ① 眼型：没有嘴和眉之后，眼睛要一个人撑起全部情绪 ===== */
-  /* 开心 / 庆祝：∩ 形上拱弯眼（笑眼）*/
-  .act-happy .eye, .act-celebrate .eye { height: 4px; border-radius: 3px 3px 0 0; }
+  /* 开心 / 庆祝：^ ^ 线条式眯眼
+     做法：border-top + border-right 拼出一个「折角」，再 rotate(-45deg) 把这个角转到正上方 = ∧。
+     比原来的 ∩ 圆顶更"线条"，就是动画片里那种弯弯的笑眼。*/
+  .act-happy .eye, .act-celebrate .eye {
+    width: 6px; height: 6px; top: 10px; background: none; border-radius: 1px;
+    border-top: 2px solid #000; border-right: 2px solid #000;
+    transform: rotate(-45deg);
+  }
+  /* 害羞：> < 线条眼（同一个折角转 45° 指向右、转 135° 指向左，就是两个朝内的尖角）*/
+  .act-shy .eye {
+    width: 6px; height: 6px; top: 10px; background: none; border-radius: 1px;
+    border-top: 2px solid #000; border-right: 2px solid #000;
+  }
+  .act-shy .eye-left { transform: rotate(45deg); }    /* 左眼 ">" */
+  .act-shy .eye-right { transform: rotate(135deg); }  /* 右眼 "<" */
   /* 得意：一只眼得意地眨（左眼睁开盯着你 + 右眼上拱眯起）+ ✨ —— 高光去掉后这是最不撞脸的做法 */
   .act-proud .eye-left { top: 8px; }
   .act-proud .eye-right { height: 4px; border-radius: 3px 3px 0 0; }
@@ -301,6 +317,26 @@
   .pet.act-read .arm-right { right: 12px; animation: armflip 3.4s ease-in-out infinite; }
   @keyframes armread { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-1px) rotate(-4deg); } }
   @keyframes armflip { 0%,58%,100% { transform: translateY(0) rotate(0); } 72% { transform: translateY(-3px) rotate(-9deg); } 86% { transform: translateY(0) rotate(0); } }
+
+  /* ===== 会伸长的手 =====
+     手臂平时是 8×8 的短方块（主人说"短得挺可爱"），所以不改常态；
+     只在特定动作里把手臂「拉长」去够东西 —— 举手、摸脑袋。
+     注意：手和身体同色，伸出来时必须带暗轮廓才不会糊在身体上（看书那次的教训）。*/
+  /* 举手：右臂从 8×8 拉成 7×18、立到方块顶上方，来回轻摆（像在喊"我我我"）*/
+  @keyframes armup { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-2px) rotate(-9deg); } }
+  .pet.act-raise .arm-right {
+    width: 7px; height: 18px; top: -14px; right: -7px; border-radius: 4px;
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.12);
+    animation: armup .7s ease-in-out infinite;
+  }
+  /* 摸脑袋：左臂伸长弯到头顶左侧，以肩为轴小幅摇（挠头 / 不好意思）*/
+  @keyframes armrub { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+  .pet.act-scratch .arm-left {
+    width: 9px; height: 14px; top: -10px; left: 7px; border-radius: 7px 7px 3px 3px;
+    transform-origin: bottom center;
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.12);
+    animation: armrub .6s ease-in-out infinite;
+  }
   /* 杂耍专用接球手势：手举到最高，跟着球的节奏上下托 */
   .pet.juggling .arm { top: 1px; animation: armcatch 1.05s ease-in-out infinite; }
   .pet.juggling .arm-left { left: -4px; } .pet.juggling .arm-right { right: -4px; }
@@ -367,6 +403,7 @@
     <span class="fx fx-star">✨</span>
     <span class="fx fx-zzz">zZz</span>
     <span class="fx fx-smoke">💢</span>
+    <span class="fx fx-smoke2">💢</span>
     <span class="fx fx-bubble">🫧</span>
     <span class="fx fx-music">🎧</span>
     <span class="fx fx-note n1">♪</span>
@@ -495,6 +532,7 @@
         (FX[action] || []).forEach(function(sel) {
           var el = document.querySelector(sel); if (el) el.classList.add('show');
         });
+        if (action === 'shy') blushFor(2600);   // 害羞：> < 眼 + 脸红一起上（Lv3 起才有腮红）
         // 状态类动作（思考/干活/惊讶/睡觉/看书）持续更久，普通动作短一点
         var hold = (action === 'think' || action === 'run' || action === 'shock' || action === 'sleepy' || action === 'read')
           ? 8000 : 2500;
@@ -582,7 +620,7 @@
   }
 
   // ===== 自主小动作：参考相册表情图，随机自觉做 =====
-  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond'];
+  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch'];
   // ===== 情绪特效（新）：agent 可直接推 action=stareyes/blush/sweat/heartburst/firework/note =====
   var FEELS = ['stareyes','blush','sweat','heartburst','firework','note'];
 
@@ -675,7 +713,10 @@
     run: [],
     roll: [],
     read: [],
-    diamond: ['.fx-star', '.fx-heart']
+    diamond: ['.fx-star', '.fx-heart'],
+    shy: ['.fx-heart'],
+    raise: ['.fx-exclaim'],
+    scratch: ['.fx-question']
   };
   function clearFx() {
     document.querySelectorAll('.fx').forEach(function(el) { el.classList.remove('show'); });
