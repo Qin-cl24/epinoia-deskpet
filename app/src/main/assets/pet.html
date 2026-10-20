@@ -21,7 +21,8 @@
 
   /* ===== 桌宠形象 ===== */
   .pet {
-    position: relative; width: 72px; height: 46px;
+    /* 高度 50 = 4 上边距 + 36 身体 + 10 腿（腿拉长后要跟着加，否则腿会被裁掉）*/
+    position: relative; width: 72px; height: 50px;
     animation: idle 2.5s ease-in-out infinite;
   }
   @keyframes idle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
@@ -67,13 +68,18 @@
   /* 手：小正方形、与身体同色、垂直居中、紧贴身体两侧无缝隙 */
   .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 12px; }
   .arm-left { left: -8px; } .arm-right { right: -8px; }
-  /* 腿：两条，分开在下方 */
-  /* 腿：四条（细一点、左右各两条靠近且对称）*/
-  .leg { position: absolute; width: 5px; height: 6px; background: var(--pet-leg, #d35400); bottom: -6px; border-radius: 0 0 4px 4px; }
+  /* 腿：四条细腿（细一点、左右各两条靠近且对称）
+     2026-10-16：对齐 clawd 比例 —— 他们的脚是身体高的 29%，我们原来只有 17%，显得"腿短"。
+     所以 6px → 10px，并给腿加一段「身体色 → 腿色」的竖直渐变做过渡，
+     不然腿和身体之间是一道生硬的颜色断口。*/
+  .leg {
+    position: absolute; width: 5px; height: 10px; bottom: -10px; border-radius: 0 0 5px 5px;
+    background: linear-gradient(180deg, var(--pet-body, #e67e22) 0%, var(--pet-leg, #d35400) 58%);
+  }
   .leg-l1 { left: 8px; } .leg-l2 { left: 17px; } .leg-r2 { right: 17px; } .leg-r1 { right: 8px; }
-  /* 走路步态：对角腿一起抬（像猫狗小跑），拖动/边缘跑时生效 */
-  @keyframes walkA { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-  @keyframes walkB { 0%,100% { transform: translateY(-3px); } 50% { transform: translateY(0); } }
+  /* 走路步态：对角腿一起抬（像猫狗小跑），拖动/边缘跑时生效；腿变长了，抬腿幅度也加到 4px */
+  @keyframes walkA { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  @keyframes walkB { 0%,100% { transform: translateY(-4px); } 50% { transform: translateY(0); } }
   .pet.walking .leg-l1, .pet.walking .leg-r2 { animation: walkA .32s ease-in-out infinite; }
   .pet.walking .leg-l2, .pet.walking .leg-r1 { animation: walkB .32s ease-in-out infinite; }
   .pet.walking { animation: none; }   /* 走路时用腿部表现，别和整体 idle 上下浮动打架 */
