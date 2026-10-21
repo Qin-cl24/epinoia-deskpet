@@ -426,15 +426,22 @@
      0 抱着骰子想吃什么 → 1 举起来往左摇 → 2 往右摇 → 3 扔出去 → 4 翻着往下掉
      → 5 落地吓一蹦 → 6 凑近看是几 → 7 冒出一碗面并拍手 → 8 搓手 → 9 搓手，面收回骰子捡回 */
   .pet.act-food .scene.dice { animation: diceBeat 10s ease-in-out infinite; }
-  @keyframes diceBeat {
-    0%, 10%   { transform: translate(0,0) rotate(-3deg);            opacity: 1; }  /* 抱在胸前 */
-    16%, 22%  { transform: translate(4px,-36px) rotate(0deg);       opacity: 1; }  /* 双手举过头顶 */
-    26%       { transform: translate(-2px,-36px) rotate(-10deg);    opacity: 1; }  /* 头顶往左摇 */
-    30%       { transform: translate(10px,-36px) rotate(10deg);     opacity: 1; }  /* 往右摇 */
-    34%       { transform: translate(6px,-34px) rotate(0deg);       opacity: 1; }  /* 松手起坠 */
-    40%, 44%  { transform: translate(32px,4px) rotate(200deg);      opacity: 1; }  /* 翻着往下掉 */
-    48%, 58%  { transform: translate(36px,18px) rotate(360deg);     opacity: 1; }  /* 落地定住（这一刻换点数）*/
-    64%, 96%  { transform: translate(36px,18px) rotate(360deg);     opacity: 0; }  /* 食物出现后骰子淡出 */
+    @keyframes diceBeat {
+    0%, 10%   { transform: translate(0,0) rotate(-3deg);            opacity: 1; }
+    16%       { transform: translate(4px,-36px) rotate(0deg);       opacity: 1; }
+    /* 快速摇（照原版：每 0.2 秒换一边 = 每 2%），幅度 ±10px，中间那一下还往上颠 3px、歪 ±10° */
+    18%       { transform: translate(-6px,-36px) rotate(-8deg); }
+    20%       { transform: translate(14px,-39px) rotate(10deg); }
+    22%       { transform: translate(-6px,-36px) rotate(-10deg); }
+    24%       { transform: translate(14px,-39px) rotate(10deg); }
+    26%       { transform: translate(-6px,-36px) rotate(-10deg); }
+    28%       { transform: translate(14px,-39px) rotate(10deg); }
+    30%       { transform: translate(-6px,-36px) rotate(-8deg); }
+    32%       { transform: translate(4px,-36px) rotate(0deg); }
+    36%       { transform: translate(12px,-30px) rotate(60deg); }
+    40%, 44%  { transform: translate(32px,4px) rotate(200deg); }
+    48%, 58%  { transform: translate(36px,18px) rotate(360deg);     opacity: 1; }
+    64%, 96%  { transform: translate(36px,18px) rotate(360deg);     opacity: 0; }
     100%      { transform: translate(0,0) rotate(-3deg);            opacity: 0; }
   }
   /* 右边出现的食物：一只细线碗，里面丸子数量 = 骰子点数（几点就吃几个）*/
@@ -472,12 +479,13 @@
     94%, 100% { height: 5px; border-radius: 3px 3px 0 0; }        /* 吃完满足 ^^ */
   }
   .pet.act-food .eye { animation: foodEyes 10s ease-in-out infinite; }
-  @keyframes foodHop {
-    0%, 44%   { transform: translateY(0); }
-    48%       { transform: translateY(-7px); }
-    52%       { transform: translateY(0); }
-    56%       { transform: translateY(-2px); }
-    60%, 100% { transform: translateY(0); }
+    @keyframes foodHop {
+    /* 落地吓一蹦 → 凑过去看时身体右倾 → 面出来再跳一下（照原版 body 的 y-1 / x+1）*/
+    0%, 44%   { transform: translate(0,0); }
+    48%       { transform: translate(0,-6px); }
+    52%, 60%  { transform: translate(3px,0); }
+    64%       { transform: translate(3px,-5px); }
+    68%, 100% { transform: translate(0,0); }
   }
   .pet.act-food .body { animation: foodHop 10s ease-in-out infinite; }
   /* 手：0~30% 夹着骰子 → 扔出去松手并后缩 → 落地时扶一下 → 70% 后捧碗、拍手、搓手 */
@@ -486,27 +494,50 @@
   /* 手只做平移、**不拉长**（主人说拉长太"雷霆"了）。
      而且原版的手本来就是脱离身体的小方块 —— 举到头顶时手跟着骰子上去就对了。
      横移量与基准位配套：base 左 -14 / 右 46；端食物横移 44；送到嘴边 +14。*/
-  @keyframes foodHandL {
+    @keyframes foodHandL {
+    /* 摇骰子：手和骰子走同一条轨迹（每 2% 跟着换边），落地后手啪地放下，最后 A/B 快速搓手 */
     0%, 10%   { transform: translate(0,0); }
-    16%, 22%  { transform: translate(4px,-36px); }
-    26%       { transform: translate(-2px,-36px) rotate(-4deg); }
-    30%       { transform: translate(10px,-36px) rotate(4deg); }
-    34%       { transform: translate(6px,-34px); }
-    40%, 58%  { transform: translate(0,0); }
-    64%, 72%  { transform: translate(44px,6px) rotate(-6deg); }
-    76%, 92%  { transform: translate(14px,-16px) rotate(-8deg); }
-    98%, 100% { transform: translate(0,0); }
+    16%       { transform: translate(4px,-36px); }
+    18%       { transform: translate(-6px,-36px); }
+    20%       { transform: translate(14px,-39px); }
+    22%       { transform: translate(-6px,-36px); }
+    24%       { transform: translate(14px,-39px); }
+    26%       { transform: translate(-6px,-36px); }
+    28%       { transform: translate(14px,-39px); }
+    30%       { transform: translate(-6px,-36px); }
+    32%       { transform: translate(4px,-36px); }
+    36%, 44%  { transform: translate(0,-6px); }
+    48%, 60%  { transform: translate(0,12px); }
+    66%, 74%  { transform: translate(44px,6px) rotate(-6deg); }
+    78%, 86%  { transform: translate(20px,-14px) rotate(-8deg); }
+    88%       { transform: translate(24px,4px) rotate(-10deg); }
+    90%       { transform: translate(24px,-2px) rotate(-4deg); }
+    92%       { transform: translate(24px,4px) rotate(-10deg); }
+    94%       { transform: translate(24px,-2px) rotate(-4deg); }
+    96%       { transform: translate(24px,4px) rotate(-10deg); }
+    100%      { transform: translate(0,0); }
   }
-  @keyframes foodHandR {
+    @keyframes foodHandR {
     0%, 10%   { transform: translate(0,0); }
-    16%, 22%  { transform: translate(4px,-36px); }
-    26%       { transform: translate(-2px,-36px) rotate(4deg); }
-    30%       { transform: translate(10px,-36px) rotate(-4deg); }
-    34%       { transform: translate(6px,-34px); }
-    40%, 58%  { transform: translate(0,0); }
-    64%, 72%  { transform: translate(44px,6px) rotate(6deg); }
-    76%, 92%  { transform: translate(14px,-16px) rotate(8deg); }
-    98%, 100% { transform: translate(0,0); }
+    16%       { transform: translate(4px,-36px); }
+    18%       { transform: translate(-6px,-36px); }
+    20%       { transform: translate(14px,-39px); }
+    22%       { transform: translate(-6px,-36px); }
+    24%       { transform: translate(14px,-39px); }
+    26%       { transform: translate(-6px,-36px); }
+    28%       { transform: translate(14px,-39px); }
+    30%       { transform: translate(-6px,-36px); }
+    32%       { transform: translate(4px,-36px); }
+    36%, 44%  { transform: translate(0,-6px); }
+    48%, 60%  { transform: translate(0,12px); }
+    66%, 74%  { transform: translate(44px,6px) rotate(6deg); }
+    78%, 86%  { transform: translate(20px,-14px) rotate(8deg); }
+    88%       { transform: translate(24px,-2px) rotate(4deg); }
+    90%       { transform: translate(24px,4px) rotate(10deg); }
+    92%       { transform: translate(24px,-2px) rotate(4deg); }
+    94%       { transform: translate(24px,4px) rotate(10deg); }
+    96%       { transform: translate(24px,-2px) rotate(4deg); }
+    100%      { transform: translate(0,0); }
   }
   .pet.act-food .arm-left  { animation: foodHandL 10s ease-in-out infinite; }
   .pet.act-food .arm-right { animation: foodHandR 10s ease-in-out infinite; }
