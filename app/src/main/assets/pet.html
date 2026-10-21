@@ -331,35 +331,84 @@
   .scene.letter::before { content: ''; position: absolute; left: 3px; top: 3px; width: 9px; height: 1px; background: #b9ac99; box-shadow: 0 3px 0 #b9ac99, 0 6px 0 #b9ac99, 0 9px 0 #b9ac99; }
   .scene.letter::after { content: ''; position: absolute; right: -4px; bottom: -4px; width: 2px; height: 11px; background: #5d5246; border-radius: 1px; transform: rotate(28deg); }
 
-  /* 钓鱼：斜举的鱼竿 + 垂下的鱼线 + 一沉一浮的浮漂
-     分镜照 clawd-island 的 fish：等浮漂 → 打瞌睡 → 拽空了挠头 */
-  .scene.rod { left: 30px; top: -4px; width: 36px; height: 2px; background: #6d6155; border-radius: 1px; transform: rotate(-30deg); transform-origin: left center; }
-  .scene.rod::before { content: ''; position: absolute; right: 0; top: 1px; width: 1px; height: 24px; background: #8d8072; }
-  .scene.rod::after { content: ''; position: absolute; right: -2px; top: 23px; width: 5px; height: 5px; border-radius: 50%; background: #e53935; animation: bobber 1.8s ease-in-out infinite; }
-  @keyframes bobber { 0%,100% { transform: translateY(0); } 45% { transform: translateY(4px); } 70% { transform: translateY(-1px); } }
-
-  /* ==== 手与道具：接触位置 + 前后明暗（2026-10-21 主人定）====
-     ① 身前的手比身体**浅一档**（受光），伸到身后的手加 .arm-behind 变灰（在身体阴影里）
-     ② 拿着道具的手必须落在道具边沿，并和道具共用同一套节奏曲线 */
-  .pet.act-read .arm, .pet.act-care .arm, .pet.act-food .arm,
-  .pet.act-letter .arm, .pet.act-travel .arm, .pet.act-fish .arm,
-  .pet.act-rose .arm, .pet.act-window .arm {
-    background-color: var(--pet-body, #e67e22);
-    background-image: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.12));
-    border-radius: 3px;
-    box-shadow: 0 0 0 1px rgba(0,0,0,.14), inset 0 2px 0 rgba(255,255,255,.45);
+  /* ===== 钓鱼（照 clawd-island 的 fish 十秒脚本，10 拍）=====
+     0 等浮漂 → 1 打瞌睡 → 2 浮漂一沉一激灵 → 3 拽空了 >< → 4 空钩晃着挠头
+     5 甩竿重抛 → 6 浮漂被拖下去！→ 7 拽上来 <(鱼) → 8 举到脸边看 ^^ → 9 放回水里挥手
+     原版几何：竿绕右手转、基准 17°；线长 11.5 单位（≈58px）；线始终垂直下垂。
+     单位换算 1 单位 ≈ 5.09px。*/
+  .scene.rod {
+    position: absolute; left: 60px; top: -18px; width: 2px; height: 40px;
+    background: #a85a3a; border-radius: 1px; transform-origin: bottom center;
+    animation: rodBeat 10s ease-in-out infinite;
   }
-  /* 递热水：双手捧在杯子左右两侧，跟着杯子一起矮下、捧起、递出 */
-  .pet.act-care .arm-left  { left: 14px; top: 24px; }
-  .pet.act-care .arm-right { right: 15px; top: 24px; }
-  .pet.act-care .arm-left  { left: 14px; top: 24px; }
-  @keyframes careHands {
-    0%, 12%   { transform: translateY(3px); }
-    26%, 44%  { transform: translateY(0); }
-    58%       { transform: translateY(-3px); }
-    78%, 100% { transform: translateY(-4px); }
+  @keyframes rodBeat {
+    0%, 4.5%      { transform: rotate(17deg); }
+    18.5%         { transform: rotate(17deg); }
+    24.5%         { transform: rotate(19deg); }   /* 有动静，竿一抬 */
+    26.2%, 34%    { transform: rotate(5deg); }    /* 一拽（拽空）*/
+    38%           { transform: rotate(12deg); }   /* 空钩垂着 */
+    46%           { transform: rotate(-5deg); }   /* 往后甩 */
+    48%           { transform: rotate(21deg); }   /* 抛出去 */
+    57%           { transform: rotate(17deg); }   /* 浮漂落水 */
+    58.5%, 64.5%  { transform: rotate(24deg); }   /* 咬钩，被拖 */
+    66.2%, 73.5%  { transform: rotate(6deg); }    /* 拽上来 */
+    78%, 84.5%    { transform: rotate(16deg); }   /* 举到脸边看 */
+    88.5%         { transform: rotate(17deg); }   /* 放回去 */
+    100%          { transform: rotate(17deg); }
   }
-  .pet.act-care .arm { animation: careHands 8s ease-in-out infinite; }
+  /* 鱼线：长度按原版的 l 走；同时反向旋转 -竿角，保证线始终垂直下垂 */
+  .scene.rod .line {
+    position: absolute; left: 50%; top: 0; width: 1px; height: 58px;
+    background: #8d8072; transform-origin: top center;
+    animation: lineBeat 10s ease-in-out infinite, hangBeat 10s ease-in-out infinite;
+  }
+  @keyframes lineBeat {
+    0%, 18.5%     { height: 58px; }
+    24.5%         { height: 62px; }
+    26.2%, 34%    { height: 15px; }   /* 拽出水面 */
+    38%, 46%      { height: 10px; }   /* 空钩晃 */
+    48%           { height: 58px; }   /* 重新落水 */
+    58.5%, 64.5%  { height: 71px; }   /* 浮漂整个被拖下去 */
+    66.2%, 73.5%  { height: 27px; }   /* 拽上来 */
+    78%, 84.5%    { height: 3px; }    /* 鱼到脸边 */
+    88.5%         { height: 45px; }   /* 放回水里 */
+    96%, 100%     { height: 58px; }
+  }
+  @keyframes hangBeat {
+    0%, 4.5%      { rotate: -17deg; }
+    18.5%         { rotate: -17deg; }
+    24.5%         { rotate: -19deg; }
+    26.2%, 34%    { rotate: -5deg; }
+    38%           { rotate: -12deg; }
+    46%           { rotate: 5deg; }
+    48%           { rotate: -21deg; }
+    57%           { rotate: -17deg; }
+    58.5%, 64.5%  { rotate: -24deg; }
+    66.2%, 73.5%  { rotate: -6deg; }
+    78%, 84.5%    { rotate: -16deg; }
+    88.5%, 100%   { rotate: -17deg; }
+  }
+  /* 浮漂：一沉一浮 */
+  .scene.rod .bobber {
+    position: absolute; left: -2px; bottom: -3px; width: 5px; height: 5px; border-radius: 50%;
+    background: #ff5365; animation: bobberBob 1.4s ease-in-out infinite;
+  }
+  @keyframes bobberBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(2px); } }
+  /* 小白条：挂在线下端，55%~97% 才出现（原版 fish-vis 的时间）*/
+  .scene.rod .line .fish {
+    position: absolute; left: -6px; bottom: -2px; width: 12px; height: 7px; box-sizing: border-box;
+    border: 1px solid #8d8072; background: #eef4f8;
+    border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+    opacity: 0; animation: fishVis 10s step-end infinite;
+  }
+  .scene.rod .line .fish::after {
+    content: ''; position: absolute; right: -4px; top: 1px; width: 0; height: 0;
+    border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 5px solid #cdd8de;
+  }
+  .scene.rod .line .fish::before {
+    content: ''; position: absolute; left: 3px; top: 2px; width: 2px; height: 2px; border-radius: 50%; background: #333;
+  }
+  @keyframes fishVis { 0%, 54.9% { opacity: 0; } 55%, 96.9% { opacity: 1; } 97%, 100% { opacity: 0; } }
 
   /* 递热水：细线杯子 + 三缕往上升的热气
      分镜照 clawd-island 的 care 十秒脚本，压成 8 秒六幕：
@@ -568,12 +617,15 @@
   .pet.act-travel .arm-right { filter: saturate(.45) brightness(.88); }
 
   /* 钓鱼：右手攥着鱼竿手柄（竿根在 body 的 x22,y-8），轻微摇竿 */
-  .pet.act-fish .arm-right { right: auto; left: 20px; top: -8px; width: 7px; height: 12px; }
-  @keyframes rodHand {
-    0%, 100% { transform: rotate(0); }
-    50%      { transform: rotate(-5deg); }
+  .pet.act-fish .arm-right { right: 0px; top: 16px; }
+  /* 左手：平时搭在竿上，34%~47% 那一拍抬起来挠头（原版 S4「空钩晃着，挠头」）*/
+  .pet.act-fish .arm-left { left: 2px; top: 22px; }
+  @keyframes fishHandL {
+    0%, 30%   { transform: translate(0,0) rotate(0); }
+    34%, 44%  { transform: translate(4px,-20px) rotate(-24deg); }
+    47%, 100% { transform: translate(0,0) rotate(0); }
   }
-  .pet.act-fish .arm-right { animation: rodHand 2.4s ease-in-out infinite; }
+  .pet.act-fish .arm-left { animation: fishHandL 10s ease-in-out infinite; }
 
   /* 看窗外：双手扒在窗台上（放在身体底部），接雨那一幕右手再抬出去 */
   .pet.act-window .arm-left, .pet.act-window .arm-right { top: 28px; }
@@ -608,6 +660,30 @@
 
   /* 四个情景的配套眼神/身体小动作 */
   .act-letter .eye { height: 6px; transform: translateY(1px); }              /* 低头看信纸 */
+  /* 钓鱼的眼神分镜：盯浮漂 → 打瞌睡 → 一激灵 → 拽空 >< → 挠头 → 咬钩！→ 拽上来 >< → ^^ */
+  @keyframes fishEyes {
+    0%, 6%        { height: 10px; }
+    7%, 18%       { height: 2px; }                              /* 打瞌睡，眼睛压成线 */
+    19%, 24.5%    { height: 12px; }                             /* 一激灵瞪大（!）*/
+    26%, 33%      { height: 3px; transform: rotate(-16deg); }   /* 拽空 >< */
+    34%, 47%      { height: 10px; transform: none; }            /* 挠头 */
+    48%, 57%      { height: 10px; }                             /* 抛竿 */
+    58.5%, 64.5%  { height: 12px; }                             /* 咬钩！瞪大 */
+    66%, 73%      { height: 3px; transform: rotate(-16deg); }   /* 拽上来 >< */
+    75%, 88%      { height: 5px; border-radius: 3px 3px 0 0; transform: none; }  /* 举着看 ^^ */
+    90%, 100%     { height: 10px; border-radius: 2px; }
+  }
+  .pet.act-fish .eye { animation: fishEyes 10s ease-in-out infinite; }
+  /* 身体：打瞌睡往下塌，被咬钩时一激灵弹起 */
+  @keyframes fishBody {
+    0%, 6%        { transform: translateY(0); }
+    8%, 17%       { transform: translateY(3px); }
+    19%, 24.5%    { transform: translateY(-4px); }
+    26%, 57%      { transform: translateY(0); }
+    59%, 64.5%    { transform: translateY(-4px); }
+    66%, 100%     { transform: translateY(0); }
+  }
+  .pet.act-fish .body { animation: fishBody 10s ease-in-out infinite; }
   /* ==== 看窗外的表演分镜（8 秒，和上面窗景的关键帧同步）==== */
   @keyframes windowEyes {
     0%, 12%   { height: 8px; }                              /* 扒着窗台看雨 */
@@ -793,7 +869,7 @@
     <span class="book"><span class="bk bk-l"></span><span class="bk bk-r"></span></span>
     <!-- 情景动作道具（细线条风格），对应 act-letter / act-window / act-food / act-travel -->
     <span class="scene letter"></span>
-    <span class="scene rod"></span>
+    <span class="scene rod"><span class="line"><span class="bobber"></span><span class="fish"></span></span></span>
     <span class="scene cup"></span>
     <span class="scene food" data-n="3"><span class="bit b1"></span><span class="bit b2"></span><span class="bit b3"></span><span class="bit b4"></span><span class="bit b5"></span><span class="bit b6"></span></span>
     <span class="scene dice" data-face="5"><span class="pip tl"></span><span class="pip tr"></span><span class="pip c"></span><span class="pip ml"></span><span class="pip mr"></span><span class="pip bl"></span><span class="pip br"></span></span>
