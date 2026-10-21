@@ -304,12 +304,35 @@
   .pet.act-letter .scene.letter,
   .pet.act-window .scene.window,
   .pet.act-food   .scene.bowl,
-  .pet.act-travel .scene.case { display: block; }
+  .pet.act-travel .scene.case,
+  .pet.act-fish   .scene.rod,
+  .pet.act-care   .scene.cup { display: block; }
 
-  /* 写信：一张微斜的信纸（四行字） + 一支笔 */
-  .scene.letter { left: 23px; top: 21px; width: 16px; height: 13px; background: #fffdf6; border: 1px solid #8d8072; border-radius: 2px; transform: rotate(-7deg); }
+  /* 写信：信纸（四行字）+ 笔
+     分镜照 clawd-island 的 letter：低头写两行 → 折起来 → 装进信封 → 举起来给你看 */
+  .scene.letter { left: 23px; top: 21px; width: 16px; height: 13px; background: #fffdf6; border: 1px solid #8d8072; border-radius: 2px; }
+  .pet.act-letter .scene.letter { animation: letterBeat 4.4s ease-in-out infinite; }
+  @keyframes letterBeat {
+    0%, 32%  { transform: rotate(-7deg) scale(1); }
+    46%      { transform: rotate(-3deg) scale(.92); }
+    58%, 78% { transform: rotate(0deg) scale(.72); }
+    90%,100% { transform: rotate(0deg) scale(.78) translateY(-7px); }
+  }
   .scene.letter::before { content: ''; position: absolute; left: 3px; top: 3px; width: 9px; height: 1px; background: #b9ac99; box-shadow: 0 3px 0 #b9ac99, 0 6px 0 #b9ac99, 0 9px 0 #b9ac99; }
   .scene.letter::after { content: ''; position: absolute; right: -4px; bottom: -4px; width: 2px; height: 11px; background: #5d5246; border-radius: 1px; transform: rotate(28deg); }
+
+  /* 钓鱼：斜举的鱼竿 + 垂下的鱼线 + 一沉一浮的浮漂
+     分镜照 clawd-island 的 fish：等浮漂 → 打瞌睡 → 拽空了挠头 */
+  .scene.rod { left: 30px; top: -4px; width: 36px; height: 2px; background: #6d6155; border-radius: 1px; transform: rotate(-30deg); transform-origin: left center; }
+  .scene.rod::before { content: ''; position: absolute; right: 0; top: 1px; width: 1px; height: 24px; background: #8d8072; }
+  .scene.rod::after { content: ''; position: absolute; right: -2px; top: 23px; width: 5px; height: 5px; border-radius: 50%; background: #e53935; animation: bobber 1.8s ease-in-out infinite; }
+  @keyframes bobber { 0%,100% { transform: translateY(0); } 45% { transform: translateY(4px); } 70% { transform: translateY(-1px); } }
+
+  /* 递热水：细线杯子 + 三缕往上升的热气
+     分镜照 clawd-island 的 care：吹凉一杯热水 → 双手捧到你面前 → 等你接 */
+  .scene.cup { left: 27px; top: 25px; width: 12px; height: 13px; border: 1px solid #8d8072; border-radius: 2px 2px 4px 4px; background: rgba(255,253,246,.8); }
+  .scene.cup::before { content: ''; position: absolute; left: 2px; top: -7px; width: 1px; height: 5px; background: #b9ac99; box-shadow: 4px 0 0 #b9ac99, 8px 0 0 #b9ac99; animation: steamUp 2s ease-in-out infinite; }
+  @keyframes steamUp { 0%,100% { opacity: .3; transform: translateY(1px); } 50% { opacity: .9; transform: translateY(-3px); } }
 
   /* 看窗外：整块窗框垫在身体**下面**（DOM 里排在 .body 之前、z-index:0），
      身体挡住中间，只露出边框和一圈天空色 —— 像桌宠坐在窗边。这样绝不会挡住眼睛。*/
@@ -488,6 +511,8 @@
     <span class="book"><span class="bk bk-l"></span><span class="bk bk-r"></span></span>
     <!-- 情景动作道具（细线条风格），对应 act-letter / act-window / act-food / act-travel -->
     <span class="scene letter"></span>
+    <span class="scene rod"></span>
+    <span class="scene cup"></span>
     <span class="scene bowl"></span>
     <span class="scene case"></span>
   </div>
@@ -677,7 +702,7 @@
   }
 
   // ===== 自主小动作：参考相册表情图，随机自觉做 =====
-  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch','letter','window','food','travel'];
+  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch','letter','window','food','travel','fish','care'];
   // ===== 情绪特效（新）：agent 可直接推 action=stareyes/blush/sweat/heartburst/firework/note =====
   var FEELS = ['stareyes','blush','sweat','heartburst','firework','note'];
 
@@ -777,7 +802,9 @@
     letter: ['.fx-heart'],
     window: ['.fx-star'],
     food: [],
-    travel: []
+    travel: [],
+    fish: [],
+    care: ['.fx-heart']
   };
   function clearFx() {
     document.querySelectorAll('.fx').forEach(function(el) { el.classList.remove('show'); });
@@ -811,6 +838,8 @@
     { prop: null, act: 'act-window', arm: 'arm-hold', say: ['在看外面～', '外面天气不错', '有人路过呢', '云飘过去了'] },
     { prop: null, act: 'act-food',   arm: 'arm-hold', blush: 1, say: ['呼噜呼噜～🍚', '这碗好香！', '再来一口', '吃饱啦'] },
     { prop: null, act: 'act-travel', arm: 'arm-hold', say: ['出门走走～🧳', '行李带好啦', '今天去哪儿呢', '出发！'] },
+    { prop: null, act: 'act-fish',   arm: 'arm-hold', say: ['钓鱼中…🎣', '鱼什么时候来呀', '（浮漂动了！）', '今天能钓到吗'] },
+    { prop: null, act: 'act-care',   arm: 'arm-hold', blush: 1, say: ['给你倒了杯热水☕', '吹凉一点…', '小心烫哦', '记得多喝水'] },
     { prop: '🍳', left: 48, top: 11, act: 'act-happy',     arm: 'arm-hold',  blush: 1, say: ['好吃！🍳', '煎蛋嘿嘿', '再来一份～'] },
     { prop: '🎮', left: 26, top: 18, act: 'act-celebrate', arm: 'arm-shake', say: ['通关啦！🎮', '再来一局嘛', '赢了赢了！'] },
     { prop: '🥤', left: 52, top: 9,  act: 'act-cute',      arm: 'arm-hold',  blush: 1, say: ['咕嘟咕嘟🥤', '快乐水！', '好喝～'] },
