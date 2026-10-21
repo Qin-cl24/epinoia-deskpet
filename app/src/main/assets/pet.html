@@ -481,28 +481,38 @@
   }
   .pet.act-food .body { animation: foodHop 10s ease-in-out infinite; }
   /* 手：0~30% 夹着骰子 → 扔出去松手并后缩 → 落地时扶一下 → 70% 后捧碗、拍手、搓手 */
+  /* 举手过头顶时，手臂必须**拉长**才能把身体和骰子连起来 —— 不然就是两个悬空的小方块。
+     做法：16~34% 这一段同时改 top 和 height（top -6 / height 40），手就从肩一路申到骰子底部。*/
+  /* 手只做平移、**不拉长**（主人说拉长太"雷霆"了）。
+     而且原版的手本来就是脱离身体的小方块 —— 举到头顶时手跟着骰子上去就对了。
+     横移量与基准位配套：base 左 -14 / 右 46；端食物横移 44；送到嘴边 +14。*/
   @keyframes foodHandL {
-    /* 前 34% 和骰子走同一条轨迹（举过头顶 translate 4,-36），手才像真的托着 */
     0%, 10%   { transform: translate(0,0); }
-    16%, 34%  { transform: translate(4px,-36px); }
-    40%, 58%  { transform: translate(0,0); }                        /* 松手，骰子掉了 */
-    64%, 72%  { transform: translate(40px,6px) rotate(-6deg); }     /* 伸到右边端食物 */
-    76%, 92%  { transform: translate(18px,-16px) rotate(-8deg); }   /* 端到嘴边吃 */
+    16%, 22%  { transform: translate(4px,-36px); }
+    26%       { transform: translate(-2px,-36px) rotate(-4deg); }
+    30%       { transform: translate(10px,-36px) rotate(4deg); }
+    34%       { transform: translate(6px,-34px); }
+    40%, 58%  { transform: translate(0,0); }
+    64%, 72%  { transform: translate(44px,6px) rotate(-6deg); }
+    76%, 92%  { transform: translate(14px,-16px) rotate(-8deg); }
     98%, 100% { transform: translate(0,0); }
   }
   @keyframes foodHandR {
     0%, 10%   { transform: translate(0,0); }
-    16%, 34%  { transform: translate(4px,-36px); }
+    16%, 22%  { transform: translate(4px,-36px); }
+    26%       { transform: translate(-2px,-36px) rotate(4deg); }
+    30%       { transform: translate(10px,-36px) rotate(-4deg); }
+    34%       { transform: translate(6px,-34px); }
     40%, 58%  { transform: translate(0,0); }
-    64%, 72%  { transform: translate(26px,6px) rotate(6deg); }
-    76%, 92%  { transform: translate(10px,-16px) rotate(8deg); }
+    64%, 72%  { transform: translate(44px,6px) rotate(6deg); }
+    76%, 92%  { transform: translate(14px,-16px) rotate(8deg); }
     98%, 100% { transform: translate(0,0); }
   }
   .pet.act-food .arm-left  { animation: foodHandL 10s ease-in-out infinite; }
   .pet.act-food .arm-right { animation: foodHandR 10s ease-in-out infinite; }
   /* 等吃的：双手一开始夹着骰子（骰子在 body 的 x19~30）*/
-  .pet.act-food .arm-left  { left: -18px; top: 24px; }
-  .pet.act-food .arm-right { right: 39px; top: 24px; }
+  .pet.act-food .arm-left  { left: -14px; top: 24px; }
+  .pet.act-food .arm-right { right: 46px; top: 24px; }
 
   /* 写信：左手按住信纸左缘，右手握着笔在纸上写（笔在纸的右下角，所以右手也压在那里）*/
   .pet.act-letter .arm-left  { left: 11px; top: 22px; }
