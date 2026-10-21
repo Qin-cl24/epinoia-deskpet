@@ -678,18 +678,27 @@
     background: #b9ac99; box-shadow: 3px 0 0 #b9ac99;
   }
   /* 地图：双页折叠，靠 scaleX 从 0.34 展开到 1 */
-  .scene.map { left: 24px; top: 20px; width: 20px; height: 15px; box-sizing: border-box;
-    border: 1px solid #8d8072; background: #fffdf3; opacity: 0; transform-origin: center bottom;
-    animation: mapShow 10s ease-in-out infinite; }
-  .scene.map::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #cbbda8; }
-  .scene.map::after {  /* 一条路线 + 一个 X 标记 */
-    content: ''; position: absolute; left: 3px; top: 4px; width: 12px; height: 1px;
-    background: #d9a86b; box-shadow: 2px 3px 0 #d9a866, 5px 1px 0 #d9a866;
-  }
+  /* 地图：横向长条（不再是竖方块，免得像一扇门）+ 两道折痕 + 一条虚线路线。
+     位置压在眼睛下方（y24 起），不挡脸。*/
+  .scene.map { left: 21px; top: 26px; width: 24px; height: 13px; box-sizing: border-box;
+    border: 1px solid #8d8072; border-radius: 1px; background: #fffdf3; opacity: 0;
+    transform-origin: center bottom; animation: mapShow 10s ease-in-out infinite; }
+  /* 两道折痕（把地图分成三块，一眼看出是折叠地图）*/
+  .scene.map::before { content: ''; position: absolute; left: 33%; top: 0; bottom: 0; width: 1px;
+    background: #d8cbb4; box-shadow: 8px 0 0 #d8cbb4; }
+  /* 虚线路线 + 终点的 X 标记 */
+  .scene.map::after { content: ''; position: absolute; left: 3px; top: 4px; width: 14px; height: 1px;
+    background: repeating-linear-gradient(90deg, #d9a86b 0 2px, transparent 2px 4px);
+    transform: rotate(-8deg); box-shadow: 12px 3px 0 -0px rgba(0,0,0,0); }
+  .pet.act-travel .scene.map .spot { position: absolute; right: 2px; top: 6px; width: 5px; height: 5px; }
+  .pet.act-travel .scene.map .spot::before, .pet.act-travel .scene.map .spot::after {
+    content: ''; position: absolute; left: 2px; top: 0; width: 1px; height: 5px; background: #e0536b; }
+  .pet.act-travel .scene.map .spot::before { transform: rotate(45deg); }
+  .pet.act-travel .scene.map .spot::after  { transform: rotate(-45deg); }
   @keyframes mapShow {
     0%, 63%   { opacity: 0; transform: translateY(4px) scaleX(.34); }   /* 还没掏出来 */
     68%, 72%  { opacity: 1; transform: translateY(0) scaleX(.34); }     /* 掏出来，还是折着 */
-    78%, 86%  { opacity: 1; transform: translateY(-3px) scaleX(1); }    /* 展开并举起 */
+    78%, 86%  { opacity: 1; transform: translateY(-2px) scaleX(1); }    /* 展开并举起（别抬太高，免得挡脸）*/
     92%, 100% { opacity: 0; transform: translateY(2px) scaleX(.34); }   /* 收起来 */
   }
   /* 小鸟：从右边飞进来，翅膀两种姿态交替扇 */
@@ -965,7 +974,7 @@
     <span class="scene dice" data-face="5"><span class="pip tl"></span><span class="pip tr"></span><span class="pip c"></span><span class="pip ml"></span><span class="pip mr"></span><span class="pip bl"></span><span class="pip br"></span></span>
     <span class="scene rose"></span>
     <span class="scene case"></span>
-    <span class="scene map"></span>
+    <span class="scene map"><span class="spot"></span></span>
     <span class="scene bird"><span class="wing-up"></span><span class="wing-dn"></span></span>
   </div>
 
