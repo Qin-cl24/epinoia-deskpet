@@ -304,6 +304,7 @@
   .pet.act-letter .scene.letter,
   .pet.act-window .scene.window,
   .pet.act-food   .scene.bowl,
+  .pet.act-food   .scene.dice,
   .pet.act-travel .scene.case,
   .pet.act-fish   .scene.rod,
   .pet.act-care   .scene.cup { display: block; }
@@ -329,10 +330,79 @@
   @keyframes bobber { 0%,100% { transform: translateY(0); } 45% { transform: translateY(4px); } 70% { transform: translateY(-1px); } }
 
   /* 递热水：细线杯子 + 三缕往上升的热气
-     分镜照 clawd-island 的 care：吹凉一杯热水 → 双手捧到你面前 → 等你接 */
+     分镜照 clawd-island 的 care 十秒脚本，压成 8 秒六幕：
+       低头看杯 → 抬眼皱眉看你 → 吹两下（眯眼）→ 眯眼笑 → 双手捧起来 → 往前一递 → 冒心等你接 */
   .scene.cup { left: 27px; top: 25px; width: 12px; height: 13px; border: 1px solid #8d8072; border-radius: 2px 2px 4px 4px; background: rgba(255,253,246,.8); }
+  .pet.act-care .scene.cup { animation: cupBeat 8s ease-in-out infinite; }
+  @keyframes cupBeat {
+    0%, 12%   { transform: translateY(3px) scale(.95); }
+    26%, 44%  { transform: translateY(0) scale(1); }
+    58%       { transform: translateY(-3px) scale(1); }
+    78%, 100% { transform: translateY(-4px) scale(1.12); }
+  }
   .scene.cup::before { content: ''; position: absolute; left: 2px; top: -7px; width: 1px; height: 5px; background: #b9ac99; box-shadow: 4px 0 0 #b9ac99, 8px 0 0 #b9ac99; animation: steamUp 2s ease-in-out infinite; }
   @keyframes steamUp { 0%,100% { opacity: .3; transform: translateY(1px); } 50% { opacity: .9; transform: translateY(-3px); } }
+
+  /* 等吃的：骰子（掷骰子选晚饭）+ 一碗面
+     分镜照 clawd-island 的 food 十秒脚本：
+       抱着骰子想 → 左右摇 → 扔出去翻转掉落 → 落地吓一蹦 >< → 凑近看点数 → 冒出一碗面 ^^ → 搓手 */
+  .scene.dice { left: 28px; top: 22px; width: 9px; height: 9px; border: 1px solid #8d8072; border-radius: 2px; background: #fffdf6; }
+  .scene.dice::before { content: ''; position: absolute; left: 2px; top: 2px; width: 2px; height: 2px; border-radius: 50%; background: #5d5246; box-shadow: 3px 3px 0 #5d5246, 6px 6px 0 #5d5246; }
+  .pet.act-food .scene.dice { animation: diceBeat 8s ease-in-out infinite; }
+  @keyframes diceBeat {
+    0%, 16%   { transform: translate(0,0) rotate(0); opacity: 1; }
+    22%, 30%  { transform: translate(-6px,-4px) rotate(-16deg); opacity: 1; }
+    36%, 42%  { transform: translate(6px,-5px) rotate(18deg); opacity: 1; }
+    48%, 64%  { transform: translate(13px,13px) rotate(230deg); opacity: 1; }
+    68%, 72%  { transform: translate(13px,13px) rotate(360deg); opacity: 1; }
+    76%, 100% { transform: translate(13px,13px) rotate(360deg); opacity: 0; }
+  }
+  .pet.act-food .scene.bowl { animation: bowlPop 8s ease-in-out infinite; }
+  @keyframes bowlPop {
+    0%, 72%   { opacity: 0; transform: scale(.35) translateY(5px); }
+    80%, 100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes foodEyes {
+    0%, 16%   { height: 8px; }
+    24%, 42%  { height: 2px; }
+    48%, 60%  { height: 8px; }
+    64%, 70%  { height: 2px; transform: rotate(-16deg); }
+    76%, 88%  { height: 4px; border-radius: 3px 3px 0 0; transform: none; }
+    94%, 100% { height: 8px; border-radius: 2px; }
+  }
+  .pet.act-food .eye { animation: foodEyes 8s ease-in-out infinite; }
+  @keyframes foodHop {
+    0%, 60%   { transform: translateY(0); }
+    66%       { transform: translateY(-6px); }
+    72%, 100% { transform: translateY(0); }
+  }
+  .pet.act-food .body { animation: foodHop 8s ease-in-out infinite; }
+  @keyframes foodArms {
+    0%, 70%   { transform: translate(0,0); }
+    76%, 86%  { transform: translate(5px,0) rotate(-12deg); }
+    90%, 100% { transform: translate(3px,0) rotate(-6deg); }
+  }
+  .pet.act-food .arm-left { animation: foodArms 8s ease-in-out infinite; }
+  @keyframes foodArmsR {
+    0%, 70%   { transform: translate(0,0); }
+    76%, 86%  { transform: translate(-5px,0) rotate(12deg); }
+    90%, 100% { transform: translate(-3px,0) rotate(6deg); }
+  }
+  .pet.act-food .arm-right { animation: foodArmsR 8s ease-in-out infinite; }
+  @keyframes careEyes {
+    0%, 10%   { height: 6px; transform: translateY(1px); }
+    16%, 24%  { height: 8px; transform: none; }
+    28%, 42%  { height: 2px; }
+    48%, 56%  { height: 4px; border-radius: 3px 3px 0 0; }
+    62%, 100% { height: 8px; border-radius: 2px; }
+  }
+  .pet.act-care .eye { animation: careEyes 8s ease-in-out infinite; }
+  @keyframes careArms {
+    0%, 54%   { transform: translateY(0); }
+    62%, 82%  { transform: translateY(-3px); }
+    88%, 100% { transform: translateY(-2px); }
+  }
+  .pet.act-care .arm { animation: careArms 8s ease-in-out infinite; }
 
   /* 看窗外：整块窗框垫在身体**下面**（DOM 里排在 .body 之前、z-index:0），
      身体挡住中间，只露出边框和一圈天空色 —— 像桌宠坐在窗边。这样绝不会挡住眼睛。
@@ -552,6 +622,7 @@
     <span class="scene rod"></span>
     <span class="scene cup"></span>
     <span class="scene bowl"></span>
+    <span class="scene dice"></span>
     <span class="scene case"></span>
   </div>
 
