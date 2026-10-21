@@ -449,6 +449,18 @@ class PetOverlayService : Service() {
             }
 
             windowManager?.addView(overlayView, params)
+            // 让系统手势（返回/主页）不要抢桌宠窗口里的拖动，否则贴着屏幕边缘拖会被当成返回手势
+            overlayView?.post {
+                try {
+                    val v = overlayView
+                    if (v != null && v.width > 0 && v.height > 0) {
+                        v.systemGestureExclusionRects = listOf(android.graphics.Rect(0, 0, v.width, v.height))
+                        logLifecycle("gestureExclusion set ${v.width}x${v.height}")
+                    }
+                } catch (e: Exception) {
+                    logLifecycle("gestureExclusion FAILED: $e")
+                }
+            }
             resetIdleTimer()
             resetLonelyTimer()
             scheduleEdgeRun()
@@ -604,7 +616,10 @@ class PetOverlayService : Service() {
                 MotionEvent.ACTION_UP -> {
                     stopWalking()
                     if (hidden) {
-                        if (hasMoved) snapHandle() else toPetMode()
+                        // 用**位移**判断，别用 hasMoved：手指轻微抖动不该导致"召不回来"
+                        val hdx = event.rawX - initialTouchX
+                        val hdy = event.rawY - initialTouchY
+                        if (sqrt(hdx * hdx + hdy * hdy) > MOVE_THRESHOLD * 3) snapHandle() else toPetMode()
                         return@OnTouchListener true
                     }
                     resetIdleTimer()
@@ -617,7 +632,7 @@ class PetOverlayService : Service() {
                         // ⚠️ 只有手指**真的走远了**才算拖动；点了半天没位移的（比如长按唤醒、
                         //    或者桌宠自己飘了一下导致的 MOVE 事件）要继续走下面的"按时长判断"，
                         //    否则永远进不了长按唤醒分支（2026-10-21 踩过）
-                        if (dist > MOVE_THRESHOLD * 2) {
+                        if (dist > MOVE_THRESHOLD * 4) {   // 60px：按住时的自然抖动不会误判成拖动
                             if (dist <= FLING_DISTANCE || elapsed >= FLING_TIME_MS) {
                                 onDragEnd()
                             } else {
@@ -641,8 +656,10 @@ class PetOverlayService : Service() {
                         onActivate()
                         return@OnTouchListener true
                     }
-                    if (now > interactUntil) {
-                        // 还没唤醒：不冒泡、不反应，只把这次触摸吃掉
+                    // 防误触只针对**屏幕下半部分**（键盘弹出的地方）：
+                    // 上半屏点一下就能互动，只有下半屏（打字区）才要求先长按 2 秒唤醒
+                    val inKeyboardZone = event.rawY > getScreenH() * 0.55f
+                    if (inKeyboardZone && now > interactUntil) {
                         tapCount = 0
                         return@OnTouchListener true
                     }
