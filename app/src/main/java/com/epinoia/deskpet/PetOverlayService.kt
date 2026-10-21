@@ -86,7 +86,11 @@ class PetOverlayService : Service() {
 
         private const val DOUBLE_TAP_TIMEOUT = 300L
         private const val LONG_PRESS_TIMEOUT = 600L
-        private const val MOVE_THRESHOLD = 10
+        // 长按 2 秒才「唤醒」交互（2026-10-21 主人定）：打字时手指划过桌宠一律静默吞掉，
+        // 不冒泡、不反应；唤醒后 12 秒内单击/双击/连击才照常可用。
+        private const val ACTIVATE_HOLD_MS = 2000L
+        private const val INTERACT_WINDOW_MS = 12_000L
+        private const val MOVE_THRESHOLD = 16
         private const val FLING_DISTANCE = 200.0          // px
         private const val FLING_TIME_MS = 400L
 
@@ -198,6 +202,8 @@ class PetOverlayService : Service() {
     private var hasMoved = false
     private var tapCount = 0
     private var firstTapTime = 0L
+    /** 交互模式截止时间戳：长按 2 秒唤醒后的一段时间内，单击才有反应 */
+    private var interactUntil = 0L
 
     // 定时器
     private val handler = Handler(Looper.getMainLooper())
@@ -448,6 +454,8 @@ class PetOverlayService : Service() {
             scheduleEdgeRun()
             schedulePeekaboo()
             scheduleAiWatch()
+            handler.removeCallbacks(imePollRunnable)
+            handler.postDelayed(imePollRunnable, 600L)
             startLocalServer()
             scheduleBrainTick()
             startScreenshotWatch()
@@ -513,6 +521,38 @@ class PetOverlayService : Service() {
         return v / 100f
     }
 
+    /**
+     * IME 兜底轮询（2026-10-21 加）：
+     * 实测这台机器上应用悬浮窗收不到 IME 的 WindowInsets 回调（键盘明明弹着就是不来），
+     * 所以每 0.8 秒主动问一次 rootWindowInsets 里 IME 是否可见，再驱动同一套显隐逻辑。
+     */
+    private val imePollRunnable = object : Runnable {
+        override fun run() {
+            try {
+                if (prefBool("pref_keyboard", true)) {
+                    val ins = overlayView?.rootWindowInsets
+                    val shown = ins?.isVisible(android.view.WindowInsets.Type.ime()) ?: false
+                    val h = ins?.getInsets(android.view.WindowInsets.Type.ime())?.bottom ?: 0
+                    if (shown && !keyboardVisible) {
+                        keyboardVisible = true
+                        imeHeightPx = h
+                        logLifecycle("imePoll: shown h=$h")
+                        onKeyboardShow()
+                    } else if (!shown && keyboardVisible) {
+                        keyboardVisible = false
+                        imeHeightPx = 0
+                        logLifecycle("imePoll: hidden")
+                        onKeyboardHide()
+                    } else if (shown) {
+                        imeHeightPx = h
+                    }
+                }
+            } catch (_: Exception) {
+            }
+            handler.postDelayed(this, 800L)
+        }
+    }
+
     private fun onWindowInsets(insets: WindowInsets): WindowInsets {
         if (prefBool("pref_keyboard", true)) {
             val ime = insets.getInsets(WindowInsets.Type.ime())
@@ -535,6 +575,7 @@ class PetOverlayService : Service() {
         return View.OnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    logLifecycle("touch DOWN raw=(${event.rawX.toInt()},${event.rawY.toInt()})")
                     hideHandler.removeCallbacks(hideRunnable)
                     if (hidden) {
                         initialX = params?.x ?: 0
@@ -568,15 +609,22 @@ class PetOverlayService : Service() {
                     }
                     resetIdleTimer()
                     val elapsed = System.currentTimeMillis() - touchStartTime
+                    logLifecycle("touch UP elapsed=${elapsed}ms moved=$hasMoved interactLeft=${interactUntil - System.currentTimeMillis()}ms")
                     if (hasMoved) {
                         val dx = event.rawX - initialTouchX
                         val dy = event.rawY - initialTouchY
-                        if (sqrt(dx * dx + dy * dy) <= FLING_DISTANCE || elapsed >= FLING_TIME_MS) {
-                            onDragEnd()
-                        } else {
-                            onFling()
+                        val dist = sqrt(dx * dx + dy * dy)
+                        // ⚠️ 只有手指**真的走远了**才算拖动；点了半天没位移的（比如长按唤醒、
+                        //    或者桌宠自己飘了一下导致的 MOVE 事件）要继续走下面的"按时长判断"，
+                        //    否则永远进不了长按唤醒分支（2026-10-21 踩过）
+                        if (dist > MOVE_THRESHOLD * 2) {
+                            if (dist <= FLING_DISTANCE || elapsed >= FLING_TIME_MS) {
+                                onDragEnd()
+                            } else {
+                                onFling()
+                            }
+                            return@OnTouchListener true
                         }
-                        return@OnTouchListener true
                     }
                     val now = System.currentTimeMillis()
                     // 打字中：桌宠可能落在键盘附近，单击/双击/长按不响应（避免误触），
@@ -586,9 +634,16 @@ class PetOverlayService : Service() {
                         tapCount = 0
                         return@OnTouchListener true
                     }
-                    if (elapsed > LONG_PRESS_TIMEOUT) {
+                    // 【防误触】长按满 2 秒 = 唤醒交互；短按（打字时手指划过）静默吞掉
+                    if (elapsed >= ACTIVATE_HOLD_MS) {
+                        interactUntil = now + INTERACT_WINDOW_MS
                         tapCount = 0
-                        onLongPress()
+                        onActivate()
+                        return@OnTouchListener true
+                    }
+                    if (now > interactUntil) {
+                        // 还没唤醒：不冒泡、不反应，只把这次触摸吃掉
+                        tapCount = 0
                         return@OnTouchListener true
                     }
                     if (now - firstTapTime > 2000) {
@@ -654,6 +709,15 @@ class PetOverlayService : Service() {
         js("onDoubleTap()")
         bumpIntimacy()
         maybeAiSpeak("宝宝刚刚双击了我，回应一句开心的")
+    }
+
+    /** 长按 2 秒唤醒：进入 12 秒的交互窗口，并给一句提示 */
+    private fun onActivate() {
+        logLifecycle("interact activated ${INTERACT_WINDOW_MS}ms")
+        overlayView?.evaluateJavascript("window.wakeUp && window.wakeUp()", null)
+        overlayView?.evaluateJavascript(
+            "window.petEngine && window.petEngine.onAiSay('（我在呢～陪你玩会儿）', 'happy')", null
+        )
     }
 
     private fun onLongPress() {
@@ -919,10 +983,45 @@ class PetOverlayService : Service() {
             // 打字期间保持贴边小条，不触发「缩手柄」计时器
             hideHandler.removeCallbacks(hideRunnable)
         }
+        // ① 打字期间窗口**不吃触摸**：手指落在桌宠上也会穿透到键盘
+        //    （主人反馈：打字时老是点到它 —— 2026-10-21）
+        setOverlayTouchable(false)
+        // ② 把桌宠整体挪到**键盘上方**，不压在按键行上
+        val imeTop = getScreenH() - imeHeightPx
+        val bottomLimit = imeTop - dpToPx(6)
+        if (p.y + p.height > bottomLimit) {
+            animateToY((bottomLimit - p.height).coerceAtLeast(0))
+        }
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onKeyboardUp()", null)
     }
 
+    /** 只沿 y 方向做动画（animateTo 只管 x 和透明度） */
+    private fun animateToY(targetY: Int) {
+        val p = params ?: return
+        val startY = p.y
+        val anim = ValueAnimator.ofFloat(0.0f, 1.0f)
+        anim.duration = DOCK_ANIM_MS
+        anim.addUpdateListener {
+            val t = it.animatedValue as Float
+            p.y = startY + ((targetY - startY) * t).toInt()
+            safeUpdate(p)
+        }
+        anim.start()
+    }
+
+    /** 悬浮窗是否可触摸：打字时关掉，避免误触（关掉后触摸会穿透到下层 App） */
+    private fun setOverlayTouchable(touchable: Boolean) {
+        val p = params ?: return
+        val notTouchable = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        val newFlags = if (touchable) p.flags and notTouchable.inv() else p.flags or notTouchable
+        if (newFlags == p.flags) return
+        p.flags = newFlags
+        safeUpdate(p)
+        logLifecycle("overlayTouchable=$touchable")
+    }
+
     private fun onKeyboardHide() {
+        setOverlayTouchable(true)   // 键盘收起 → 恢复可点
         if (keyboardDocked) {
             keyboardDocked = false
             // 恢复键盘弹出前的位置
