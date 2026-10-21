@@ -418,6 +418,18 @@
      并且跟着道具一起动 —— 道具升手升、道具扔手松、道具递手抬。
      坐标都相对 .body（56×36）；道具的 .pet 坐标 = body 坐标 + (8, 4)。*/
 
+  /* ⚠️ 手和身体同色 —— 一旦手伸到身体轮廓里（捧杯/握笔/捏花茎/按纸），就会和身体糊成一片，
+     "看不见手"（2026-10-15 看书时踩过一次，2026-10-21 加手部规则时又犯了一次）。
+     统一处理：① 比身体暗一档（叠一层半透明黑）② 1px 暗轮廓 ③ 圆角做成小爪子 */
+  .pet.act-read .arm, .pet.act-care .arm, .pet.act-food .arm,
+  .pet.act-letter .arm, .pet.act-travel .arm, .pet.act-fish .arm,
+  .pet.act-rose .arm, .pet.act-window .arm {
+    background-color: var(--pet-body, #e67e22);
+    background-image: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.22));
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.20);
+  }
+
   /* 递热水：两只手分别捧住杯子左右两侧，跟着杯子一起矮下、捧起、递出 */
   .pet.act-care .arm-left  { left: 14px; top: 24px; }
   .pet.act-care .arm-right { right: 14px; top: 24px; }
