@@ -307,6 +307,7 @@
   .pet.act-food   .scene.dice,
   .pet.act-travel .scene.case,
   .pet.act-fish   .scene.rod,
+  .pet.act-rose   .scene.rose,
   .pet.act-care   .scene.cup { display: block; }
 
   /* 写信：信纸（四行字）+ 笔
@@ -343,6 +344,33 @@
   .scene.cup::before { content: ''; position: absolute; left: 2px; top: -7px; width: 1px; height: 5px; background: #b9ac99; box-shadow: 4px 0 0 #b9ac99, 8px 0 0 #b9ac99; animation: steamUp 2s ease-in-out infinite; }
   @keyframes steamUp { 0%,100% { opacity: .3; transform: translateY(1px); } 50% { opacity: .9; transform: translateY(-3px); } }
 
+  /* 拿玫瑰：细线条的玫瑰（花头 + 茎 + 一片叶），**右手捏在花茎上**，手和花一起晃
+     分镜：举着晃两下 → 举到脸边 → 眯眼闻（腮红）→ 轻轻放下 */
+  .scene.rose { left: 33px; top: 10px; width: 9px; height: 9px; border-radius: 50%; background: #e0536b; box-shadow: inset 0 -2px 0 rgba(0,0,0,.18); }
+  .scene.rose::before { content: ''; position: absolute; left: 3px; top: 8px; width: 2px; height: 18px; background: #4e7a3a; border-radius: 1px; }
+  .scene.rose::after { content: ''; position: absolute; left: 1px; top: 15px; width: 6px; height: 3px; border-radius: 50% 50% 50% 0; background: #5c8c45; transform: rotate(-18deg); }
+  .pet.act-rose .scene.rose { animation: roseBeat 8s ease-in-out infinite; }
+  @keyframes roseBeat {
+    0%, 20%   { transform: rotate(-6deg); }
+    30%, 42%  { transform: rotate(7deg) translateY(-2px); }
+    52%, 70%  { transform: rotate(-2deg) translateY(-7px); }
+    82%, 100% { transform: rotate(0) translateY(0); }
+  }
+  /* 右手捏着花茎（茎在 body 的 x26~28），跟着花一起晃、一起抬到脸边 */
+  .pet.act-rose .arm-right { right: 22px; top: 24px; animation: roseHand 8s ease-in-out infinite; }
+  @keyframes roseHand {
+    0%, 20%   { transform: rotate(-5deg); }
+    30%, 42%  { transform: rotate(6deg) translateY(-2px); }
+    52%, 70%  { transform: rotate(0) translateY(-9px); }
+    82%, 100% { transform: rotate(0); }
+  }
+  @keyframes roseEyes {
+    0%, 44%   { height: 8px; }
+    52%, 70%  { height: 3px; border-radius: 0 0 3px 3px; }
+    78%, 100% { height: 8px; border-radius: 2px; }
+  }
+  .pet.act-rose .eye { animation: roseEyes 8s ease-in-out infinite; }
+
   /* 等吃的：骰子（掷骰子选晚饭）+ 一碗面
      分镜照 clawd-island 的 food 十秒脚本：
        抱着骰子想 → 左右摇 → 扔出去翻转掉落 → 落地吓一蹦 >< → 凑近看点数 → 冒出一碗面 ^^ → 搓手 */
@@ -377,18 +405,6 @@
     72%, 100% { transform: translateY(0); }
   }
   .pet.act-food .body { animation: foodHop 8s ease-in-out infinite; }
-  @keyframes foodArms {
-    0%, 70%   { transform: translate(0,0); }
-    76%, 86%  { transform: translate(5px,0) rotate(-12deg); }
-    90%, 100% { transform: translate(3px,0) rotate(-6deg); }
-  }
-  .pet.act-food .arm-left { animation: foodArms 8s ease-in-out infinite; }
-  @keyframes foodArmsR {
-    0%, 70%   { transform: translate(0,0); }
-    76%, 86%  { transform: translate(-5px,0) rotate(12deg); }
-    90%, 100% { transform: translate(-3px,0) rotate(6deg); }
-  }
-  .pet.act-food .arm-right { animation: foodArmsR 8s ease-in-out infinite; }
   @keyframes careEyes {
     0%, 10%   { height: 6px; transform: translateY(1px); }
     16%, 24%  { height: 8px; transform: none; }
@@ -397,12 +413,69 @@
     62%, 100% { height: 8px; border-radius: 2px; }
   }
   .pet.act-care .eye { animation: careEyes 8s ease-in-out infinite; }
-  @keyframes careArms {
-    0%, 54%   { transform: translateY(0); }
-    62%, 82%  { transform: translateY(-3px); }
-    88%, 100% { transform: translateY(-2px); }
+  /* ===== 手与道具的接触（2026-10-21 主人点出：道具在动、手不能悬空）=====
+     原则：凡是"拿着 / 捧着 / 扒着"道具的动作，手必须落在道具的边沿上，
+     并且跟着道具一起动 —— 道具升手升、道具扔手松、道具递手抬。
+     坐标都相对 .body（56×36）；道具的 .pet 坐标 = body 坐标 + (8, 4)。*/
+
+  /* 递热水：两只手分别捧住杯子左右两侧，跟着杯子一起矮下、捧起、递出 */
+  .pet.act-care .arm-left  { left: 14px; top: 24px; }
+  .pet.act-care .arm-right { right: 14px; top: 24px; }
+  @keyframes careHands {
+    0%, 12%   { transform: translateY(3px); }
+    26%, 44%  { transform: translateY(0); }
+    58%       { transform: translateY(-3px); }
+    78%, 100% { transform: translateY(-4px); }
   }
-  .pet.act-care .arm { animation: careArms 8s ease-in-out infinite; }
+  .pet.act-care .arm { animation: careHands 8s ease-in-out infinite; }
+
+  /* 等吃的：前段双手夹着骰子 → 扔出去时手松开往后缩 → 面出来时双手捧住碗 → 搓手 */
+  .pet.act-food .arm-left  { left: 12px; top: 18px; }
+  .pet.act-food .arm-right { right: 12px; top: 18px; }
+  @keyframes foodHandL {
+    0%, 30%   { transform: translate(0,0); }
+    38%, 64%  { transform: translate(-5px,-2px); }
+    76%, 88%  { transform: translate(-3px,8px); }
+    92%, 100% { transform: translate(0,8px) rotate(-6deg); }
+  }
+  @keyframes foodHandR {
+    0%, 30%   { transform: translate(0,0); }
+    38%, 64%  { transform: translate(5px,-2px); }
+    76%, 88%  { transform: translate(3px,8px); }
+    92%, 100% { transform: translate(0,8px) rotate(6deg); }
+  }
+  .pet.act-food .arm-left  { animation: foodHandL 8s ease-in-out infinite; }
+  .pet.act-food .arm-right { animation: foodHandR 8s ease-in-out infinite; }
+
+  /* 写信：左手按住信纸左缘，右手握着笔在纸上写（笔在纸的右下角，所以右手也压在那里）*/
+  .pet.act-letter .arm-left  { left: 11px; top: 22px; }
+  .pet.act-letter .arm-right { right: 22px; top: 24px; }
+  @keyframes writeHand {
+    0%, 100% { transform: translate(0,0); }
+    25%      { transform: translate(-2px,-1px); }
+    50%      { transform: translate(1px,1px); }
+    75%      { transform: translate(-1px,0); }
+  }
+  .pet.act-letter .arm-right { animation: writeHand .9s ease-in-out infinite; }
+
+  /* 出门：左手攥着行李箱的提手（箱子在身体左侧），跟着走路节奏左右摆 */
+  .pet.act-travel .arm-left { left: -2px; top: 16px; }
+  @keyframes caseHand {
+    0%, 100% { transform: rotate(0); }
+    50%      { transform: rotate(-8deg); }
+  }
+  .pet.act-travel .arm-left { animation: caseHand .64s ease-in-out infinite; }
+
+  /* 钓鱼：右手攥着鱼竿手柄（竿根在 body 的 x22,y-8），轻微摇竿 */
+  .pet.act-fish .arm-right { right: auto; left: 20px; top: -8px; width: 7px; height: 12px; }
+  @keyframes rodHand {
+    0%, 100% { transform: rotate(0); }
+    50%      { transform: rotate(-5deg); }
+  }
+  .pet.act-fish .arm-right { animation: rodHand 2.4s ease-in-out infinite; }
+
+  /* 看窗外：双手扒在窗台上（放在身体底部），接雨那一幕右手再抬出去 */
+  .pet.act-window .arm-left, .pet.act-window .arm-right { top: 28px; }
 
   /* 看窗外：整块窗框垫在身体**下面**（DOM 里排在 .body 之前、z-index:0），
      身体挡住中间，只露出边框和一圈天空色 —— 像桌宠坐在窗边。这样绝不会挡住眼睛。
@@ -623,6 +696,7 @@
     <span class="scene cup"></span>
     <span class="scene bowl"></span>
     <span class="scene dice"></span>
+    <span class="scene rose"></span>
     <span class="scene case"></span>
   </div>
 
@@ -727,7 +801,7 @@
         // 状态类动作（思考/干活/惊讶/睡觉/看书）持续更久，普通动作短一点
         // 情景动作（写信/看窗外/吃饭/出门/钓鱼/递热水）都是 8 秒的分镜动画，必须给足时间，
         // 否则分镜演到一半就被撤掉（2026-10-21 踩过：拍 4 秒那一帧时窗外道具已经消失了）
-        var SLOW = ['think','run','shock','sleepy','read','letter','window','food','travel','fish','care'];
+        var SLOW = ['rose','think','run','shock','sleepy','read','letter','window','food','travel','fish','care'];
         var hold = SLOW.indexOf(action) >= 0 ? 8500 : 2500;
         if (SLOW.indexOf(action) >= 0) markBusy(hold + 200);
         setTimeout(function() { pet.classList.remove('act-' + action); clearFx(); }, hold);
@@ -814,7 +888,7 @@
   }
 
   // ===== 自主小动作：参考相册表情图，随机自觉做 =====
-  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch','letter','window','food','travel','fish','care'];
+  var ACTIONS = ['rose','happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch','letter','window','food','travel','fish','care'];
   // 忙碌锁：8 秒分镜动作（看书/写信/看窗外/吃饭/出门/钓鱼/递热水）在演完之前，
   // 不许随机自娱自乐插队 —— 否则 runAction 一开跑就把所有 act-* 清掉，分镜会断在半路。
   var busyUntil = 0;
@@ -920,7 +994,8 @@
     food: [],
     travel: [],
     fish: [],
-    care: ['.fx-heart']
+    care: ['.fx-heart'],
+    rose: ['.fx-heart']
   };
   function clearFx() {
     document.querySelectorAll('.fx').forEach(function(el) { el.classList.remove('show'); });
@@ -956,6 +1031,7 @@
     { prop: null, act: 'act-travel', arm: 'arm-hold', say: ['出门走走～🧳', '行李带好啦', '今天去哪儿呢', '出发！'] },
     { prop: null, act: 'act-fish',   arm: 'arm-hold', say: ['钓鱼中…🎣', '鱼什么时候来呀', '（浮漂动了！）', '今天能钓到吗'] },
     { prop: null, act: 'act-care',   arm: 'arm-hold', blush: 1, say: ['给你倒了杯热水☕', '吹凉一点…', '小心烫哦', '记得多喝水'] },
+    { prop: null, act: 'act-rose',   arm: 'arm-hold', blush: 1, say: ['送你一朵玫瑰🌹', '香不香？', '（认真闻一闻）', '好闻吧～'] },
     { prop: '🍳', left: 48, top: 11, act: 'act-happy',     arm: 'arm-hold',  blush: 1, say: ['好吃！🍳', '煎蛋嘿嘿', '再来一份～'] },
     { prop: '🎮', left: 26, top: 18, act: 'act-celebrate', arm: 'arm-shake', say: ['通关啦！🎮', '再来一局嘛', '赢了赢了！'] },
     { prop: '🥤', left: 52, top: 9,  act: 'act-cute',      arm: 'arm-hold',  blush: 1, say: ['咕嘟咕嘟🥤', '快乐水！', '好喝～'] },
@@ -1003,7 +1079,7 @@
     if (L.blush) blushFor(2000);
     if (Math.random() < 0.5) randomSay(L.say[Math.floor(Math.random() * L.say.length)]);
     // 情景类动作都是 8 秒分镜动画（看书/写信/看窗外/吃饭/出门/钓鱼/递热水），得给足时间演完
-    var LONG_ACTS = ['act-read', 'act-letter', 'act-window', 'act-food', 'act-travel', 'act-fish', 'act-care'];
+    var LONG_ACTS = ['act-read', 'act-letter', 'act-window', 'act-food', 'act-travel', 'act-fish', 'act-care', 'act-rose'];
     var isLong = LONG_ACTS.indexOf(L.act) >= 0;
     if (isLong) markBusy(8800);
     setTimeout(function() { pet.classList.remove(L.act); clearArm(); }, isLong ? 8600 : 3500);
