@@ -733,27 +733,17 @@
     37%, 40% { opacity: 1; } 41%, 46% { opacity: 0; } 47%, 100% { opacity: 0; }
   }
 
-  /* ===== 侧身远眺（2026-10-21 加）=====
-     整块身体绕 Y 轴转过去（rotateY），远侧眼压窄、近侧眼移到边缘，
-     再把手搭到额头上挡光看远处 —— 一个"看到什么了"的姿势。*/
-  @keyframes sideTurn {
-    0%, 8%    { transform: perspective(140px) rotateY(0deg) translateX(0); }
-    22%, 76%  { transform: perspective(140px) rotateY(-30deg) translateX(-2px); }
-    90%, 100% { transform: perspective(140px) rotateY(0deg) translateX(0); }
+  /* ===== 侧身远眺（2026-10-21 加，按主人要求改版）=====
+     纯像素做法：**眼睛尺寸和形状一律不动，只横向平移** —— 两只眼一起往一边挪，
+     加上一只手抬到额头挡光，就是"侧头看远处"的意思。不做任何伪 3D 旋转。*/
+  @keyframes sideEyes {
+    0%, 8%    { transform: translateX(0); }
+    22%, 76%  { transform: translateX(-4px); }
+    90%, 100% { transform: translateX(0); }
   }
-  .pet.act-side .body { animation: sideTurn 8s ease-in-out infinite !important; }
-  @keyframes sideEyeL {
-    0%, 8%    { transform: none; width: 5px; }
-    22%, 76%  { transform: translateX(-3px); width: 6px; }
-    90%, 100% { transform: none; width: 5px; }
-  }
-  @keyframes sideEyeR {
-    0%, 8%    { transform: none; width: 5px; }
-    22%, 76%  { transform: translateX(-3px); width: 2px; }
-    90%, 100% { transform: none; width: 5px; }
-  }
-  .pet.act-side .eye-left  { animation: sideEyeL 8s ease-in-out infinite; }
-  .pet.act-side .eye-right { animation: sideEyeR 8s ease-in-out infinite; }
+  .pet.act-side .eye-left,
+  .pet.act-side .eye-right { animation: sideEyes 8s ease-in-out infinite; }
+  /* 右手抬到额头挡光远看 */
   @keyframes sideHand {
     0%, 8%    { transform: translate(0,0) rotate(0); }
     22%, 76%  { transform: translate(4px,-12px) rotate(-28deg); }
