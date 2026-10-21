@@ -73,7 +73,7 @@
      所以 6px → 10px，并给腿加一段「身体色 → 腿色」的竖直渐变做过渡，
      不然腿和身体之间是一道生硬的颜色断口。*/
   .leg {
-    position: absolute; width: 5px; height: 10px; bottom: -10px; border-radius: 0 0 5px 5px;
+    position: absolute; width: 5px; height: 10px; bottom: -10px; border-radius: 0;
     background: linear-gradient(180deg, var(--pet-body, #e67e22) 0%, var(--pet-leg, #d35400) 58%);
   }
   .leg-l1 { left: 8px; } .leg-l2 { left: 17px; } .leg-r2 { right: 17px; } .leg-r1 { right: 8px; }
@@ -83,8 +83,10 @@
   .pet.walking .leg-l1, .pet.walking .leg-r2 { animation: walkA .32s ease-in-out infinite; }
   .pet.walking .leg-l2, .pet.walking .leg-r1 { animation: walkB .32s ease-in-out infinite; }
   .pet.walking { animation: none; }   /* 走路时用腿部表现，别和整体 idle 上下浮动打架 */
-  /* 地面影子：垫在身体和腿之下 */
-  .shadow { position: absolute; left: 12px; bottom: 2px; width: 50px; height: 6px; background: rgba(0,0,0,.24); border-radius: 50%; filter: blur(.8px); pointer-events: none; }
+  /* 地面影子：垫在身体和腿之下
+     2026-10-21：身体变高 + 腿拉长后重算 —— 四只脚实际踩在 .pet 的 x16~52、y50 这条线上，
+     所以影子收到脚底下（bottom:0）、宽度收到 46（比脚掌略宽），虚化加重一点表示"身子抬高了"。*/
+  .shadow { position: absolute; left: 13px; bottom: 0; width: 46px; height: 6px; background: rgba(0,0,0,.22); border-radius: 50%; filter: blur(1.1px); pointer-events: none; }
   /* 杂耍：三个彩色小球，走杂技式抛接弧线（左手上抛→空中画弧→落回），错峰接力 */
   .ball { position: absolute; top: 8px; width: 7px; height: 7px; border-radius: 50%; display: none; z-index: 8; }
   .pet.juggling .ball { display: block; }
@@ -293,6 +295,46 @@
   /* 书脊：两页中间的暗缝，做出"摊开"的立体感 */
   .book::after { content: ''; position: absolute; left: 9px; top: 1px; width: 2px; height: 9px; background: rgba(0,0,0,.16); border-radius: 1px; }
 
+  /* ===== 情景动作道具（2026-10-21 新增）=====
+     参考主人下载的 clawd-island 情景动画（在给你写信 / 在看外面 / 惦记你身体 …），
+     做成我们自己的四个"情景动作"。道具全部是细线条风格：1px 描边、无填充，
+     跟方块身体的「细线 + 纯色块」语言统一，也呼应 clawd-icons 那套线条物件。
+     坐标都在 .pet 的 72×50 坐标系里。*/
+  .scene { position: absolute; z-index: 7; display: none; pointer-events: none; box-sizing: border-box; }
+  .pet.act-letter .scene.letter,
+  .pet.act-window .scene.window,
+  .pet.act-food   .scene.bowl,
+  .pet.act-travel .scene.case { display: block; }
+
+  /* 写信：一张微斜的信纸（四行字） + 一支笔 */
+  .scene.letter { left: 23px; top: 21px; width: 16px; height: 13px; background: #fffdf6; border: 1px solid #8d8072; border-radius: 2px; transform: rotate(-7deg); }
+  .scene.letter::before { content: ''; position: absolute; left: 3px; top: 3px; width: 9px; height: 1px; background: #b9ac99; box-shadow: 0 3px 0 #b9ac99, 0 6px 0 #b9ac99, 0 9px 0 #b9ac99; }
+  .scene.letter::after { content: ''; position: absolute; right: -4px; bottom: -4px; width: 2px; height: 11px; background: #5d5246; border-radius: 1px; transform: rotate(28deg); }
+
+  /* 看窗外：整块窗框垫在身体**下面**（DOM 里排在 .body 之前、z-index:0），
+     身体挡住中间，只露出边框和一圈天空色 —— 像桌宠坐在窗边。这样绝不会挡住眼睛。*/
+  .scene.window { left: 1px; top: 0; width: 70px; height: 45px; border: 1px solid #8d8072; border-radius: 3px; background: linear-gradient(180deg, #cfe8ff 0%, #eaf6ff 100%); z-index: 0; }
+  .scene.window::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #8d8072; opacity: .55; }
+  .scene.window::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #8d8072; opacity: .55; }
+
+  /* 吃碗饭：细线碗（下半圆） + 碗口线 + 两缕热气 */
+  .scene.bowl { left: 25px; top: 30px; width: 18px; height: 10px; border: 1px solid #8d8072; border-top: none; border-radius: 0 0 9px 9px; background: rgba(255,253,246,.75); }
+  .scene.bowl::before { content: ''; position: absolute; left: -1px; right: -1px; top: 0; height: 1px; background: #8d8072; }
+  .scene.bowl::after { content: ''; position: absolute; left: 4px; top: -7px; width: 1px; height: 5px; background: #b9ac99; box-shadow: 6px 0 0 #b9ac99; border-radius: 1px; }
+
+  /* 出门旅行：细线行李箱 + 提手 + 一条横缝 */
+  .scene.case { left: 2px; top: 24px; width: 13px; height: 15px; border: 1px solid #8d8072; border-radius: 2px; background: rgba(255,253,246,.85); }
+  .scene.case::before { content: ''; position: absolute; left: 3px; top: -4px; width: 5px; height: 4px; border: 1px solid #8d8072; border-bottom: none; border-radius: 2px 2px 0 0; }
+  .scene.case::after { content: ''; position: absolute; left: 3px; right: 3px; top: 5px; height: 1px; background: #b9ac99; }
+
+  /* 四个情景的配套眼神/身体小动作 */
+  .act-letter .eye { height: 6px; transform: translateY(1px); }              /* 低头看信纸 */
+  .act-window .eye { transform: translateX(1px); }                          /* 眼神偏右，望着窗外 */
+  @keyframes chew { 0%,100% { transform: translateY(0); } 50% { transform: translateY(1px); } }
+  .act-food .eye { height: 6px; animation: chew .8s ease-in-out infinite; }  /* 咀嚼时眼神一顿一顿 */
+  .act-travel .leg-l1, .act-travel .leg-r2 { animation: walkA .32s ease-in-out infinite; }
+  .act-travel .leg-l2, .act-travel .leg-r1 { animation: walkB .32s ease-in-out infinite; }
+
   /* ===== 手臂动作：手原本是静止方块，现在配合动作动起来 ===== */
   @keyframes armtype  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
   @keyframes armhold  { 0%,100% { transform: translate(0,0) rotate(0); } 50% { transform: translate(-1px,-4px) rotate(-10deg); } }
@@ -427,6 +469,8 @@
     <span class="ball b1"></span>
     <span class="ball b2"></span>
     <span class="ball b3"></span>
+    <!-- 看窗外：窗框垫在身体下面（z-index:0），只露边框 -->
+    <span class="scene window"></span>
     <div class="body">
       <div class="eye eye-left"></div>
       <div class="eye eye-right"></div>
@@ -442,6 +486,10 @@
     </div>
     <!-- 看书道具：CSS 手绘的摊开小书（不是 emoji），act-read 时显示 -->
     <span class="book"><span class="bk bk-l"></span><span class="bk bk-r"></span></span>
+    <!-- 情景动作道具（细线条风格），对应 act-letter / act-window / act-food / act-travel -->
+    <span class="scene letter"></span>
+    <span class="scene bowl"></span>
+    <span class="scene case"></span>
   </div>
 
 <script>
@@ -629,7 +677,7 @@
   }
 
   // ===== 自主小动作：参考相册表情图，随机自觉做 =====
-  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch'];
+  var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch','letter','window','food','travel'];
   // ===== 情绪特效（新）：agent 可直接推 action=stareyes/blush/sweat/heartburst/firework/note =====
   var FEELS = ['stareyes','blush','sweat','heartburst','firework','note'];
 
@@ -725,7 +773,11 @@
     diamond: ['.fx-star', '.fx-heart'],
     shy: ['.fx-heart'],
     raise: ['.fx-exclaim'],
-    scratch: ['.fx-question']
+    scratch: ['.fx-question'],
+    letter: ['.fx-heart'],
+    window: ['.fx-star'],
+    food: [],
+    travel: []
   };
   function clearFx() {
     document.querySelectorAll('.fx').forEach(function(el) { el.classList.remove('show'); });
@@ -754,6 +806,11 @@
     { prop: '💻', left: 20, top: 19, act: 'act-think',     arm: 'arm-type',  say: ['写代码中…💻', '这个 bug 好难', '（噼里啪啦）'] },
     /* 看书：没有 emoji 道具（prop:null），书是 CSS 手绘的 .book，靠 act-read 显示 */
     { prop: null, act: 'act-read', arm: 'arm-hold', say: ['看会儿书📖', '这页好有意思…', '安静看会儿书', '（一边看一边点头）'] },
+    /* === 情景动作（2026-10-21，参考 clawd-island 情景动画）道具同样走 CSS 线条 === */
+    { prop: null, act: 'act-letter', arm: 'arm-type', say: ['在给你写信✉️', '写点心里话…', '（认真写字）', '这封信要好好写'] },
+    { prop: null, act: 'act-window', arm: 'arm-hold', say: ['在看外面～', '外面天气不错', '有人路过呢', '云飘过去了'] },
+    { prop: null, act: 'act-food',   arm: 'arm-hold', blush: 1, say: ['呼噜呼噜～🍚', '这碗好香！', '再来一口', '吃饱啦'] },
+    { prop: null, act: 'act-travel', arm: 'arm-hold', say: ['出门走走～🧳', '行李带好啦', '今天去哪儿呢', '出发！'] },
     { prop: '🍳', left: 48, top: 11, act: 'act-happy',     arm: 'arm-hold',  blush: 1, say: ['好吃！🍳', '煎蛋嘿嘿', '再来一份～'] },
     { prop: '🎮', left: 26, top: 18, act: 'act-celebrate', arm: 'arm-shake', say: ['通关啦！🎮', '再来一局嘛', '赢了赢了！'] },
     { prop: '🥤', left: 52, top: 9,  act: 'act-cute',      arm: 'arm-hold',  blush: 1, say: ['咕嘟咕嘟🥤', '快乐水！', '好喝～'] },
