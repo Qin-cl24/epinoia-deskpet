@@ -314,6 +314,8 @@
   .pet.act-food   .scene.food,
   .pet.act-food   .scene.dice,
   .pet.act-travel .scene.case,
+  .pet.act-travel .scene.map,
+  .pet.act-travel .scene.bird,
   .pet.act-fish   .scene.rod,
   .pet.act-rose   .scene.rose,
   .pet.act-care   .scene.cup { display: block; }
@@ -612,7 +614,14 @@
     0%, 100% { transform: rotate(0); }
     50%      { transform: rotate(-8deg); }
   }
-  .pet.act-travel .arm-left { animation: caseHand .64s ease-in-out infinite; }
+  @keyframes travelHandL {
+    0%, 28%   { transform: translate(0,0) rotate(0); }
+    32%, 42%  { transform: translate(2px,-10px) rotate(-30deg); }   /* 举手跟鸟招手 */
+    46%, 70%  { transform: translate(0,0) rotate(0); }
+    72%, 90%  { transform: translate(10px,-2px) rotate(-10deg); }   /* 扶着举起来的地图 */
+    94%, 100% { transform: translate(0,0) rotate(0); }
+  }
+  .pet.act-travel .arm-left { animation: travelHandL 10s ease-in-out infinite; }
   /* 出门时右手在身体另一侧（箱子后面那一侧），按前后关系压灰 */
   .pet.act-travel .arm-right { filter: saturate(.45) brightness(.88); }
 
@@ -653,10 +662,67 @@
   .scene.bowl::before { content: ''; position: absolute; left: -1px; right: -1px; top: 0; height: 1px; background: #8d8072; }
   .scene.bowl::after { content: ''; position: absolute; left: 4px; top: -7px; width: 1px; height: 5px; background: #b9ac99; box-shadow: 6px 0 0 #b9ac99; border-radius: 1px; }
 
-  /* 出门旅行：细线行李箱 + 提手 + 一条横缝 */
-  .scene.case { left: 2px; top: 24px; width: 13px; height: 15px; border: 1px solid #8d8072; border-radius: 2px; background: rgba(255,253,246,.85); }
-  .scene.case::before { content: ''; position: absolute; left: 3px; top: -4px; width: 5px; height: 4px; border: 1px solid #8d8072; border-bottom: none; border-radius: 2px 2px 0 0; }
-  .scene.case::after { content: ''; position: absolute; left: 3px; right: 3px; top: 5px; height: 1px; background: #b9ac99; }
+  /* ===== 出门走走（照 clawd-island 的 travel 十秒脚本）=====
+     0 走·左脚抬 → 1 走·右脚抬 → 2 走来一只鸟 → 3 抬眼看鸟 → 4 蹦一下 ^^ 招手
+     → 5 挥手拜拜 → 6 东张西望 → 7 掏地图低头看 → 8 找到了 ^^ 举高 → 9 收地图接着走
+     原版元素：登山包（顶上捆一卷奶白睡垫）、地图（先折叠后展开 scaleX 0.34→1）、鸟（翅膀两种姿态交替）。*/
+  /* 登山包：包身 + 顶上的奶白睡垫卷 + 两条肩带 */
+  .scene.case { left: 2px; top: 14px; width: 14px; height: 17px; box-sizing: border-box;
+    border: 1px solid #8d8072; border-radius: 3px; background: rgba(255,253,246,.9); }
+  .scene.case::before {  /* 顶上那卷睡垫 */
+    content: ''; position: absolute; left: 1px; top: -5px; width: 10px; height: 5px;
+    background: #efe6d6; border: 1px solid #8d8072; border-radius: 3px;
+  }
+  .scene.case::after {  /* 肩带 */
+    content: ''; position: absolute; left: 6px; top: 3px; width: 1px; height: 11px;
+    background: #b9ac99; box-shadow: 3px 0 0 #b9ac99;
+  }
+  /* 地图：双页折叠，靠 scaleX 从 0.34 展开到 1 */
+  .scene.map { left: 24px; top: 20px; width: 20px; height: 15px; box-sizing: border-box;
+    border: 1px solid #8d8072; background: #fffdf3; opacity: 0; transform-origin: center bottom;
+    animation: mapShow 10s ease-in-out infinite; }
+  .scene.map::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #cbbda8; }
+  .scene.map::after {  /* 一条路线 + 一个 X 标记 */
+    content: ''; position: absolute; left: 3px; top: 4px; width: 12px; height: 1px;
+    background: #d9a86b; box-shadow: 2px 3px 0 #d9a866, 5px 1px 0 #d9a866;
+  }
+  @keyframes mapShow {
+    0%, 63%   { opacity: 0; transform: translateY(4px) scaleX(.34); }   /* 还没掏出来 */
+    68%, 72%  { opacity: 1; transform: translateY(0) scaleX(.34); }     /* 掏出来，还是折着 */
+    78%, 86%  { opacity: 1; transform: translateY(-3px) scaleX(1); }    /* 展开并举起 */
+    92%, 100% { opacity: 0; transform: translateY(2px) scaleX(.34); }   /* 收起来 */
+  }
+  /* 小鸟：从右边飞进来，翅膀两种姿态交替扇 */
+  .scene.bird { left: 68px; top: 4px; width: 8px; height: 8px; opacity: 0;
+    animation: birdFly 10s ease-in-out infinite; }
+  .scene.bird .wing-up, .scene.bird .wing-dn { position: absolute; left: 0; top: 0; width: 8px; height: 8px; opacity: 0; }
+  .scene.bird .wing-up::before, .scene.bird .wing-up::after,
+  .scene.bird .wing-dn::before, .scene.bird .wing-dn::after {
+    content: ''; position: absolute; width: 4px; height: 1px; background: #6d6155;
+  }
+  .scene.bird .wing-up::before { left: 0; top: 4px; transform: rotate(-30deg); }   /* ∩ 翅膀往下扇 */
+  .scene.bird .wing-up::after  { right: 0; top: 4px; transform: rotate(30deg); }
+  .scene.bird .wing-dn::before { left: 0; top: 5px; transform: rotate(20deg); }    /* ‾v‾ 翅膀抬平 */
+  .scene.bird .wing-dn::after  { right: 0; top: 5px; transform: rotate(-20deg); }
+  .pet.act-travel .scene.bird .wing-up { animation: birdWingUp 10s step-end infinite; }
+  .pet.act-travel .scene.bird .wing-dn { animation: birdWingDn 10s step-end infinite; }
+  @keyframes birdFly {
+    0%, 18%   { opacity: 0; transform: translate(0, 6px); }
+    22%       { opacity: 1; transform: translate(-18px, 0); }
+    30%       { opacity: 1; transform: translate(-34px, -6px); }   /* 飞到头顶附近 */
+    38%       { opacity: 1; transform: translate(-30px, 2px); }
+    46%       { opacity: 1; transform: translate(-44px, -10px); }
+    54%       { opacity: 0; transform: translate(-58px, -18px); }  /* 飞走了 */
+    100%      { opacity: 0; transform: translate(-58px, -18px); }
+  }
+  @keyframes birdWingUp {
+    0%, 20% { opacity: 0; } 21%, 26% { opacity: 1; } 27%, 30% { opacity: 0; }
+    31%, 36% { opacity: 1; } 37%, 40% { opacity: 0; } 41%, 46% { opacity: 1; } 47%, 100% { opacity: 0; }
+  }
+  @keyframes birdWingDn {
+    0%, 26% { opacity: 0; } 27%, 30% { opacity: 1; } 31%, 36% { opacity: 0; }
+    37%, 40% { opacity: 1; } 41%, 46% { opacity: 0; } 47%, 100% { opacity: 0; }
+  }
 
   /* 四个情景的配套眼神/身体小动作 */
   .act-letter .eye { height: 6px; transform: translateY(1px); }              /* 低头看信纸 */
@@ -713,8 +779,32 @@
   .pet.act-window .body { animation: windowHop 8s ease-in-out infinite; }
   @keyframes chew { 0%,100% { transform: translateY(0); } 50% { transform: translateY(1px); } }
   .act-food .eye { height: 6px; animation: chew .8s ease-in-out infinite; }  /* 咀嚼时眼神一顿一顿 */
-  .act-travel .leg-l1, .act-travel .leg-r2 { animation: walkA .32s ease-in-out infinite; }
-  .act-travel .leg-l2, .act-travel .leg-r1 { animation: walkB .32s ease-in-out infinite; }
+  /* 走路：每一拍（1 秒）换一次抬脚，照原版"0 左脚抬 / 1 右脚抬"交替 */
+  @keyframes travelLegA { 0%,10%,20%,30%,40%,50%,60%,70%,80%,90% { transform: translateY(0); } 5%,25%,45%,65%,85% { transform: translateY(-4px); } 100% { transform: translateY(0); } }
+  @keyframes travelLegB { 0%,10%,20%,30%,40%,50%,60%,70%,80%,90% { transform: translateY(-4px); } 5%,25%,45%,65%,85% { transform: translateY(0); } 100% { transform: translateY(0); } }
+  .pet.act-travel .leg-l1, .pet.act-travel .leg-r2 { animation: travelLegA 1s ease-in-out infinite; }
+  .pet.act-travel .leg-l2, .pet.act-travel .leg-r1 { animation: travelLegB 1s ease-in-out infinite; }
+  /* 眼神：走路 → 抬眼看鸟 → 蹦起来 ^^ → 跟鸟飞走 → 东张西望 → 低头看地图 → 找到了 ^^ */
+  @keyframes travelEyes {
+    0%, 18%   { height: 10px; transform: none; }
+    20%, 28%  { height: 10px; transform: translate(1px, -2px); }   /* 抬眼看右上方的鸟 */
+    30%, 38%  { height: 5px; border-radius: 3px 3px 0 0; transform: none; }  /* 蹦一下 ^^ */
+    40%, 56%  { height: 10px; border-radius: 2px; transform: translate(-1px, -2px); } /* 跟着鸟往左上 */
+    60%, 68%  { height: 10px; transform: translate(-2px, 0); }     /* 东张西望 */
+    70%, 84%  { height: 6px; transform: translateY(2px); }         /* 低头看地图 */
+    86%, 90%  { height: 5px; border-radius: 3px 3px 0 0; transform: none; }  /* 找到了 ^^ */
+    94%, 100% { height: 10px; border-radius: 2px; }
+  }
+  .pet.act-travel .eye { animation: travelEyes 10s ease-in-out infinite; }
+  /* 身体：走路一小颠一颠，第 4 拍蹦一下 */
+  @keyframes travelBody {
+    0%, 28%   { transform: translateY(0); }
+    32%       { transform: translateY(-7px); }   /* 蹦一下招手 */
+    36%, 58%  { transform: translateY(0); }
+    62%       { transform: translateY(-1px); }   /* 东张西望时头一探 */
+    66%, 100% { transform: translateY(0); }
+  }
+  .pet.act-travel .body { animation: travelBody 10s ease-in-out infinite; }
 
   /* ===== 手臂动作：手原本是静止方块，现在配合动作动起来 ===== */
   @keyframes armtype  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
@@ -875,6 +965,8 @@
     <span class="scene dice" data-face="5"><span class="pip tl"></span><span class="pip tr"></span><span class="pip c"></span><span class="pip ml"></span><span class="pip mr"></span><span class="pip bl"></span><span class="pip br"></span></span>
     <span class="scene rose"></span>
     <span class="scene case"></span>
+    <span class="scene map"></span>
+    <span class="scene bird"><span class="wing-up"></span><span class="wing-dn"></span></span>
   </div>
 
 <script>
