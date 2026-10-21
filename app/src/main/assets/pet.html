@@ -733,6 +733,39 @@
     37%, 40% { opacity: 1; } 41%, 46% { opacity: 0; } 47%, 100% { opacity: 0; }
   }
 
+  /* ===== 思考泡泡（2026-10-21 加）=====
+     一朵细线云 + 三个轮流闪的点 + 两颗从云飘向头顶的尾巴小圆。
+     挂在 act-think（思考）和 act-scratch（挠头想事）上。像素/细线风格，1px 描边无填充。*/
+  .scene.thought { position: absolute; left: 30px; top: -22px; width: 26px; height: 22px; z-index: 9; pointer-events: none; display: none; }
+  .pet.act-think .scene.thought,
+  .pet.act-scratch .scene.thought { display: block; animation: thoughtPop 2.8s ease-in-out infinite; }
+  @keyframes thoughtPop {
+    0%        { opacity: 0; transform: scale(.6) translateY(3px); }
+    18%, 78%  { opacity: 1; transform: scale(1) translateY(0); }
+    92%, 100% { opacity: 0; transform: scale(.8) translateY(2px); }
+  }
+  /* 云朵：一个圆角方块 + 上方两个鼓包 */
+  .scene.thought .cloud {
+    position: absolute; left: 0; top: 1px; width: 24px; height: 12px;
+    background: #fffdf6; border: 1px solid #a89b88; border-radius: 7px;
+  }
+  .scene.thought .cloud::before,
+  .scene.thought .cloud::after {
+    content: ''; position: absolute; background: #fffdf6; border: 1px solid #a89b88; border-radius: 50%;
+  }
+  .scene.thought .cloud::before { left: 3px; top: -5px; width: 9px; height: 9px; }
+  .scene.thought .cloud::after  { left: 13px; top: -3px; width: 7px; height: 7px; }
+  /* 三个轮流闪的点 */
+  .scene.thought .dot { position: absolute; top: 6px; width: 3px; height: 3px; border-radius: 50%; background: #8d8072; opacity: .25; }
+  .scene.thought .dot.d1 { left: 6px;  animation: thoughtDot 1.4s ease-in-out infinite; }
+  .scene.thought .dot.d2 { left: 11px; animation: thoughtDot 1.4s ease-in-out infinite .22s; }
+  .scene.thought .dot.d3 { left: 16px; animation: thoughtDot 1.4s ease-in-out infinite .44s; }
+  @keyframes thoughtDot { 0%, 100% { opacity: .25; } 40%, 60% { opacity: 1; } }
+  /* 尾巴：两颗从云飘向头顶的小圆 */
+  .scene.thought .tail { position: absolute; border-radius: 50%; background: #fffdf6; border: 1px solid #a89b88; }
+  .scene.thought .tail.t1 { left: 4px; top: 14px; width: 5px; height: 5px; }
+  .scene.thought .tail.t2 { left: 1px; top: 20px; width: 3px; height: 3px; }
+
   /* ===== 侧身远眺（2026-10-21 加，按主人要求改版）=====
      纯像素做法：**眼睛尺寸和形状一律不动，只横向平移** —— 两只眼一起往一边挪，
      加上一只手抬到额头挡光，就是"侧头看远处"的意思。不做任何伪 3D 旋转。*/
@@ -993,6 +1026,7 @@
     <span class="scene rose"></span>
     <span class="scene case"></span>
     <span class="scene map"><span class="spot"></span></span>
+    <span class="scene thought"><span class="cloud"></span><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span><span class="tail t1"></span><span class="tail t2"></span></span>
     <span class="scene bird"><span class="wing-up"></span><span class="wing-dn"></span></span>
   </div>
 
