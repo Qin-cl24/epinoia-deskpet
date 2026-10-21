@@ -77,5 +77,13 @@ if box:
 
 im = im.resize((im.width * 3, im.height * 3), Image.NEAREST)
 im.save(out)
+# 额外存一份固定名字，方便主人随时点开看最新那张
+import shutil, os
+latest = os.path.expanduser("~/storage/downloads/pet-最新.png")
+try:
+    shutil.copyfile(out, latest)
+    print("LATEST=" + latest)
+except Exception as e:
+    print("latest copy failed:", e)
 print(f"OUT={out}  {im.width}x{im.height}")
 PY
