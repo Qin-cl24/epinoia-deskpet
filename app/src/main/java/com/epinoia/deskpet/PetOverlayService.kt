@@ -59,10 +59,15 @@ class PetOverlayService : Service() {
         private const val CHANNEL_ID = "deskpet_overlay"
         private const val NOTIFICATION_ID = 1
 
-        private const val PET_WIDTH_DP = 96    // 透明活动空间（比形象本身大一圈，方便点击/拖动）
-        private const val PET_HEIGHT_DP = 72   // pet.html 46px 高 + 顶部给帽子/杂耍球留余量
-        private const val MAX_PET_WIDTH_DP = 180   // 尺寸最大档（对应 pet.html 130×60 放大 2.5 倍）
-        private const val MAX_PET_HEIGHT_DP = 100
+        // ===== 窗口尺寸（2026-10-21 改成"按内容×缩放+头顶余量"动态计算）=====
+        // pet.html 里 .pet 的内容盒是 72×50 CSS px；头顶还要放思考泡泡(22)、巫师帽/派对帽(22)、
+        // 竖起的钓鱼竿(18)、礼帽(10) —— 所以头顶留 26。
+        // 以前窗口固定 96×72，缩放 1.1 时头顶只剩 17px（泡泡被切），缩放 2.5 时身体 180×125 直接溢出 100 高的窗口。
+        private const val PET_CONTENT_W_DP = 72     // .pet 内容宽
+        private const val PET_CONTENT_H_DP = 50     // .pet 内容高
+        private const val PET_HEADROOM_DP = 26      // 头顶余量：思考泡泡 / 帽子 / 钓竿
+        private const val PET_SIDE_PAD_DP = 12      // 左右各留一点，方便点击/拖动
+        private const val PET_BOTTOM_PAD_DP = 2
         private const val HANDLE_W_DP = 26
         private const val HANDLE_H_DP = 52
         private const val DOCK_EDGE_MARGIN_DP = 16
@@ -73,7 +78,8 @@ class PetOverlayService : Service() {
         // 贴边露出量：主体滑出屏幕外，但留一条可见的桌宠身体（悬浮球式半透明条）
         private const val VISIBLE_EDGE_DP = 14
         // body 在窗口内的宽度占比（56/96，zoom 放大时同比例，恒成立）
-        private const val BODY_WINDOW_RATIO = 0.583f
+        private const val BODY_WINDOW_RATIO = 0.583f   // 旧固定比例（保留兼容），实际用 bodyInsetPx()
+        private const val BODY_W_DP = 56               // .body 的宽（CSS px）
 
         private const val IDLE_TIMEOUT_MS = 10_000L       // 无操作 10s → 贴边
         private const val HIDE_DELAY_MS = 60_000L         // 贴边 60s → 缩成手柄
@@ -294,7 +300,7 @@ class PetOverlayService : Service() {
                 val p = params ?: return@post
                 if (docked) {
                     // 贴边状态：保持原 dockSide 方向，按新屏幕重新贴边（不重新判断左右）
-                    val inset = (p.width * (1f - BODY_WINDOW_RATIO) / 2f).toInt()
+                    val inset = bodyInsetPx(p)
                     val visible = dpToPx(dockVisibleEdgeDp())
                     p.x = if (dockSide >= 0) getScreenW() - (inset + visible) else -(p.width - inset - visible)
                     p.y = p.y.coerceIn(0, (getScreenH() - p.height).coerceAtLeast(0))
@@ -412,10 +418,10 @@ class PetOverlayService : Service() {
         try {
             windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
-            // 尺寸档位：0 = 最小（72dp 窗口 / pet 52×24），100 = 最大（180dp 窗口 / pet 130×60）
-            val t = petSizeRatio()
-            val winW = dpToPx(PET_WIDTH_DP + ((MAX_PET_WIDTH_DP - PET_WIDTH_DP) * t).toInt())
-            val winH = dpToPx(PET_HEIGHT_DP + ((MAX_PET_HEIGHT_DP - PET_HEIGHT_DP) * t).toInt())
+            // 窗口尺寸 = 内容 × 当前缩放 + 头顶余量 + 边距（跟着尺寸档一起放大）
+            val scale = petScale()
+            val winW = dpToPx((PET_CONTENT_W_DP * scale).toInt() + PET_SIDE_PAD_DP * 2)
+            val winH = dpToPx(((PET_CONTENT_H_DP + PET_HEADROOM_DP) * scale).toInt() + PET_BOTTOM_PAD_DP)
 
             params = WindowManager.LayoutParams(
                 winW,
@@ -827,7 +833,7 @@ class PetOverlayService : Service() {
         logLifecycle("dockToEdge side=$dockSide x=${p.x}")
         // 贴边：主体滑出屏幕外，但露出一条桌宠身体（悬浮球式半透明条，始终可见）。
         // 原版露出的 16dp 是窗口透明边缘（body 在窗口中央），导致完全不可见。
-        val inset = (p.width * (1f - BODY_WINDOW_RATIO) / 2f).toInt() // body 在窗口内的边距
+        val inset = bodyInsetPx(p)   // body 在窗口内的边距（按当前缩放动态算）
         val visible = dpToPx(dockVisibleEdgeDp())                     // 贴边后露出的 body 宽度（横屏更少）
         val targetX = if (left) -(p.width - inset - visible) else getScreenW() - (inset + visible)
         animateTo(targetX, dockAlpha())
@@ -1881,6 +1887,13 @@ class PetOverlayService : Service() {
             }
         }
     }
+
+    /** 当前桌宠缩放（1.0 ~ 2.5），和 JS 的 getPetScale() 保持一致 */
+    private fun petScale(): Float = 1f + 1.5f * petSizeRatio()
+
+    /** .body 在窗口内的水平边距（px）：窗口宽减去缩放后的身体宽，再对半分 */
+    private fun bodyInsetPx(p: WindowManager.LayoutParams): Int =
+        ((p.width - dpToPx((BODY_W_DP * petScale()).toInt())) / 2).coerceAtLeast(0)
 
     private fun dpToPx(dp: Int): Int =
         (dp * resources.displayMetrics.density).toInt()
