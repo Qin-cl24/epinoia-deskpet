@@ -43,7 +43,7 @@
   /* 眼睛（两只）：竖长方形（像素小宠物的标准眼型）
      2026-10-15：白色高光点已移除（主人要求，纯黑眼更干净可爱）——原来靠高光撑的"得意"
      改成眨眼表达，见下面「动作表情」。*/
-  .eye { position: absolute; width: 5px; height: 8px; background: #000; top: 9px; border-radius: 2px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
+  .eye { position: absolute; width: 5px; height: 10px; background: #000; top: 9px; border-radius: 2px; transition: height .1s, width .15s, transform .15s, border-radius .15s; }
   .eye-left { left: 12px; } .eye-right { right: 12px; }
   /* ===== 面部表情层：只用眼睛说话（2026-10-15 定稿）=====
      主人判断：萌系小宠物「没有嘴、没有眉毛」最可爱 —— 整套嘴（.mouth）与眉毛（.brow）
@@ -66,7 +66,7 @@
   .pet.act-cry .eye-right::before { right: -3px; transform: rotate(-16deg); }
   .pet.blink .eye { height: 2px; }
   /* 手：小正方形、与身体同色、垂直居中、紧贴身体两侧无缝隙 */
-  .arm { position: absolute; width: 8px; height: 8px; background: var(--pet-body, #e67e22); top: 12px; }
+  .arm { position: absolute; width: 10px; height: 10px; background: var(--pet-body, #e67e22); top: 12px; }
   .arm-left { left: -8px; } .arm-right { right: -8px; }
   /* 腿：四条细腿（细一点、左右各两条靠近且对称）
      2026-10-16：对齐 clawd 比例 —— 他们的脚是身体高的 29%，我们原来只有 17%，显得"腿短"。
@@ -346,22 +346,23 @@
 
   /* 拿玫瑰：细线条的玫瑰（花头 + 茎 + 一片叶），**右手捏在花茎上**，手和花一起晃
      分镜：举着晃两下 → 举到脸边 → 眯眼闻（腮红）→ 轻轻放下 */
-  .scene.rose { left: 33px; top: 10px; width: 9px; height: 9px; border-radius: 50%; background: #e0536b; box-shadow: inset 0 -2px 0 rgba(0,0,0,.18); }
-  .scene.rose::before { content: ''; position: absolute; left: 3px; top: 8px; width: 2px; height: 18px; background: #4e7a3a; border-radius: 1px; }
-  .scene.rose::after { content: ''; position: absolute; left: 1px; top: 15px; width: 6px; height: 3px; border-radius: 50% 50% 50% 0; background: #5c8c45; transform: rotate(-18deg); }
+  .scene.rose { left: 33px; top: 22px; width: 9px; height: 9px; border-radius: 50%; background: #e0536b; box-shadow: inset 0 -2px 0 rgba(0,0,0,.18); }
+  .scene.rose::before { content: ''; position: absolute; left: 3px; top: 8px; width: 2px; height: 10px; background: #4e7a3a; border-radius: 1px; }
+  .scene.rose::after { content: ''; position: absolute; left: 1px; top: 11px; width: 6px; height: 3px; border-radius: 50% 50% 50% 0; background: #5c8c45; transform: rotate(-18deg); }
   .pet.act-rose .scene.rose { animation: roseBeat 8s ease-in-out infinite; }
   @keyframes roseBeat {
+    /* 闻花那一幕只抬高 4px —— 花头的上沿必须留在眼睛下方（主人 2026-10-21 要求：不能高于眼睛）*/
     0%, 20%   { transform: rotate(-6deg); }
     30%, 42%  { transform: rotate(7deg) translateY(-2px); }
-    52%, 70%  { transform: rotate(-2deg) translateY(-7px); }
+    52%, 70%  { transform: rotate(-2deg) translateY(-4px); }
     82%, 100% { transform: rotate(0) translateY(0); }
   }
   /* 右手捏着花茎（茎在 body 的 x26~28），跟着花一起晃、一起抬到脸边 */
-  .pet.act-rose .arm-right { right: 22px; top: 24px; animation: roseHand 8s ease-in-out infinite; }
+  .pet.act-rose .arm-right { right: 22px; top: 28px; animation: roseHand 8s ease-in-out infinite; }
   @keyframes roseHand {
     0%, 20%   { transform: rotate(-5deg); }
     30%, 42%  { transform: rotate(6deg) translateY(-2px); }
-    52%, 70%  { transform: rotate(0) translateY(-9px); }
+    52%, 70%  { transform: rotate(0) translateY(-4px); }
     82%, 100% { transform: rotate(0); }
   }
   @keyframes roseEyes {
@@ -432,7 +433,7 @@
 
   /* 递热水：两只手分别捧住杯子左右两侧，跟着杯子一起矮下、捧起、递出 */
   .pet.act-care .arm-left  { left: 14px; top: 24px; }
-  .pet.act-care .arm-right { right: 14px; top: 24px; }
+  .pet.act-care .arm-right { right: 15px; top: 24px; }
   @keyframes careHands {
     0%, 12%   { transform: translateY(3px); }
     26%, 44%  { transform: translateY(0); }
@@ -442,8 +443,8 @@
   .pet.act-care .arm { animation: careHands 8s ease-in-out infinite; }
 
   /* 等吃的：前段双手夹着骰子 → 扔出去时手松开往后缩 → 面出来时双手捧住碗 → 搓手 */
-  .pet.act-food .arm-left  { left: 12px; top: 18px; }
-  .pet.act-food .arm-right { right: 12px; top: 18px; }
+  .pet.act-food .arm-left  { left: 11px; top: 18px; }
+  .pet.act-food .arm-right { right: 18px; top: 18px; }
   @keyframes foodHandL {
     0%, 30%   { transform: translate(0,0); }
     38%, 64%  { transform: translate(-5px,-2px); }
@@ -577,7 +578,7 @@
      坐标相对 .body：书占 x18~38 / y19~30；左手 x12~20、右手 x36~44，正好各压住书外沿。
      右手每 3.4 秒抬起一下，和右页 pageflip 同步（都在周期 58%~86%），看起来像在翻页。*/
   .pet.act-read .arm {
-    top: 21px; width: 8px; height: 9px; border-radius: 3px; animation: armread 3.4s ease-in-out infinite;
+    top: 21px; width: 9px; height: 10px; border-radius: 3px; animation: armread 3.4s ease-in-out infinite;
     box-shadow: inset 0 -2px 0 rgba(0,0,0,.20), 0 0 0 1px rgba(0,0,0,.13);
   }
   .pet.act-read .arm-left { left: 12px; }
