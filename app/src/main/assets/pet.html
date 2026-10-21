@@ -408,7 +408,7 @@
        抱着骰子想 → 左右摇 → 扔出去翻转掉落 → 落地吓一蹦 >< → 凑近看点数 → 冒出一碗面 ^^ → 搓手 */
   /* 骰子：尺寸照 clawd 原版 —— 他们是 5×5 单位、身体 11×7 单位，也就是骰宽 = 体宽的 45%。
      我们体宽 56px → 骰子 25px（1 单位 ≈ 5.09px）。位置放在头的左前方，不挡眼睛。*/
-  .scene.dice { left: -4px; top: 12px; width: 25px; height: 25px; border: 1px solid #8d8072; border-radius: 3px; background: #fffdf6; box-sizing: border-box; }
+  .scene.dice { left: -8px; top: 12px; width: 25px; height: 25px; border: 1px solid #8d8072; border-radius: 3px; background: #fffdf6; box-sizing: border-box; }
   /* 七个点位（真骰子的六面所需）：四角 + 正中 + 中左中右 */
   .scene.dice .pip { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #5d5246; visibility: hidden; }
   .pip.tl { left: 4px; top: 4px; }    .pip.tr { right: 4px; top: 4px; }
@@ -463,29 +463,29 @@
   .pet.act-food .body { animation: foodHop 10s ease-in-out infinite; }
   /* 手：0~30% 夹着骰子 → 扔出去松手并后缩 → 落地时扶一下 → 70% 后捧碗、拍手、搓手 */
   @keyframes foodHandL {
-    /* 前 30% 手要跟着骰子一起晃（骰子往左 6px、往右 6px），不然就是"骰子自己抖、手不动" */
+    /* 抱骰子阶段：和骰子走**同一条**轨迹（-2,-16 / 8,-18），手才像真的托着它 */
     0%, 8%    { transform: translate(0,0); }
-    12%, 18%  { transform: translate(-6px,-4px); }
-    22%, 28%  { transform: translate(6px,-4px); }
-    34%, 50%  { transform: translate(-4px,-6px) rotate(-8deg); }
-    56%, 68%  { transform: translate(-2px,4px); }
-    74%, 88%  { transform: translate(-3px,8px) rotate(-6deg); }
-    92%, 100% { transform: translate(0,8px) rotate(-10deg); }
+    12%, 18%  { transform: translate(-2px,-16px); }
+    22%, 28%  { transform: translate(8px,-18px); }
+    32%, 50%  { transform: translate(-2px,2px) rotate(-10deg); }   /* 扔出去，手松开放下 */
+    56%, 68%  { transform: translate(0,6px); }
+    74%, 88%  { transform: translate(33px,2px) rotate(-6deg); }    /* 横移过去捧住面碗左侧 */
+    92%, 100% { transform: translate(30px,2px) rotate(-10deg); }   /* 搓手 */
   }
   @keyframes foodHandR {
     0%, 8%    { transform: translate(0,0); }
-    12%, 18%  { transform: translate(-6px,-4px); }
-    22%, 28%  { transform: translate(6px,-4px); }
-    34%, 50%  { transform: translate(4px,-6px) rotate(8deg); }
-    56%, 68%  { transform: translate(2px,4px); }
-    74%, 88%  { transform: translate(3px,8px) rotate(6deg); }
-    92%, 100% { transform: translate(0,8px) rotate(10deg); }
+    12%, 18%  { transform: translate(-2px,-16px); }
+    22%, 28%  { transform: translate(8px,-18px); }
+    32%, 50%  { transform: translate(2px,2px) rotate(10deg); }
+    56%, 68%  { transform: translate(0,6px); }
+    74%, 88%  { transform: translate(20px,2px) rotate(6deg); }     /* 捧住面碗右侧 */
+    92%, 100% { transform: translate(23px,2px) rotate(10deg); }    /* 搓手 */
   }
   .pet.act-food .arm-left  { animation: foodHandL 10s ease-in-out infinite; }
   .pet.act-food .arm-right { animation: foodHandR 10s ease-in-out infinite; }
   /* 等吃的：双手一开始夹着骰子（骰子在 body 的 x19~30）*/
-  .pet.act-food .arm-left  { left: -6px; top: 26px; }
-  .pet.act-food .arm-right { right: 40px; top: 26px; }
+  .pet.act-food .arm-left  { left: -18px; top: 24px; }
+  .pet.act-food .arm-right { right: 39px; top: 24px; }
 
   /* 写信：左手按住信纸左缘，右手握着笔在纸上写（笔在纸的右下角，所以右手也压在那里）*/
   .pet.act-letter .arm-left  { left: 11px; top: 22px; }
