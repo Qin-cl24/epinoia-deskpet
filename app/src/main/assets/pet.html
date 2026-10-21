@@ -335,10 +335,22 @@
   @keyframes steamUp { 0%,100% { opacity: .3; transform: translateY(1px); } 50% { opacity: .9; transform: translateY(-3px); } }
 
   /* 看窗外：整块窗框垫在身体**下面**（DOM 里排在 .body 之前、z-index:0），
-     身体挡住中间，只露出边框和一圈天空色 —— 像桌宠坐在窗边。这样绝不会挡住眼睛。*/
-  .scene.window { left: 1px; top: 0; width: 70px; height: 45px; border: 1px solid #8d8072; border-radius: 3px; background: linear-gradient(180deg, #cfe8ff 0%, #eaf6ff 100%); z-index: 0; }
-  .scene.window::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #8d8072; opacity: .55; }
-  .scene.window::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #8d8072; opacity: .55; }
+     身体挡住中间，只露出边框和一圈天空色 —— 像桌宠坐在窗边。这样绝不会挡住眼睛。
+     分镜照 clawd-island 的 window 十秒脚本，压缩成 8 秒五幕：
+       雨丝下落 → 闭眼听雨 → 伸爪接雨 → 凉得 >< → 雨停月亮升起 + 蹦起来 ^^ */
+  .scene.window { left: 1px; top: 0; width: 70px; height: 45px; border: 1px solid #8d8072; border-radius: 3px; background: linear-gradient(180deg, #cfe8ff 0%, #eaf6ff 100%); z-index: 0; overflow: hidden; }
+  .scene.window::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #8d8072; opacity: .55; z-index: 2; }
+  .scene.window::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #8d8072; opacity: .55; z-index: 2; }
+  /* 雨丝：斜线纹理往下走，前 5 秒有、之后停 */
+  .scene.window .rain { position: absolute; inset: 0; background-image: repeating-linear-gradient(105deg, rgba(120,160,200,.7) 0 1px, transparent 1px 5px); background-size: 40px 40px; animation: rainFall .9s linear infinite, rainShow 8s steps(1) infinite; }
+  @keyframes rainFall { from { background-position: 0 0; } to { background-position: -8px 20px; } }
+  @keyframes rainShow { 0%,46% { opacity: .95; } 47%,100% { opacity: 0; } }
+  /* 云：前 5.5 秒在左边，雨停后往右飘走 */
+  .scene.window .cloud { position: absolute; left: 5px; top: 6px; width: 17px; height: 6px; border-radius: 3px; background: #eef3f8; border: 1px solid #cfd8e3; animation: cloudMove 8s ease-in-out infinite; }
+  @keyframes cloudMove { 0%,46% { transform: translateX(0); opacity: .95; } 62% { transform: translateX(16px); opacity: .55; } 74%,100% { transform: translateX(26px); opacity: 0; } }
+  /* 月亮：雨停后升起来，第六幕最亮 */
+  .scene.window .moon { position: absolute; right: 7px; top: 5px; width: 9px; height: 9px; border-radius: 50%; background: #ffe58f; box-shadow: 0 0 6px rgba(255,229,143,.85); animation: moonShow 8s ease-in-out infinite; }
+  @keyframes moonShow { 0%,50% { opacity: 0; transform: translateY(5px) scale(.5); } 64%,82% { opacity: 1; transform: translateY(0) scale(1); } 92%,100% { opacity: .2; transform: translateY(2px) scale(.8); } }
 
   /* 吃碗饭：细线碗（下半圆） + 碗口线 + 两缕热气 */
   .scene.bowl { left: 25px; top: 30px; width: 18px; height: 10px; border: 1px solid #8d8072; border-top: none; border-radius: 0 0 9px 9px; background: rgba(255,253,246,.75); }
@@ -352,7 +364,33 @@
 
   /* 四个情景的配套眼神/身体小动作 */
   .act-letter .eye { height: 6px; transform: translateY(1px); }              /* 低头看信纸 */
-  .act-window .eye { transform: translateX(1px); }                          /* 眼神偏右，望着窗外 */
+  /* ==== 看窗外的表演分镜（8 秒，和上面窗景的关键帧同步）==== */
+  @keyframes windowEyes {
+    0%, 12%   { height: 8px; }                              /* 扒着窗台看雨 */
+    18%, 30%  { height: 2px; }                              /* 闭眼听雨 */
+    36%, 44%  { height: 8px; }                              /* 睁眼看钳子接雨 */
+    48%, 58%  { height: 2px; transform: rotate(-16deg); }   /* 凉得 ><（眯眼外八字）*/
+    64%, 72%  { height: 8px; transform: none; }             /* 抬头看天 */
+    76%, 86%  { height: 4px; border-radius: 3px 3px 0 0; }  /* 月亮出来 ^^ */
+    92%, 100% { height: 8px; border-radius: 2px; }
+  }
+  .pet.act-window .eye { animation: windowEyes 8s ease-in-out infinite; }
+  /* 第三幕：右手伸出窗外接雨 */
+  @keyframes windowArm {
+    0%, 32%   { transform: translate(0,0) rotate(0); }
+    36%, 44%  { transform: translate(9px,-7px) rotate(-20deg); }
+    50%, 100% { transform: translate(0,0) rotate(0); }
+  }
+  .pet.act-window .arm-right { animation: windowArm 8s ease-in-out infinite; }
+  /* 第六幕：月亮出来时蹦一下 */
+  @keyframes windowHop {
+    0%, 72%   { transform: translateY(0); }
+    77%       { transform: translateY(-7px); }
+    83%       { transform: translateY(0); }
+    88%       { transform: translateY(-3px); }
+    93%, 100% { transform: translateY(0); }
+  }
+  .pet.act-window .body { animation: windowHop 8s ease-in-out infinite; }
   @keyframes chew { 0%,100% { transform: translateY(0); } 50% { transform: translateY(1px); } }
   .act-food .eye { height: 6px; animation: chew .8s ease-in-out infinite; }  /* 咀嚼时眼神一顿一顿 */
   .act-travel .leg-l1, .act-travel .leg-r2 { animation: walkA .32s ease-in-out infinite; }
@@ -492,8 +530,8 @@
     <span class="ball b1"></span>
     <span class="ball b2"></span>
     <span class="ball b3"></span>
-    <!-- 看窗外：窗框垫在身体下面（z-index:0），只露边框 -->
-    <span class="scene window"></span>
+    <!-- 看窗外：窗框垫在身体下面（z-index:0），只露边框；里面的云/月亮/雨丝走 8 秒分镜 -->
+    <span class="scene window"><span class="cloud"></span><span class="moon"></span><span class="rain"></span></span>
     <div class="body">
       <div class="eye eye-left"></div>
       <div class="eye eye-right"></div>
@@ -616,8 +654,11 @@
         });
         if (action === 'shy') blushFor(2600);   // 害羞：> < 眼 + 脸红一起上（Lv3 起才有腮红）
         // 状态类动作（思考/干活/惊讶/睡觉/看书）持续更久，普通动作短一点
-        var hold = (action === 'think' || action === 'run' || action === 'shock' || action === 'sleepy' || action === 'read')
-          ? 8000 : 2500;
+        // 情景动作（写信/看窗外/吃饭/出门/钓鱼/递热水）都是 8 秒的分镜动画，必须给足时间，
+        // 否则分镜演到一半就被撤掉（2026-10-21 踩过：拍 4 秒那一帧时窗外道具已经消失了）
+        var SLOW = ['think','run','shock','sleepy','read','letter','window','food','travel','fish','care'];
+        var hold = SLOW.indexOf(action) >= 0 ? 8500 : 2500;
+        if (SLOW.indexOf(action) >= 0) markBusy(hold + 200);
         setTimeout(function() { pet.classList.remove('act-' + action); clearFx(); }, hold);
       } else if (action && FEELS.indexOf(action) >= 0) {
         wakeUp();
@@ -703,6 +744,10 @@
 
   // ===== 自主小动作：参考相册表情图，随机自觉做 =====
   var ACTIONS = ['happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch','letter','window','food','travel','fish','care'];
+  // 忙碌锁：8 秒分镜动作（看书/写信/看窗外/吃饭/出门/钓鱼/递热水）在演完之前，
+  // 不许随机自娱自乐插队 —— 否则 runAction 一开跑就把所有 act-* 清掉，分镜会断在半路。
+  var busyUntil = 0;
+  function markBusy(ms) { busyUntil = Date.now() + (ms || 8600); }
   // ===== 情绪特效（新）：agent 可直接推 action=stareyes/blush/sweat/heartburst/firework/note =====
   var FEELS = ['stareyes','blush','sweat','heartburst','firework','note'];
 
@@ -886,7 +931,11 @@
     if (L.prop) showProp(L.prop, L.left, L.top, 3200);
     if (L.blush) blushFor(2000);
     if (Math.random() < 0.5) randomSay(L.say[Math.floor(Math.random() * L.say.length)]);
-    setTimeout(function() { pet.classList.remove(L.act); clearArm(); }, 3500);
+    // 情景类动作都是 8 秒分镜动画（看书/写信/看窗外/吃饭/出门/钓鱼/递热水），得给足时间演完
+    var LONG_ACTS = ['act-read', 'act-letter', 'act-window', 'act-food', 'act-travel', 'act-fish', 'act-care'];
+    var isLong = LONG_ACTS.indexOf(L.act) >= 0;
+    if (isLong) markBusy(8800);
+    setTimeout(function() { pet.classList.remove(L.act); clearArm(); }, isLong ? 8600 : 3500);
   }
   // 杂耍：三个小球轮流抛接（独立动作，比普通生活动作更"表演性"）
   function playJuggle() {
@@ -904,6 +953,7 @@
   }
   function runAction() {
     if (pet.classList.contains('asleep')) return;
+    if (Date.now() < busyUntil) return;   // 长分镜还在演，别插队
     if (!getPref('pref_idle_actions', true)) return;
     // 自娱自乐：约 1/3 概率改成自己玩球（Lv2 解锁后）
     if (ballUnlocked() && getPref('pref_toy_ball', true) && Math.random() < 0.35) { playBall(); return; }
