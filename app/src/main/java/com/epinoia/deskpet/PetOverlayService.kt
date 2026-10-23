@@ -1033,6 +1033,19 @@ class PetOverlayService : Service() {
     }
 
     /** 悬浮窗是否可触摸：打字时关掉，避免误触（关掉后触摸会穿透到下层 App） */
+    /** 让桌宠立刻可见：退出隐藏手柄 + 从贴边滑出来（设置页切形态、调试时用） */
+    fun showPetNow() {
+        handler.post {
+            try {
+                if (hidden) toPetMode()
+                if (docked) undock()
+                resetIdleTimer()
+            } catch (e: Exception) {
+                logLifecycle("showPetNow FAILED: $e")
+            }
+        }
+    }
+
     private fun setOverlayTouchable(touchable: Boolean) {
         val p = params ?: return
         val notTouchable = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE

@@ -215,7 +215,8 @@
     font-size: 20px; color: rgba(230, 126, 34, .55); display: none; z-index: 20;
     line-height: 1;
   }
-  .pet.handle-mode .body, .pet.handle-mode .fx, .pet.handle-mode .bubble { display: none; }
+  .pet.handle-mode .body, .pet.handle-mode .fx, .pet.handle-mode .bubble,
+  .pet.handle-mode .fox { display: none; }   /* 狐狐形态也要跟着隐藏，否则手柄和狐狐会叠在一起 */
   .pet.handle-mode .handle { display: block; }
   /* 翻滚动作 */
   .act-roll { animation: roll .6s ease 1; }

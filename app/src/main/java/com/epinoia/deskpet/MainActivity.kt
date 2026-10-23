@@ -96,6 +96,8 @@ class MainActivity : AppCompatActivity() {
             sw.setOnCheckedChangeListener { _, checked ->
                 prefs.edit().putString("pref_form", if (checked) "fox" else "block").apply()
                 applyLookLive()
+                // 切完形态让它冒出来一下，否则如果正处在隐藏/贴边状态就看不到效果
+                PetOverlayService.instance?.showPetNow()
             }
         }
         bindLookBox(R.id.cb_acc_cap, "pref_acc_cap")
