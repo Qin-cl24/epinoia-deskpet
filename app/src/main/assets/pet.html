@@ -733,6 +733,62 @@
     37%, 40% { opacity: 1; } 41%, 46% { opacity: 0; } 47%, 100% { opacity: 0; }
   }
 
+  /* ===== 狐狐形态（Live2D 风格的分层插画，2026-10-23 加）=====
+     素材：主人在画世界里画的 Q 版小狐狸，PSD 拆成 19 个图层后逐层抽出透明 PNG，
+     坐标由 PSD 图层包围盒自动换算（零件图 272x327，画布内缩放 0.235 → 屏幕约 64x77 CSS px）。
+     形态由 .pet[data-form="fox"] 控制，方块形态完全不受影响。*/
+  .fox { display: none; }
+  .pet[data-form="fox"] .fox { display: block; }
+  /* 切到狐狐形态时隐藏方块形态的所有部件（身体/道具/影子/球/玩具）*/
+  .pet[data-form="fox"] .body,
+  .pet[data-form="fox"] .shadow,
+  .pet[data-form="fox"] .scene,
+  .pet[data-form="fox"] .book,
+  .pet[data-form="fox"] .ball,
+  .pet[data-form="fox"] .toy { display: none !important; }
+
+  .fox {
+    position: absolute; left: 50%; bottom: 0; width: 272px; height: 327px;
+    transform: translateX(-50%) scale(.235); transform-origin: bottom center;
+    pointer-events: none;
+  }
+  .fox-inner { position: absolute; inset: 0; animation: foxIdle 2.8s ease-in-out infinite; }
+  @keyframes foxIdle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  .fox img.fx { position: absolute; display: block; }
+
+    .fx-tail { left: 153px; top: 184px; width: 120px; height: 128px; }
+    .fx-pants { left: 86px; top: 175px; width: 106px; height: 138px; }
+    .fx-layer19 { left: 116px; top: 197px; width: 51px; height: 47px; }
+    .fx-neck-hands { left: 131px; top: 154px; width: 28px; height: 27px; }
+    .fx-sleeves { left: 103px; top: 151px; width: 75px; height: 74px; }
+    .fx-top { left: 99px; top: 150px; width: 95px; height: 80px; }
+    .fx-hair-back { left: 29px; top: 43px; width: 208px; height: 157px; }
+    .fx-ear-L { left: 0px; top: 70px; width: 71px; height: 87px; }
+    .fx-head { left: 64px; top: 64px; width: 134px; height: 135px; }
+    .fx-mouth { left: 126px; top: 155px; width: 12px; height: 6px; }
+    .fx-eyes { left: 77px; top: 98px; width: 90px; height: 65px; }
+    .fx-ear-R { left: 106px; top: 0px; width: 84px; height: 85px; }
+    .fx-fur-under-ear-L { left: 22px; top: 103px; width: 53px; height: 62px; }
+    .fx-bangs { left: 32px; top: 43px; width: 190px; height: 147px; }
+    .fx-layer13 { left: 33px; top: 25px; width: 74px; height: 64px; }
+    .fx-fur-under-ear-R { left: 132px; top: 40px; width: 56px; height: 49px; }
+    .fx-hair-highlight { left: 62px; top: 90px; width: 106px; height: 49px; }
+    .fx-hair-tuft { left: 75px; top: 87px; width: 52px; height: 22px; }
+
+  /* --- 狐狐的小动画：眨眼 / 尾巴摇 / 耳朵抖 / 呆毛晃 --- */
+  .fx-eyes { transform-origin: center center; animation: foxBlink 4.2s ease-in-out infinite; }
+  @keyframes foxBlink { 0%, 93%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(.12); } }
+  .fx-tail { transform-origin: 12% 10%; animation: foxTail 3.6s ease-in-out infinite; }
+  @keyframes foxTail { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-7deg); } }
+  .fx-ear-L { transform-origin: 70% 90%; animation: foxEarL 3.2s ease-in-out infinite; }
+  .fx-ear-R { transform-origin: 30% 90%; animation: foxEarR 3.2s ease-in-out infinite .4s; }
+  @keyframes foxEarL { 0%,100% { transform: rotate(0); } 40% { transform: rotate(-4deg); } 70% { transform: rotate(2deg); } }
+  @keyframes foxEarR { 0%,100% { transform: rotate(0); } 40% { transform: rotate(4deg); } 70% { transform: rotate(-2deg); } }
+  .fx-hair-tuft { transform-origin: bottom left; animation: foxTuft 2.4s ease-in-out infinite; }
+  @keyframes foxTuft { 0%,100% { transform: rotate(0); } 50% { transform: rotate(6deg); } }
+  .fx-hair-highlight { animation: foxShine 4.8s ease-in-out infinite; }
+  @keyframes foxShine { 0%,100% { opacity: 1; } 50% { opacity: .82; } }
+
   /* ===== 思考泡泡（2026-10-21 加）=====
      一朵细线云 + 三个轮流闪的点 + 两颗从云飘向头顶的尾巴小圆。
      挂在 act-think（思考）和 act-scratch（挠头想事）上。像素/细线风格，1px 描边无填充。*/
@@ -1000,6 +1056,27 @@
     <span class="ball b1"></span>
     <span class="ball b2"></span>
     <span class="ball b3"></span>
+    <!-- 狐狐形态：19 个分层部件（素材来自主人的画世界作品，PSD 拆层后导出） -->
+    <div class="fox"><div class="fox-inner">
+      <img class="fx fx-tail" src="fox/tail.png" alt="">
+      <img class="fx fx-pants" src="fox/pants.png" alt="">
+      <img class="fx fx-layer19" src="fox/layer19.png" alt="">
+      <img class="fx fx-neck-hands" src="fox/neck-hands.png" alt="">
+      <img class="fx fx-sleeves" src="fox/sleeves.png" alt="">
+      <img class="fx fx-top" src="fox/top.png" alt="">
+      <img class="fx fx-hair-back" src="fox/hair-back.png" alt="">
+      <img class="fx fx-ear-L" src="fox/ear-L.png" alt="">
+      <img class="fx fx-head" src="fox/head.png" alt="">
+      <img class="fx fx-mouth" src="fox/mouth.png" alt="">
+      <img class="fx fx-eyes" src="fox/eyes.png" alt="">
+      <img class="fx fx-ear-R" src="fox/ear-R.png" alt="">
+      <img class="fx fx-fur-under-ear-L" src="fox/fur-under-ear-L.png" alt="">
+      <img class="fx fx-bangs" src="fox/bangs.png" alt="">
+      <img class="fx fx-layer13" src="fox/layer13.png" alt="">
+      <img class="fx fx-fur-under-ear-R" src="fox/fur-under-ear-R.png" alt="">
+      <img class="fx fx-hair-highlight" src="fox/hair-highlight.png" alt="">
+      <img class="fx fx-hair-tuft" src="fox/hair-tuft.png" alt="">
+    </div></div>
     <!-- 看窗外：窗框垫在身体下面（z-index:0），只露边框；里面的云/月亮/雨丝走 8 秒分镜 -->
     <span class="scene window"><span class="cloud"></span><span class="moon"></span><span class="rain"></span></span>
     <div class="body">
@@ -1219,6 +1296,15 @@
   }
 
   // ===== 自主小动作：参考相册表情图，随机自觉做 =====
+  // 形态：block（方块，默认） / fox（狐狐）
+  (function applyForm() {
+    var f = getPrefStr('pref_form', 'block');
+    pet.dataset.form = (f === 'fox') ? 'fox' : 'block';
+  })();
+  /** 运行时切换形态（设置页与调试都能用） */
+  function setForm(f) {
+    pet.dataset.form = (f === 'fox') ? 'fox' : 'block';
+  }
   var ACTIONS = ['rose','happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch','letter','window','food','travel','fish','care','side'];
   // 忙碌锁：8 秒分镜动作（看书/写信/看窗外/吃饭/出门/钓鱼/递热水）在演完之前，
   // 不许随机自娱自乐插队 —— 否则 runAction 一开跑就把所有 act-* 清掉，分镜会断在半路。
