@@ -216,7 +216,7 @@
     line-height: 1;
   }
   .pet.handle-mode .body, .pet.handle-mode .fx, .pet.handle-mode .bubble,
-  .pet.handle-mode .fox { display: none; }   /* 狐狐形态也要跟着隐藏，否则手柄和狐狐会叠在一起 */
+  .pet.handle-mode .fox { display: none !important; }   /* 必须 !important：.pet[data-form="fox"] .fox 的 display:block 优先级相同且位置更靠后 */
   .pet.handle-mode .handle { display: block; }
   /* 翻滚动作 */
   .act-roll { animation: roll .6s ease 1; }
