@@ -733,13 +733,12 @@
     37%, 40% { opacity: 1; } 41%, 46% { opacity: 0; } 47%, 100% { opacity: 0; }
   }
 
-  /* ===== 狐狐形态（Live2D 风格的分层插画，2026-10-23 加）=====
-     素材：主人在画世界里画的 Q 版小狐狸，PSD 拆成 19 个图层后逐层抽出透明 PNG，
-     坐标由 PSD 图层包围盒自动换算（零件图 272x327，画布内缩放 0.235 → 屏幕约 64x77 CSS px）。
-     形态由 .pet[data-form="fox"] 控制，方块形态完全不受影响。*/
+  /* ===== 狐狐形态（分层插画，2026-10-23）=====
+     素材：主人在画世界画的 Q 版小狐狸，PSD 21 层拆解 → 逐层抽出透明 PNG（并做过"去白边"处理：
+     把半透明像素按 alpha 反推真实颜色，消除白底残留的白边）。
+     零件画布 548x656，画布内缩放 0.117 → 屏幕约 64x77 CSS px。*/
   .fox { display: none; }
   .pet[data-form="fox"] .fox { display: block; }
-  /* 切到狐狐形态时隐藏方块形态的所有部件（身体/道具/影子/球/玩具）*/
   .pet[data-form="fox"] .body,
   .pet[data-form="fox"] .shadow,
   .pet[data-form="fox"] .scene,
@@ -748,46 +747,50 @@
   .pet[data-form="fox"] .toy { display: none !important; }
 
   .fox {
-    position: absolute; left: 50%; bottom: 0; width: 272px; height: 327px;
-    transform: translateX(-50%) scale(.235); transform-origin: bottom center;
+    position: absolute; left: 50%; bottom: 0; width: 548px; height: 656px;
+    transform: translateX(-50%) scale(.104); transform-origin: bottom center;   /* 0.104 → 屏幕约 57x68，顶部留出余量 */
     pointer-events: none;
   }
   .fox-inner { position: absolute; inset: 0; animation: foxIdle 2.8s ease-in-out infinite; }
   @keyframes foxIdle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
   .fox img.fx { position: absolute; display: block; }
+  /* 地上的影子（画稿里没画，用 CSS 补一个柔和椭圆）*/
+  .fox .fox-shadow {
+    position: absolute; left: 96px; bottom: -6px; width: 360px; height: 34px;
+    background: rgba(0,0,0,.22); border-radius: 50%; filter: blur(9px);
+  }
 
-    .fx-tail { left: 153px; top: 184px; width: 120px; height: 128px; }
-    .fx-pants { left: 86px; top: 175px; width: 106px; height: 138px; }
-    .fx-layer19 { left: 116px; top: 197px; width: 51px; height: 47px; }
-    .fx-neck-hands { left: 131px; top: 154px; width: 28px; height: 27px; }
-    .fx-sleeves { left: 103px; top: 151px; width: 75px; height: 74px; }
-    .fx-top { left: 99px; top: 150px; width: 95px; height: 80px; }
-    .fx-hair-back { left: 29px; top: 43px; width: 208px; height: 157px; }
-    .fx-ear-L { left: 0px; top: 70px; width: 71px; height: 87px; }
-    .fx-head { left: 64px; top: 64px; width: 134px; height: 135px; }
-    .fx-mouth { left: 126px; top: 155px; width: 12px; height: 6px; }
-    .fx-eyes { left: 77px; top: 98px; width: 90px; height: 65px; }
-    .fx-ear-R { left: 106px; top: 0px; width: 84px; height: 85px; }
-    .fx-fur-under-ear-L { left: 22px; top: 103px; width: 53px; height: 62px; }
-    .fx-bangs { left: 32px; top: 43px; width: 190px; height: 147px; }
-    .fx-layer13 { left: 33px; top: 25px; width: 74px; height: 64px; }
-    .fx-fur-under-ear-R { left: 132px; top: 40px; width: 56px; height: 49px; }
-    .fx-hair-highlight { left: 62px; top: 90px; width: 106px; height: 49px; }
-    .fx-hair-tuft { left: 75px; top: 87px; width: 52px; height: 22px; }
+    .fx-tail { left: 307px; top: 368px; width: 240px; height: 255px; }
+    .fx-shoes { left: 177px; top: 510px; width: 188px; height: 144px; }
+    .fx-pants { left: 173px; top: 350px; width: 211px; height: 276px; }
+    .fx-layer19 { left: 233px; top: 393px; width: 101px; height: 94px; }
+    .fx-neck-hands { left: 263px; top: 305px; width: 55px; height: 65px; }
+    .fx-sleeves { left: 207px; top: 302px; width: 150px; height: 147px; }
+    .fx-top { left: 199px; top: 299px; width: 190px; height: 160px; }
+    .fx-hair-back { left: 58px; top: 84px; width: 418px; height: 316px; }
+    .fx-ear-L { left: 0px; top: 139px; width: 143px; height: 177px; }
+    .fx-head { left: 128px; top: 128px; width: 269px; height: 270px; }
+    .fx-mouth { left: 253px; top: 303px; width: 26px; height: 19px; }
+    .fx-eyes { left: 155px; top: 195px; width: 180px; height: 131px; }
+    .fx-ear-R { left: 211px; top: 0px; width: 188px; height: 169px; }
+    .fx-fur-under-ear-L { left: 44px; top: 205px; width: 107px; height: 125px; }
+    .fx-bangs { left: 64px; top: 85px; width: 381px; height: 294px; }
+    .fx-layer13 { left: 67px; top: 50px; width: 148px; height: 127px; }
+    .fx-fur-under-ear-R { left: 264px; top: 79px; width: 112px; height: 98px; }
+    .fx-hair-highlight { left: 125px; top: 180px; width: 211px; height: 98px; }
+    .fx-hair-tuft { left: 151px; top: 173px; width: 104px; height: 45px; }
 
-  /* --- 狐狐的小动画：眨眼 / 尾巴摇 / 耳朵抖 / 呆毛晃 --- */
+  /* --- 小动画：眨眼 / 尾巴摇 / 耳朵抖 / 呆毛晃 --- */
   .fx-eyes { transform-origin: center center; animation: foxBlink 4.2s ease-in-out infinite; }
   @keyframes foxBlink { 0%, 93%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(.12); } }
-  .fx-tail { transform-origin: 12% 10%; animation: foxTail 3.6s ease-in-out infinite; }
-  @keyframes foxTail { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-7deg); } }
-  .fx-ear-L { transform-origin: 70% 90%; animation: foxEarL 3.2s ease-in-out infinite; }
-  .fx-ear-R { transform-origin: 30% 90%; animation: foxEarR 3.2s ease-in-out infinite .4s; }
-  @keyframes foxEarL { 0%,100% { transform: rotate(0); } 40% { transform: rotate(-4deg); } 70% { transform: rotate(2deg); } }
-  @keyframes foxEarR { 0%,100% { transform: rotate(0); } 40% { transform: rotate(4deg); } 70% { transform: rotate(-2deg); } }
+  .fx-tail { transform-origin: 12% 8%; animation: foxTail 3.6s ease-in-out infinite; }
+  @keyframes foxTail { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg); } }
+  .fx-ear-L { transform-origin: 70% 92%; animation: foxEarL 3.2s ease-in-out infinite; }
+  .fx-ear-R { transform-origin: 30% 92%; animation: foxEarR 3.2s ease-in-out infinite .4s; }
+  @keyframes foxEarL { 0%,100% { transform: rotate(0); } 40% { transform: rotate(-3.5deg); } 70% { transform: rotate(1.5deg); } }
+  @keyframes foxEarR { 0%,100% { transform: rotate(0); } 40% { transform: rotate(3.5deg); } 70% { transform: rotate(-1.5deg); } }
   .fx-hair-tuft { transform-origin: bottom left; animation: foxTuft 2.4s ease-in-out infinite; }
-  @keyframes foxTuft { 0%,100% { transform: rotate(0); } 50% { transform: rotate(6deg); } }
-  .fx-hair-highlight { animation: foxShine 4.8s ease-in-out infinite; }
-  @keyframes foxShine { 0%,100% { opacity: 1; } 50% { opacity: .82; } }
+  @keyframes foxTuft { 0%,100% { transform: rotate(0); } 50% { transform: rotate(5deg); } }
 
   /* ===== 思考泡泡（2026-10-21 加）=====
      一朵细线云 + 三个轮流闪的点 + 两颗从云飘向头顶的尾巴小圆。
@@ -1057,8 +1060,9 @@
     <span class="ball b2"></span>
     <span class="ball b3"></span>
     <!-- 狐狐形态：19 个分层部件（素材来自主人的画世界作品，PSD 拆层后导出） -->
-    <div class="fox"><div class="fox-inner">
+    <div class="fox"><span class="fox-shadow"></span><div class="fox-inner">
       <img class="fx fx-tail" src="fox/tail.png" alt="">
+      <img class="fx fx-shoes" src="fox/shoes.png" alt="">
       <img class="fx fx-pants" src="fox/pants.png" alt="">
       <img class="fx fx-layer19" src="fox/layer19.png" alt="">
       <img class="fx fx-neck-hands" src="fox/neck-hands.png" alt="">
