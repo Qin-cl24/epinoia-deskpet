@@ -90,6 +90,14 @@ class MainActivity : AppCompatActivity() {
         }
         spSkin.post { skinInit = false }
 
+        // 形态：狐狐（分层插画） / 方块（默认）
+        findViewById<Switch>(R.id.sw_form)?.let { sw ->
+            sw.isChecked = prefs.getString("pref_form", "block") == "fox"
+            sw.setOnCheckedChangeListener { _, checked ->
+                prefs.edit().putString("pref_form", if (checked) "fox" else "block").apply()
+                applyLookLive()
+            }
+        }
         bindLookBox(R.id.cb_acc_cap, "pref_acc_cap")
         bindLookBox(R.id.cb_acc_sleepcap, "pref_acc_sleepcap")
         bindLookBox(R.id.cb_acc_xmascap, "pref_acc_xmascap")

@@ -83,6 +83,14 @@
             android:visibility="gone">
 
         <Switch
+            android:id="@+id/sw_form"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="狐狐形态（Q版小狐狸插画；关闭 = 方块形态）"
+            android:textColor="#333333" />
+
+        <Switch
             android:id="@+id/sw_dock"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
