@@ -784,10 +784,49 @@
   @keyframes foxBlink { 0%, 93%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(.12); } }
   .fx-tail { transform-origin: 12% 8%; animation: foxTail 3.6s ease-in-out infinite; }
   @keyframes foxTail { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg); } }
-  .fx-ear-L { transform-origin: 70% 92%; animation: foxEarL 3.2s ease-in-out infinite; }
-  .fx-ear-R { transform-origin: 30% 92%; animation: foxEarR 3.2s ease-in-out infinite .4s; }
-  @keyframes foxEarL { 0%,100% { transform: rotate(0); } 40% { transform: rotate(-3.5deg); } 70% { transform: rotate(1.5deg); } }
-  @keyframes foxEarR { 0%,100% { transform: rotate(0); } 40% { transform: rotate(3.5deg); } 70% { transform: rotate(-1.5deg); } }
+  /* ===== 耳朵（2026-10-23 加情绪版）=====
+     起点：耳根在各自下方（左耳 origin 70% 92%、右耳 30% 92%），所以旋转=绕耳根摆。
+     平时：每 5 秒抖一下（像真狐狸偶尔动耳）；情绪：开心竖起、生气压平、犯困耷拉、害羞轻抖。*/
+  .fx-ear-L { transform-origin: 70% 92%; animation: foxEarTwitchL 5s ease-in-out infinite; }
+  .fx-ear-R { transform-origin: 30% 92%; animation: foxEarTwitchR 5s ease-in-out infinite .7s; }
+  @keyframes foxEarTwitchL {
+    0%, 84%, 100% { transform: rotate(0); }
+    88%           { transform: rotate(-9deg); }   /* 突然抖一下 */
+    92%           { transform: rotate(4deg); }
+    96%           { transform: rotate(-2deg); }
+  }
+  @keyframes foxEarTwitchR {
+    0%, 84%, 100% { transform: rotate(0); }
+    88%           { transform: rotate(9deg); }
+    92%           { transform: rotate(-4deg); }
+    96%           { transform: rotate(2deg); }
+  }
+  /* --- 情绪耳朵（沿用动作系统的 act-* 类）--- */
+  /* 开心/庆祝：竖起并轻轻快抖 */
+  @keyframes foxEarHappyL { 0%,100% { transform: rotate(7deg); } 50% { transform: rotate(11deg); } }
+  @keyframes foxEarHappyR { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(-11deg); } }
+  .pet[data-form="fox"].act-happy .fx-ear-L,
+  .pet[data-form="fox"].act-celebrate .fx-ear-L { animation: foxEarHappyL .9s ease-in-out infinite; }
+  .pet[data-form="fox"].act-happy .fx-ear-R,
+  .pet[data-form="fox"].act-celebrate .fx-ear-R { animation: foxEarHappyR .9s ease-in-out infinite; }
+  /* 生气：往两边压平（飞机耳）*/
+  .pet[data-form="fox"].act-angry .fx-ear-L { animation: none; transform: rotate(-16deg); }
+  .pet[data-form="fox"].act-angry .fx-ear-R { animation: none; transform: rotate(16deg); }
+  /* 犯困：慢慢耷拉下来 */
+  @keyframes foxEarSleepL { 0%,100% { transform: rotate(-10deg); } 50% { transform: rotate(-6deg); } }
+  @keyframes foxEarSleepR { 0%,100% { transform: rotate(10deg); } 50% { transform: rotate(6deg); } }
+  .pet[data-form="fox"].act-sleepy .fx-ear-L { animation: foxEarSleepL 2.4s ease-in-out infinite; }
+  .pet[data-form="fox"].act-sleepy .fx-ear-R { animation: foxEarSleepR 2.4s ease-in-out infinite; }
+  /* 撒娇/害羞：小幅快抖 */
+  @keyframes foxEarShyL { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(3deg); } }
+  @keyframes foxEarShyR { 0%,100% { transform: rotate(4deg); } 50% { transform: rotate(-3deg); } }
+  .pet[data-form="fox"].act-cute .fx-ear-L,
+  .pet[data-form="fox"].act-shy .fx-ear-L { animation: foxEarShyL .7s ease-in-out infinite; }
+  .pet[data-form="fox"].act-cute .fx-ear-R,
+  .pet[data-form="fox"].act-shy .fx-ear-R { animation: foxEarShyR .7s ease-in-out infinite; }
+  /* 惊讶：两只耳朵同时竖到最直 */
+  .pet[data-form="fox"].act-shock .fx-ear-L { animation: none; transform: rotate(12deg); }
+  .pet[data-form="fox"].act-shock .fx-ear-R { animation: none; transform: rotate(-12deg); }
   .fx-hair-tuft { transform-origin: bottom left; animation: foxTuft 2.4s ease-in-out infinite; }
   @keyframes foxTuft { 0%,100% { transform: rotate(0); } 50% { transform: rotate(5deg); } }
   .fx-hair-highlight { animation: foxShine 4.8s ease-in-out infinite; }
