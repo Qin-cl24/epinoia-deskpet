@@ -775,7 +775,7 @@
     .fx-part25 { left: 196px; top: 264px; width: 139px; height: 72px; }
     .fx-mouth { left: 252px; top: 300px; width: 26px; height: 19px; }
     .fx-layer13 { left: 70px; top: 58px; width: 126px; height: 116px; }
-    .fx-eyes { left: 154px; top: 192px; width: 180px; height: 131px; }
+    .fx-eye-L, .fx-eye-R { left: 154px; top: 192px; width: 180px; height: 131px; }   /* 左右眼拆成两张，位置与原 eyes.png 完全一致 */
     .fx-bangs { left: 63px; top: 82px; width: 375px; height: 293px; }
     .fx-ear-R { left: 210px; top: 0px; width: 188px; height: 165px; }
     .fx-fur-under-ear-R { left: 263px; top: 76px; width: 92px; height: 98px; }
@@ -783,8 +783,13 @@
     .fx-hair-tuft { left: 150px; top: 170px; width: 104px; height: 45px; }
 
   /* 小动画 */
-  .fx-eyes { transform-origin: center center; animation: foxBlink 4.2s ease-in-out infinite; }
-  @keyframes foxBlink { 0%, 93%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(.12); } }
+  /* 眨眼（2026-10-24 重做）：画稿里两只眼睛是斜着的（右眼在上、左眼偏下 40 多 px），
+     原来整张眼睛图层绕「图层中心」压扁，闭眼时两条线会飘到脸中间。现在拆成左右眼两张，
+     各自绕自己的**眼底**压扁（46,130 和 134,88 是用 tools/fox-eye-split.py 量出来的），
+     闭眼线就落在各自的下眼睑上。开合由 JS 的 .blink 类驱动（尊重「眨眼开关」和睡眠状态）。 */
+  .fx-eye-L { transform-origin: 46px 130px; transition: transform .09s ease-out; }
+  .fx-eye-R { transform-origin: 134px 88px;  transition: transform .09s ease-out; }
+  .pet.blink .fx-eye-L, .pet.blink .fx-eye-R { transform: scaleY(.12); }
   .fx-tail { transform-origin: 12% 8%; animation: foxTail 3.6s ease-in-out infinite; }
   @keyframes foxTail { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg); } }
   /* 耳根补片（2026-10-24）：左耳绕耳根转的时候，耳朵内侧会离开头发，露出一条背景色的缝。
@@ -1146,7 +1151,8 @@
       <img class="fx fx-part25" src="fox/part25.png" alt="">
       <img class="fx fx-mouth" src="fox/mouth.png" alt="">
       <img class="fx fx-layer13" src="fox/layer13.png" alt="">
-      <img class="fx fx-eyes" src="fox/eyes.png" alt="">
+      <img class="fx fx-eye-L" src="fox/eye-L.png" alt="">
+      <img class="fx fx-eye-R" src="fox/eye-R.png" alt="">
       <img class="fx fx-bangs" src="fox/bangs.png" alt="">
       <img class="fx fx-ear-R" src="fox/ear-R.png" alt="">
       <img class="fx fx-fur-under-ear-R" src="fox/fur-under-ear-R.png" alt="">
@@ -1212,13 +1218,23 @@
     try { return window.AndroidBridge ? AndroidBridge.getPrefInt(key, def) : def; } catch (e) { return def; }
   }
 
-  // 眨眼（设置可关）
+  // 眨眼（设置可关）：间隔随机、偶尔连眨两下、睡着不眨。
+  // 方块形态靠 .blink .eye{height:2px} 生效，狐狐靠 .blink .fx-eye-L/R 的 scaleY，同一套类。
   if (getPref('pref_blink', true)) {
-    setInterval(() => {
-      if (pet.classList.contains('asleep')) return;
+    const blinkOnce = () => {
       pet.classList.add('blink');
-      setTimeout(() => pet.classList.remove('blink'), 130);
-    }, 3000 + Math.random() * 1500);
+      setTimeout(() => pet.classList.remove('blink'), 110);
+    };
+    const scheduleBlink = () => {
+      setTimeout(() => {
+        if (!pet.classList.contains('asleep')) {
+          blinkOnce();
+          if (Math.random() < 0.18) setTimeout(blinkOnce, 230);   // 偶尔连眨两下，更像活物
+        }
+        scheduleBlink();
+      }, 2600 + Math.random() * 4200);                            // 2.6~6.8 秒
+    };
+    scheduleBlink();
   }
 
   window.petEngine = {
