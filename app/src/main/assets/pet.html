@@ -1310,6 +1310,8 @@
   /** 运行时切换形态（设置页与调试都能用） */
   function setForm(f) {
     pet.dataset.form = (f === 'fox') ? 'fox' : 'block';
+    // 切换后立刻把新的锚点矩形报给原生层（气泡位置要跟着变）
+    setTimeout(function() { try { reportBodyRect(); } catch (e) {} }, 60);
   }
   var ACTIONS = ['rose','happy','sleepy','angry','cry','proud','jump','wiggle','music','shock','think','celebrate','cute','run','roll','read','diamond','shy','raise','scratch','letter','window','food','travel','fish','care','side'];
   // 忙碌锁：8 秒分镜动作（看书/写信/看窗外/吃饭/出门/钓鱼/递热水）在演完之前，
@@ -1592,16 +1594,24 @@
 
   // 上报桌宠身体在窗口内的相对位置（比例 0~1，原生层用窗口实际尺寸换算成屏幕坐标）。
   // 用比例而不是像素：不依赖 CSS px 与 dp 的换算假设，任何 density 下都精确锚定在头顶。
-  try {
-    var b = document.querySelector('.body');
-    var r = b.getBoundingClientRect();
-    window.AndroidBridge && window.AndroidBridge.setPetBodyRect(
-      r.left / window.innerWidth,
-      r.top / window.innerHeight,
-      r.width / window.innerWidth,
-      r.height / window.innerHeight
-    );
-  } catch (e) {}
+  reportBodyRect();
+  function reportBodyRect() {
+    try {
+      // 气泡锚定要跟着"当前形态"走：方块形态锚 .body，狐狐形态锚 .fox
+      // （否则狐狐形态下 .body 是 display:none，矩形为 0 → 气泡锚到窗口左上角）
+      var el = (pet.dataset.form === 'fox') ? document.querySelector('.fox') : document.querySelector('.body');
+      if (!el) return;
+      var r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      window.AndroidBridge && window.AndroidBridge.setPetBodyRect(
+        r.left / window.innerWidth,
+        r.top / window.innerHeight,
+        r.width / window.innerWidth,
+        r.height / window.innerHeight
+      );
+    } catch (e) {}
+  }
+  setInterval(reportBodyRect, 1500);   // 形态切换/缩放变化后自动跟上
 
   randomSay(GREETS[PERIOD]);
 </script>
