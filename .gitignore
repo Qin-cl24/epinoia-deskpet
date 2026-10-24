@@ -36,3 +36,6 @@ docs/kairos-private.md
 docs/kairos-private.enc
 kairos-mail.sh
 .kairos-pass
+
+# ── Python 工具缓存 ──
+__pycache__/

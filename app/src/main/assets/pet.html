@@ -793,14 +793,22 @@
   .fx-ear-L-base { animation: none; }
   /* ===== 耳朵（2026-10-23 加情绪版）=====
      起点：耳根在各自下方（左耳 origin 70% 92%、右耳 30% 92%），所以旋转=绕耳根摆。
-     平时：每 5 秒抖一下（像真狐狸偶尔动耳）；情绪：开心竖起、生气压平、犯困耷拉、害羞轻抖。*/
+     平时：每 5 秒抖一下（像真狐狸偶尔动耳）；情绪：开心竖起、生气压平、犯困耷拉、害羞轻抖。
+
+     ⚠️ 2026-10-24 耳根接缝：耳朵往「远离头部」那侧摆时，耳内侧会离开头发露出一条背景色的缝。
+     两个手段一起用（真机 312x253 悬浮窗截图逐角度量过，缝像素归零）：
+       ① 补片 .fx-ear-L-base（见上）：静止时完全被耳朵盖住，只在摆动时把缝填上；
+       ② 摆动时补偿一个很小的平移 —— 耳根反方向挪「1.6 × 角度」px 贴回头发。
+          因为耳朵内侧本来就压在 bangs/layer13 底下，多挪一点也看不出来（挪到头发下面）。
+          狐坐标系里 26px 只相当于屏幕上约 3px，肉眼几乎无感，但足以把缝堵死。
+     负角度（左耳往左上摆）= 远离头部那侧，才需要补偿；正角度不用。 */
   .fx-ear-L { transform-origin: 70% 92%; animation: foxEarTwitchL 5s ease-in-out infinite; }
   .fx-ear-R { transform-origin: 30% 92%; animation: foxEarTwitchR 5s ease-in-out infinite .7s; }
   @keyframes foxEarTwitchL {
     0%, 84%, 100% { transform: rotate(0); }
-    88%           { transform: rotate(-9deg); }   /* 突然抖一下 */
+    88%           { transform: translate(14px, 0) rotate(-9deg); }   /* 突然抖一下 */
     92%           { transform: rotate(4deg); }
-    96%           { transform: rotate(-2deg); }
+    96%           { transform: translate(3px, 0) rotate(-2deg); }
   }
   @keyframes foxEarTwitchR {
     0%, 84%, 100% { transform: rotate(0); }
@@ -817,15 +825,15 @@
   .pet[data-form="fox"].act-happy .fx-ear-R,
   .pet[data-form="fox"].act-celebrate .fx-ear-R { animation: foxEarHappyR .9s ease-in-out infinite; }
   /* 生气：往两边压平（飞机耳）*/
-  .pet[data-form="fox"].act-angry .fx-ear-L { animation: none; transform: rotate(-16deg); }
+  .pet[data-form="fox"].act-angry .fx-ear-L { animation: none; transform: translate(26px, 0) rotate(-16deg); }
   .pet[data-form="fox"].act-angry .fx-ear-R { animation: none; transform: rotate(16deg); }
   /* 犯困：慢慢耷拉下来 */
-  @keyframes foxEarSleepL { 0%,100% { transform: rotate(-10deg); } 50% { transform: rotate(-6deg); } }
+  @keyframes foxEarSleepL { 0%,100% { transform: translate(16px, 0) rotate(-10deg); } 50% { transform: translate(10px, 0) rotate(-6deg); } }
   @keyframes foxEarSleepR { 0%,100% { transform: rotate(10deg); } 50% { transform: rotate(6deg); } }
   .pet[data-form="fox"].act-sleepy .fx-ear-L { animation: foxEarSleepL 2.4s ease-in-out infinite; }
   .pet[data-form="fox"].act-sleepy .fx-ear-R { animation: foxEarSleepR 2.4s ease-in-out infinite; }
   /* 撒娇/害羞：小幅快抖 */
-  @keyframes foxEarShyL { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(3deg); } }
+  @keyframes foxEarShyL { 0%,100% { transform: translate(6px, 0) rotate(-4deg); } 50% { transform: rotate(3deg); } }
   @keyframes foxEarShyR { 0%,100% { transform: rotate(4deg); } 50% { transform: rotate(-3deg); } }
   .pet[data-form="fox"].act-cute .fx-ear-L,
   .pet[data-form="fox"].act-shy .fx-ear-L { animation: foxEarShyL .7s ease-in-out infinite; }
