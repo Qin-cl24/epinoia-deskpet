@@ -874,9 +874,9 @@ class PetOverlayService : Service() {
         val left = petX < (getScreenW() - petW) / 2
         // 狐狐形态：手柄窗口留宽一点，用来露出「一截尾巴」（方块形态仍然只用细竖条）
         val foxForm = handleFormOverride == "fox" || prefStr("pref_form", "block") == "fox"
-        // 狐狐形态：28x56dp 的细长条——够露出一条尾巴，又不至于太大块挡住屏幕边缘
-        p.width = dpToPx(if (foxForm) 28 else HANDLE_W_DP)
-        p.height = dpToPx(if (foxForm) 56 else HANDLE_H_DP)
+        // 狐狐形态：20x40dp——只露一小段尾巴，比方块形态的 26x52dp 还窄
+        p.width = dpToPx(if (foxForm) 20 else HANDLE_W_DP)
+        p.height = dpToPx(if (foxForm) 40 else HANDLE_H_DP)
         p.x = if (left) 0 else getScreenW() - p.width
         p.y = ((getScreenH() - p.height) / 2).coerceIn(0, getScreenH() - p.height)
         p.alpha = 1.0f
