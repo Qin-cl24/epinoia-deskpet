@@ -238,8 +238,6 @@ class PetOverlayService : Service() {
     private val idleRunnable = Runnable { dockToEdge() }
     private val lonelyRunnable = Runnable { advanceLoneliness() }
     private val hideRunnable = Runnable { toHandleMode() }
-    // 调试覆盖：/handle 请求里带 {"form":"fox"} 时按狐狐形态算手柄窗口尺寸
-    private var handleFormOverride: String = ""
     private val aiWatchRunnable = Runnable { watchAiMessages() }
 
     // ============ 生命周期 ============
@@ -872,11 +870,9 @@ class PetOverlayService : Service() {
         petX = p.x
         petY = p.y
         val left = petX < (getScreenW() - petW) / 2
-        // 狐狐形态：手柄窗口留宽一点，用来露出「一截尾巴」（方块形态仍然只用细竖条）
-        val foxForm = handleFormOverride == "fox" || prefStr("pref_form", "block") == "fox"
-        // 狐狐形态：16x32dp——主人要「小一些、截图时不那么明显」，只留一小撮尾尖
-        p.width = dpToPx(if (foxForm) 16 else HANDLE_W_DP)
-        p.height = dpToPx(if (foxForm) 32 else HANDLE_H_DP)
+        // 两种形态统一用细箭头手柄（主人要截图时不显眼）
+        p.width = dpToPx(HANDLE_W_DP)
+        p.height = dpToPx(HANDLE_H_DP)
         p.x = if (left) 0 else getScreenW() - p.width
         p.y = ((getScreenH() - p.height) / 2).coerceIn(0, getScreenH() - p.height)
         p.alpha = 1.0f
@@ -1649,11 +1645,6 @@ class PetOverlayService : Service() {
             }
             // 调试用：直接进「贴边手柄」态 / 回到桌宠态（仅本机 127.0.0.1），方便截图验证尾巴露头
             method == "POST" && path == "/handle" -> {
-                handleFormOverride = try {
-                    JSONObject(body.ifEmpty { "{}" }).optString("form", "")
-                } catch (_: Exception) {
-                    ""
-                }
                 handler.post {
                     if (hidden) toPetMode()   // 先复位，避免上次留着 hidden 导致 no-op
                     docked = true
@@ -1663,7 +1654,6 @@ class PetOverlayService : Service() {
                 responseBody = "{\"ok\":true}"
             }
             method == "POST" && path == "/pet" -> {
-                handleFormOverride = ""
                 handler.post { showPetNow() }
                 responseBody = "{\"ok\":true}"
             }

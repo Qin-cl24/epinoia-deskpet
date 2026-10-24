@@ -218,39 +218,8 @@
   .pet.handle-mode .body, .pet.handle-mode .fx, .pet.handle-mode .bubble,
   .pet.handle-mode .fox { display: none !important; }   /* 必须 !important：.pet[data-form="fox"] .fox 的 display:block 优先级相同且位置更靠后 */
   .pet.handle-mode .handle { display: block; }
-  /* ===== 狐狐形态的手柄：不显示 ❯，改成露出一截尾巴（2026-10-23 主人提议）=====
-     贴左边时露尾巴（尾巴本来就在角色右侧），贴右边时镜像一下，还是尾巴朝外。
-     原生会为此把手柄窗口放宽到 42x58dp。*/
-  .pet .tailpeek {
-    display: none; position: absolute; inset: 0; z-index: 21;
-    background-image: url(fox/tail.png); background-repeat: no-repeat;
-    /* 主人要求「长一点」：整条尾巴竖着挂出来（82px 宽 → 高 75px ≈ 窗口高度），
-       上窄下宽的锥形轮廓一眼就是尾巴，不再是短短一截像耳朵 */
-    background-size: 34px auto; background-position: center 6%;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
-    transform-origin: 50% 6%;
-    animation: tailPeekSway 3.1s ease-in-out infinite;
-  }
-  @keyframes tailPeekSway {
-    /* scaleY(1.1)：主人说「尾巴再画长一点」，不改画稿也把尾巴视觉上拉长一成 */
-    0%,100% { transform: rotate(-3deg) scaleY(1.1); }
-    50%     { transform: rotate(4deg) scaleY(1.1); }
-  }
-  /* 关键：手柄模式下 .pet 盒子只有 50px 高（比 74dp 窗口矮），尾巴要按「视口」撑满，
-     否则整条尾巴会被 .pet 裁掉一半，看起来又短回去了 */
-  .pet.handle-mode[data-form="fox"] .tailpeek {
-    display: block;
-    inset: auto 0 0 0; left: 0;
-    width: 100vw; height: 100vh;
-  }
-  .pet.handle-mode[data-form="fox"] .handle { display: none; }
-  .pet.handle-mode[data-form="fox"][data-side="right"] .tailpeek {
-    animation-name: tailPeekSwayR;
-  }
-  @keyframes tailPeekSwayR {
-    0%,100% { transform: scaleX(-1) rotate(3deg) scaleY(1.1); }
-    50%     { transform: scaleX(-1) rotate(-4deg) scaleY(1.1); }
-  }
+  /* 狐狐形态隐藏时也用和方块形态一样的细箭头 ❯（主人要截图不显眼，2026-10-23）；
+     尾巴露头方案见 git 历史 e661024，想要随时可以恢复 */
   /* 翻滚动作 */
   .act-roll { animation: roll .6s ease 1; }
   @keyframes roll { from { transform: rotate(0); } to { transform: rotate(360deg); } }
@@ -1113,7 +1082,6 @@
     <span class="bubble" id="bubble"></span>
     <span class="handle" id="handle">❯</span>
     <!-- 狐狐形态隐藏后露出的那截尾巴 -->
-    <span class="tailpeek"></span>
     <span class="acc halo"></span>
     <span class="acc cowboy"></span>
     <span class="acc dive"></span>
