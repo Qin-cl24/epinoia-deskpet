@@ -769,6 +769,7 @@
     .fx-top { left: 198px; top: 296px; width: 188px; height: 159px; }
     .fx-sleeves { left: 211px; top: 299px; width: 145px; height: 143px; }
     .fx-ear-L { left: 0px; top: 137px; width: 142px; height: 176px; }
+    .fx-ear-L-base { left: 0px; top: 137px; width: 142px; height: 176px; }   /* 耳根补片，坐标必须和 ear-L 完全一致 */
     .fx-fur-under-ear-L { left: 45px; top: 202px; width: 105px; height: 121px; }
     .fx-head { left: 127px; top: 126px; width: 251px; height: 268px; }
     .fx-part25 { left: 196px; top: 264px; width: 139px; height: 72px; }
@@ -786,6 +787,10 @@
   @keyframes foxBlink { 0%, 93%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(.12); } }
   .fx-tail { transform-origin: 12% 8%; animation: foxTail 3.6s ease-in-out infinite; }
   @keyframes foxTail { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg); } }
+  /* 耳根补片（2026-10-24）：左耳绕耳根转的时候，耳朵内侧会离开头发，露出一条背景色的缝。
+     补片 = ear-L 自己的像素，只留「任何角度下会露缝」的那块（x55..133），静止垫在耳朵下面：
+     静止时被耳朵完全盖住（0 像素露出），摆动时正好把缝填上（实测 -16°..+12° 全角度缝像素 0）。 */
+  .fx-ear-L-base { animation: none; }
   /* ===== 耳朵（2026-10-23 加情绪版）=====
      起点：耳根在各自下方（左耳 origin 70% 92%、右耳 30% 92%），所以旋转=绕耳根摆。
      平时：每 5 秒抖一下（像真狐狸偶尔动耳）；情绪：开心竖起、生气压平、犯困耷拉、害羞轻抖。*/
@@ -1126,6 +1131,7 @@
       <img class="fx fx-neck-hands" src="fox/neck-hands.png" alt="">
       <img class="fx fx-top" src="fox/top.png" alt="">
       <img class="fx fx-sleeves" src="fox/sleeves.png" alt="">
+      <img class="fx fx-ear-L-base" src="fox/ear-L-base.png" alt="">
       <img class="fx fx-ear-L" src="fox/ear-L.png" alt="">
       <img class="fx fx-fur-under-ear-L" src="fox/fur-under-ear-L.png" alt="">
       <img class="fx fx-head" src="fox/head.png" alt="">
