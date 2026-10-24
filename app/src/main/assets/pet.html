@@ -793,6 +793,20 @@
   .fx-hair-highlight { animation: foxShine 4.8s ease-in-out infinite; }
   @keyframes foxShine { 0%,100% { opacity: 1; } 50% { opacity: .85; } }
 
+  /* --- 狐狐形态的待机微动作 & 交互反馈（2026-10-23，接设置页三个开关 + 原生手势）--- */
+  @keyframes foxBreathe { 0%,100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-1px) scaleY(.985); } }
+  @keyframes foxWiggle  { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-2.5deg); } 75% { transform: rotate(2.5deg); } }
+  @keyframes foxHop     { 0%,100% { transform: translateY(0); } 35% { transform: translateY(-5px); } 60% { transform: translateY(0); } }
+  .pet[data-form="fox"].idle-breathe .fox-inner { animation: foxBreathe 3.2s ease-in-out infinite; }
+  .pet[data-form="fox"].idle-music   .fox-inner { animation: foxWiggle .5s ease-in-out infinite; }
+  .pet[data-form="fox"].idle-hop     .fox-inner { animation: foxHop .9s ease-in-out infinite; }
+  /* 被戳：小跳一下（原生 onTap 会加 .bounce）*/
+  @keyframes foxPounce { 0%,100% { transform: translateY(0) scale(1); } 35% { transform: translateY(-7px) scale(1.04); } 70% { transform: translateY(0) scale(.97); } }
+  .pet[data-form="fox"].bounce .fox-inner { animation: foxPounce .5s ease-out; }
+  /* 拖动 / 边缘跑：像被拎着晃（正好契合这个"被提起来"的姿势）*/
+  @keyframes foxSway { 0%,100% { transform: rotate(-3.5deg) translateY(0); } 50% { transform: rotate(3.5deg) translateY(-2px); } }
+  .pet[data-form="fox"].walking .fox-inner { animation: foxSway .55s ease-in-out infinite; }
+
   /* ===== 思考泡泡（2026-10-21 加）=====
      一朵细线云 + 三个轮流闪的点 + 两颗从云飘向头顶的尾巴小圆。
      挂在 act-think（思考）和 act-scratch（挠头想事）上。像素/细线风格，1px 描边无填充。*/
