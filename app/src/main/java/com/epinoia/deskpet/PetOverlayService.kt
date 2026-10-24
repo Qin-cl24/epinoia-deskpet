@@ -238,6 +238,8 @@ class PetOverlayService : Service() {
     private val idleRunnable = Runnable { dockToEdge() }
     private val lonelyRunnable = Runnable { advanceLoneliness() }
     private val hideRunnable = Runnable { toHandleMode() }
+    // 调试覆盖：/handle 请求里带 {"form":"fox"} 时按狐狐形态算手柄窗口尺寸
+    private var handleFormOverride: String = ""
     private val aiWatchRunnable = Runnable { watchAiMessages() }
 
     // ============ 生命周期 ============
@@ -871,9 +873,10 @@ class PetOverlayService : Service() {
         petY = p.y
         val left = petX < (getScreenW() - petW) / 2
         // 狐狐形态：手柄窗口留宽一点，用来露出「一截尾巴」（方块形态仍然只用细竖条）
-        val foxForm = prefStr("pref_form", "block") == "fox"
-        p.width = dpToPx(if (foxForm) 42 else HANDLE_W_DP)
-        p.height = dpToPx(if (foxForm) 58 else HANDLE_H_DP)
+        val foxForm = handleFormOverride == "fox" || prefStr("pref_form", "block") == "fox"
+        // 宽度只放到 36dp（贴边手柄要能点，别把屏幕边缘的返回手势区挡太宽），高度给足 74dp 让尾巴「挂」出来
+        p.width = dpToPx(if (foxForm) 36 else HANDLE_W_DP)
+        p.height = dpToPx(if (foxForm) 74 else HANDLE_H_DP)
         p.x = if (left) 0 else getScreenW() - p.width
         p.y = ((getScreenH() - p.height) / 2).coerceIn(0, getScreenH() - p.height)
         p.alpha = 1.0f
@@ -1643,6 +1646,26 @@ class PetOverlayService : Service() {
             }
             method == "GET" && path == "/status" -> {
                 responseBody = statusJson()
+            }
+            // 调试用：直接进「贴边手柄」态 / 回到桌宠态（仅本机 127.0.0.1），方便截图验证尾巴露头
+            method == "POST" && path == "/handle" -> {
+                handleFormOverride = try {
+                    JSONObject(body.ifEmpty { "{}" }).optString("form", "")
+                } catch (_: Exception) {
+                    ""
+                }
+                handler.post {
+                    if (hidden) toPetMode()   // 先复位，避免上次留着 hidden 导致 no-op
+                    docked = true
+                    toHandleMode()
+                    logLifecycle("dbg /handle -> hidden=$hidden w=${params?.width} h=${params?.height}")
+                }
+                responseBody = "{\"ok\":true}"
+            }
+            method == "POST" && path == "/pet" -> {
+                handleFormOverride = ""
+                handler.post { showPetNow() }
+                responseBody = "{\"ok\":true}"
             }
             // agent 把「宝宝说的话」记进对话流水（不进气泡、不出声，只做上下文）
             method == "POST" && path == "/log" -> {

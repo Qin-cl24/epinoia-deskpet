@@ -224,14 +224,33 @@
   .pet .tailpeek {
     display: none; position: absolute; inset: 0; z-index: 21;
     background-image: url(fox/tail.png); background-repeat: no-repeat;
-    background-size: 86px auto; background-position: 4px center;
+    /* 主人要求「长一点」：整条尾巴竖着挂出来（82px 宽 → 高 75px ≈ 窗口高度），
+       上窄下宽的锥形轮廓一眼就是尾巴，不再是短短一截像耳朵 */
+    background-size: 82px auto; background-position: center center;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
-    animation: tailPeekSway 2.6s ease-in-out infinite;
+    transform-origin: 50% 6%;
+    animation: tailPeekSway 3.1s ease-in-out infinite;
   }
-  @keyframes tailPeekSway { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-4deg); } }
-  .pet.handle-mode[data-form="fox"] .tailpeek { display: block; }
+  @keyframes tailPeekSway {
+    /* scaleY(1.1)：主人说「尾巴再画长一点」，不改画稿也把尾巴视觉上拉长一成 */
+    0%,100% { transform: rotate(-3deg) scaleY(1.1); }
+    50%     { transform: rotate(4deg) scaleY(1.1); }
+  }
+  /* 关键：手柄模式下 .pet 盒子只有 50px 高（比 74dp 窗口矮），尾巴要按「视口」撑满，
+     否则整条尾巴会被 .pet 裁掉一半，看起来又短回去了 */
+  .pet.handle-mode[data-form="fox"] .tailpeek {
+    display: block;
+    inset: auto 0 0 0; left: 0;
+    width: 100vw; height: 100vh;
+  }
   .pet.handle-mode[data-form="fox"] .handle { display: none; }
-  .pet.handle-mode[data-form="fox"][data-side="right"] .tailpeek { transform: scaleX(-1); }
+  .pet.handle-mode[data-form="fox"][data-side="right"] .tailpeek {
+    animation-name: tailPeekSwayR;
+  }
+  @keyframes tailPeekSwayR {
+    0%,100% { transform: scaleX(-1) rotate(3deg) scaleY(1.1); }
+    50%     { transform: scaleX(-1) rotate(-4deg) scaleY(1.1); }
+  }
   /* 翻滚动作 */
   .act-roll { animation: roll .6s ease 1; }
   @keyframes roll { from { transform: rotate(0); } to { transform: rotate(360deg); } }
