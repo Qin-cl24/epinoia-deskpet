@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
-"""把 eyes.png 拆成左右眼两张（眨眼用）
+"""把 eyes.png 拆成「眼珠两张 + 眉毛睫毛一张」（眨眼用）
 
 为什么要拆：眨眼是竖向压扁。原来整张眼睛图层只绕「图层中心」压扁，可画稿里两只眼睛
 是斜着的（右眼在上、左眼偏下 40 多 px），一压扁两条闭眼线就飘到脸中间，左眼还会往上跳。
 
-做法：按连通域整块分配 —— 每一块（眼睛本体、睫毛、眉毛、高光）都整块归给离它最近的
-那只眼睛，绝不把一笔切成两半。输出两张同尺寸（180x131）的图，各自只留自己那部分，
-这样 CSS 里位置不用改，只把 transform-origin 指到自己眼底。
+做法：按连通域分组 —— 两个最大的连通域就是眼珠，其余（眉毛、睫毛、高光碎片）统一进
+eye-strokes.png 保持静止不动；绝不把一笔切成两半。
+
+为什么眉毛要单独拆出来：眨眼时眉毛不该跟着飞（真狐狸/真人眨眼眉毛基本不动），
+原来整层一起压扁，眉毛会被甩下去一大截，看着像「只有睫毛在动」。
+
+⚠️ 注意：**深色眼珠其实烤在 head.png 里**（左眼中心 601 个深色像素、右眼 521 个），
+eyes.png 只是叠在上面的虹膜/高光/睫毛。所以光压扁这层眨眼是压不闭的，得配
+eye-lid-L/R（肤色盖片，见 tools/fox-eye-lid.py）把那两颗眼珠盖住。
 
 用法：
-    python3 tools/fox-eye-split.py           # 生成 eye-L.png / eye-R.png 并打印 transform-origin
-    python3 tools/fox-eye-split.py --check   # 只打印分配结果，不写文件
+    python3 tools/fox-eye-split.py           # 生成 eye-L/eye-R/eye-strokes 并打印 transform-origin
+    python3 tools/fox-eye-split.py --check   # 只打印分组结果，不写文件
 """
 import os
 import sys
@@ -96,15 +102,28 @@ def main():
     if check_only:
         return 0
 
+    # ① 眼珠：每只只留主连通域
     for k, fname in (("L", "eye-L.png"), ("R", "eye-R.png")):
         out = Image.new("RGBA", im.size, (0, 0, 0, 0))
         src, dst = im.load(), out.load()
-        for _, pts in groups[k]:
+        for x, y in groups[k][0][1]:
+            dst[x, y] = src[x, y]
+        path = os.path.join(FOX, fname)
+        out.save(path, optimize=True)
+        print("写入", path, os.path.getsize(path), "bytes")
+
+    # ② 眉毛/睫毛等小部件：合成一张静止图层
+    strokes = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    src, dst = im.load(), strokes.load()
+    kept = 0
+    for k in ("L", "R"):
+        for _, pts in groups[k][1:]:
             for x, y in pts:
                 dst[x, y] = src[x, y]
-        dst_path = os.path.join(FOX, fname)
-        out.save(dst_path, optimize=True)
-        print("写入", dst_path, os.path.getsize(dst_path), "bytes")
+                kept += 1
+    path = os.path.join(FOX, "eye-strokes.png")
+    strokes.save(path, optimize=True)
+    print(f"写入 {path} {os.path.getsize(path)} bytes（{kept}px 眉毛/睫毛，保持静止）")
     return 0
 
 
