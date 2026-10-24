@@ -870,8 +870,10 @@ class PetOverlayService : Service() {
         petX = p.x
         petY = p.y
         val left = petX < (getScreenW() - petW) / 2
-        p.width = dpToPx(HANDLE_W_DP)
-        p.height = dpToPx(HANDLE_H_DP)
+        // 狐狐形态：手柄窗口留宽一点，用来露出「一截尾巴」（方块形态仍然只用细竖条）
+        val foxForm = prefStr("pref_form", "block") == "fox"
+        p.width = dpToPx(if (foxForm) 42 else HANDLE_W_DP)
+        p.height = dpToPx(if (foxForm) 58 else HANDLE_H_DP)
         p.x = if (left) 0 else getScreenW() - p.width
         p.y = ((getScreenH() - p.height) / 2).coerceIn(0, getScreenH() - p.height)
         p.alpha = 1.0f
