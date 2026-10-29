@@ -887,8 +887,14 @@
   /* 惊讶：两只耳朵同时竖到最直 */
   .pet[data-form="fox"].act-shock .fx-ear-L { animation: none; transform: rotate(12deg); }
   .pet[data-form="fox"].act-shock .fx-ear-R { animation: none; transform: rotate(-12deg); }
-  .fx-hair-tuft { transform-origin: bottom left; animation: foxTuft 2.4s ease-in-out infinite; }
-  @keyframes foxTuft { 0%,100% { transform: rotate(0); } 50% { transform: rotate(5deg); } }
+  /* 呆毛（2026-10-29 主人要的）：原来 2.4 秒摆 5°，动作太明显、像在甩；
+     现在改成跟呼吸同一个周期 3.2 秒、只摆 2.2° 并微微上提 0.8px —— 看着像被呼吸带起来的，
+     和 .idle-breathe 的 foxBreathe 同频，混在呼吸里几乎察觉不到是单独的动画。 */
+  .fx-hair-tuft { transform-origin: bottom left; animation: foxTuft 3.2s ease-in-out infinite; }
+  @keyframes foxTuft {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    50%      { transform: rotate(2.2deg) translateY(-.8px); }
+  }
   .fx-hair-highlight { animation: foxShine 4.8s ease-in-out infinite; }
   @keyframes foxShine { 0%,100% { opacity: 1; } 50% { opacity: .85; } }
 
