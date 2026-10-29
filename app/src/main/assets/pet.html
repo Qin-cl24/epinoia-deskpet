@@ -753,6 +753,12 @@
     pointer-events: none;
   }
   .fox-inner { position: absolute; inset: 0; animation: foxIdle 2.8s ease-in-out infinite; }
+  /* 朝向（2026-10-29 主人要的）：往左走/贴左边时整只狐水平翻转。
+     绕 .fox 自身的 bottom center 翻，宽度和窗口都不变；
+     耳朵那套补偿平移是挂在各自图层上的，跟着一起翻，方向依旧是对的。 */
+  .pet[data-form="fox"][data-face="left"] .fox {
+    transform: translateX(-50%) scale(0.105) scaleX(-1);
+  }
   @keyframes foxIdle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
   .fox img.fx { position: absolute; display: block; }
   .fox .fox-shadow {
@@ -1371,8 +1377,14 @@
     playBall: function() { playBall(); },
     playLife: function() { playLife(); },
     // 走路状态（原生层拖动窗口/边缘跑动时调用）：四条腿走对角步态
-    setWalking: function(on) {
+    setWalking: function(on, dir) {
       if (on) { pet.classList.add('walking'); } else { pet.classList.remove('walking'); }
+      if (dir) this.setFacing(dir);
+    },
+    // 朝向：dir<0 朝左（整只狐左右翻转），否则朝右。原生侧在拖动/贴边时调。
+    setFacing: function(dir) {
+      var f = dir < 0 ? 'left' : 'right';
+      if (pet.dataset.face !== f) pet.dataset.face = f;
     },
   };
 

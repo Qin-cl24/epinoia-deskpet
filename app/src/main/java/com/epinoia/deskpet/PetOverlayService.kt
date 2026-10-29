@@ -451,6 +451,7 @@ class PetOverlayService : Service() {
                     setOnApplyWindowInsetsListener { _, insets -> onWindowInsets(insets) }
                 }
                 loadUrl("file:///android_asset/pet.html")
+                reapplyFacingAfterLoad()
                 setOnTouchListener(createTouchListener())
             }
 
@@ -593,6 +594,7 @@ class PetOverlayService : Service() {
         return View.OnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    lastMoveRawX = event.rawX
                     logLifecycle("touch DOWN raw=(${event.rawX.toInt()},${event.rawY.toInt()})")
                     hideHandler.removeCallbacks(hideRunnable)
                     if (hidden) {
@@ -707,7 +709,9 @@ class PetOverlayService : Service() {
                         return@OnTouchListener true
                     }
                     hasMoved = true
-                    startWalking()
+                    val stepDx = event.rawX - lastMoveRawX
+                    lastMoveRawX = event.rawX
+                    startWalking(if (abs(stepDx) > dpToPx(2)) (if (stepDx > 0) 1 else -1) else 0)
                     params?.let { p ->
                         p.x = (initialX + dx).coerceIn(0, getScreenW() - p.width)
                         p.y = (initialY + dy).coerceIn(0, getScreenH() - p.height)
@@ -771,10 +775,25 @@ class PetOverlayService : Service() {
 
     // 走路状态：拖动窗口时让四条腿走对角步态（像猫狗小跑）
     private var walking = false
-    private fun startWalking() {
-        if (walking) return
-        walking = true
-        js("setWalking(true)")
+    private var lastMoveRawX = 0f
+
+    /** 朝向：+1 朝右、-1 朝左（整只狐水平翻转）。只在变化时才打扰 WebView。 */
+    private var facing = 1
+    private fun setFacing(dir: Int) {
+        val d = if (dir < 0) -1 else 1
+        if (d == facing) return
+        facing = d
+        js("setFacing($d)")
+        logLifecycle("facing=$facing")
+    }
+
+    private fun startWalking(dir: Int) {
+        if (!walking) {
+            walking = true
+            js("setWalking(true, $dir)")
+        } else if (dir != 0) {
+            setFacing(dir)
+        }
     }
     private fun stopWalking() {
         if (!walking) return
@@ -782,6 +801,11 @@ class PetOverlayService : Service() {
         js("setWalking(false)")
     }
     private fun onFling() = js("onFling()")
+
+    /** 页面（重新）加载后把当前朝向补推一次：JS 侧状态在 reload 后会回到默认，模型这边不会 */
+    private fun reapplyFacingAfterLoad() {
+        handler.postDelayed({ js("setFacing($facing)") }, 400)
+    }
 
     private fun js(call: String) {
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.$call", null)
@@ -829,6 +853,7 @@ class PetOverlayService : Service() {
         val p = params ?: return
         val left = p.x < (getScreenW() - p.width) / 2
         dockSide = if (left) -1 else 1
+        setFacing(if (left) 1 else -1)      // 贴左边朝右、贴右边朝左（脸朝屏幕里）
         docked = true
         logLifecycle("dockToEdge side=$dockSide x=${p.x}")
         // 贴边：主体滑出屏幕外，但露出一条桌宠身体（悬浮球式半透明条，始终可见）。
@@ -1911,6 +1936,7 @@ class PetOverlayService : Service() {
         handler.post {
             try {
                 overlayView?.loadUrl("file:///android_asset/pet.html")
+                reapplyFacingAfterLoad()
             } catch (_: Exception) {
             }
         }
