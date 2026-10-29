@@ -928,16 +928,16 @@
      星星放头顶上方。两个东西都放在 .fox 里面（狐坐标系），所以会跟着整只狐一起翻转（镜像）
      和轻微晃动，位置、大小都不用另算。 */
   .fox .dizzy-face, .fox .dizzy-star {
-    position: absolute; display: none; pointer-events: none;
+    position: absolute; pointer-events: none; opacity: 0; transition: opacity .2s ease;
     line-height: 1; transform-origin: center center; white-space: nowrap;
   }
   .fox .dizzy-face { left: 197px; top: 212px; width: 156px; height: 120px; color: #3a2a24; }
   .fox .dizzy-star { left: 300px; top: 0px; font-size: 104px; color: #ffd23f; }   /* 头顶正上方 */
-  .pet[data-form="fox"].act-dizzy .dizzy-face { display: block; }   /* svg 用 block 即可 */
-  .pet[data-form="fox"].act-dizzy .dizzy-star { display: block; animation: dizzyStar 1.1s ease-in-out infinite; }
+  .pet[data-form="fox"].act-dizzy .dizzy-face { opacity: 1; }
+  .pet[data-form="fox"].act-dizzy .dizzy-star { opacity: 1; animation: dizzyStar 1.1s ease-in-out infinite; }
   @keyframes dizzyStar {
-    0%, 100% { transform: translate(-50%, -50%) rotate(-9deg) scale(1); opacity: .95; }
-    50%      { transform: translate(-50%, -50%) rotate(9deg) scale(1.1); opacity: 1; }
+    0%, 100% { transform: translate(-50%, -50%) rotate(-9deg) scale(1); }
+    50%      { transform: translate(-50%, -50%) rotate(9deg) scale(1.1); }
   }
   /* 晕的时候脸这一套全部退场（睫毛 4 层 + 双眼皮线 + 眼白 + 虹膜 + 眼里的高光 + 嘴）*/
   .pet[data-form="fox"].act-dizzy .fx-eye-white-L,
@@ -1360,12 +1360,12 @@
     onShake: function() {
       if (pet.classList.contains('asleep')) return;
       var now = Date.now();
-      if (now - (window.__lastDizzy || 0) < 3000) return;
+      if (now - (window.__lastDizzy || 0) < 3500) return;
       window.__lastDizzy = now;
       pet.classList.add('act-dizzy');
       var lines = ['晕…😵‍💫', '别摇啦…', '（眼冒金星）', '头好晕哦…', '晃…晃不动了…'];
       say(lines[Math.floor(Math.random() * lines.length)], 1600);
-      setTimeout(function() { pet.classList.remove('act-dizzy'); }, 1800);
+      setTimeout(function() { pet.classList.remove('act-dizzy'); }, 2600);
     },
     // 连击：2秒内连戳 3/5/8 次，层层递进
     onCombo3: function() {
