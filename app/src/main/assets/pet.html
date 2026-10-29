@@ -823,6 +823,13 @@
   .pet.blink .fx-brow-R { transform: scaleY(.12); }
   .fx-tail-outer, .fx-tail-inner { transform-origin: 12% 8%; animation: foxTail 3.6s ease-in-out infinite; }
   @keyframes foxTail { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg); } }
+  /* 尾巴（2026-10-29 主人要的）：平时轻轻摆 ±6°；开心/庆祝时候甩得更欢 —— 幅度 -15°..+4°、
+     节奏快一倍多（0.85s）。尾巴画在身体后面，往身体这边甩的时候被身体挡掉，不会穿帮。 */
+  @keyframes foxTailHappy { 0%,100% { transform: rotate(-15deg); } 50% { transform: rotate(4deg); } }
+  .pet[data-form="fox"].act-happy .fx-tail-outer,
+  .pet[data-form="fox"].act-happy .fx-tail-inner,
+  .pet[data-form="fox"].act-celebrate .fx-tail-outer,
+  .pet[data-form="fox"].act-celebrate .fx-tail-inner { animation: foxTailHappy .85s ease-in-out infinite; }
   /* ===== 耳朵 =====
      起点：耳根在各自下方（左耳 origin 70% 92%、右耳 30% 92%），旋转=绕耳根摆。
      平时每 5 秒抖一下；情绪：开心竖起、生气压平、犯困耷拉、害羞轻抖。
