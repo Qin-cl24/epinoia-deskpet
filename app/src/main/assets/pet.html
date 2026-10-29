@@ -913,6 +913,19 @@
   @keyframes foxSway { 0%,100% { transform: rotate(-3.5deg) translateY(0); } 50% { transform: rotate(3.5deg) translateY(-2px); } }
   .pet[data-form="fox"].walking .fox-inner { animation: foxSway .55s ease-in-out infinite; }
 
+  /* 晕眩（2026-10-29）：被快速来回甩到的时候。整只狐左右歪 + 轻轻上浮，
+     方块形态用原来的 shake 加点慢速，头上还会弹一个 💫。放在 walking 之后，源顺序压过走路摇摆。 */
+  @keyframes foxDizzy {
+    0%, 100% { transform: rotate(-5deg) translateY(0); }
+    25%      { transform: rotate(4deg) translateY(-1px); }
+    50%      { transform: rotate(-3deg) translateY(0); }
+    75%      { transform: rotate(5deg) translateY(-1px); }
+  }
+  .pet[data-form="fox"].act-dizzy .fox-inner { animation: foxDizzy .85s ease-in-out infinite; }
+  .pet[data-form="fox"].act-dizzy .fx-eye-white-L, .pet[data-form="fox"].act-dizzy .fx-eye-white-R,
+  .pet[data-form="fox"].act-dizzy .fx-iris-L, .pet[data-form="fox"].act-dizzy .fx-iris-R { opacity: .55; }
+  .act-dizzy { animation: shake .5s ease-in-out infinite; }
+
   /* ===== 思考泡泡（2026-10-21 加）=====
      一朵细线云 + 三个轮流闪的点 + 两颗从云飘向头顶的尾巴小圆。
      挂在 act-think（思考）和 act-scratch（挠头想事）上。像素/细线风格，1px 描边无填充。*/
@@ -1305,6 +1318,18 @@
     onLongPress: function() { say('唔...'); },
     onDragEnd: function() { say('嘿咻~'); },
     onFling: function() { say('哇!'); },
+    // 快速来回甩 → 晕。原生侧检测到方向反转够快会调这里；3 秒冷却，晕 1.8 秒。
+    onShake: function() {
+      if (pet.classList.contains('asleep')) return;
+      var now = Date.now();
+      if (now - (window.__lastDizzy || 0) < 3000) return;
+      window.__lastDizzy = now;
+      pet.classList.add('act-dizzy');
+      showProp('💫', 34, 1, 1800);
+      var lines = ['晕…😵‍💫', '别摇啦…', '（眼冒金星）', '头好晕哦…', '晃…晃不动了…'];
+      say(lines[Math.floor(Math.random() * lines.length)], 1600);
+      setTimeout(function() { pet.classList.remove('act-dizzy'); }, 1800);
+    },
     // 连击：2秒内连戳 3/5/8 次，层层递进
     onCombo3: function() {
       say('三连击！嘿嘿~');

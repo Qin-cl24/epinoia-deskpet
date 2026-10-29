@@ -19,6 +19,7 @@ import android.os.FileObserver
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowInsets
@@ -711,7 +712,9 @@ class PetOverlayService : Service() {
                     hasMoved = true
                     val stepDx = event.rawX - lastMoveRawX
                     lastMoveRawX = event.rawX
-                    startWalking(if (abs(stepDx) > dpToPx(2)) (if (stepDx > 0) 1 else -1) else 0)
+                    val stepDir = if (abs(stepDx) > dpToPx(3)) (if (stepDx > 0) 1 else -1) else 0
+                    trackShake(stepDir)
+                    startWalking(stepDir)
                     params?.let { p ->
                         p.x = (initialX + dx).coerceIn(0, getScreenW() - p.width)
                         p.y = (initialY + dy).coerceIn(0, getScreenH() - p.height)
@@ -785,6 +788,26 @@ class PetOverlayService : Service() {
         facing = d
         js("setFacing($d)")
         logLifecycle("facing=$facing")
+    }
+
+    /** 来回甩检测：700ms 内方向反转 3 次以上就算「被摇晃」→ 让桌宠晕一下（3 秒冷却） */
+    private val reverseTimes = ArrayDeque<Long>()
+    private var lastDizzyAt = 0L
+    private var lastStepDir = 0
+    private fun trackShake(dir: Int) {
+        if (dir == 0) return
+        val now = SystemClock.uptimeMillis()
+        if (lastStepDir != 0 && dir != lastStepDir) {
+            reverseTimes.addLast(now)
+            while (reverseTimes.isNotEmpty() && now - reverseTimes.first() > 700) reverseTimes.removeFirst()
+            if (reverseTimes.size >= 3 && now - lastDizzyAt > 3000) {
+                reverseTimes.clear()
+                lastDizzyAt = now
+                js("onShake()")
+                logLifecycle("shake -> dizzy")
+            }
+        }
+        lastStepDir = dir
     }
 
     private fun startWalking(dir: Int) {
