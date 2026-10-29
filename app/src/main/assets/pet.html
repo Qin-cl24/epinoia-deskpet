@@ -760,69 +760,81 @@
     background: rgba(0,0,0,.22); border-radius: 50%; filter: blur(9px);
   }
 
-    .fx-shoes { left: 188px; top: 514px; width: 167px; height: 111px; }
-    .fx-tail { left: 306px; top: 369px; width: 236px; height: 216px; }
-    .fx-pants { left: 178px; top: 347px; width: 201px; height: 268px; }
-    .fx-layer19 { left: 232px; top: 390px; width: 101px; height: 94px; }
-    .fx-hair-back { left: 61px; top: 81px; width: 391px; height: 315px; }
-    .fx-neck-hands { left: 262px; top: 302px; width: 55px; height: 65px; }
-    .fx-top { left: 198px; top: 296px; width: 188px; height: 159px; }
-    .fx-sleeves { left: 211px; top: 299px; width: 145px; height: 143px; }
-    .fx-ear-L { left: 0px; top: 137px; width: 142px; height: 176px; }
-    .fx-ear-L-base { left: 0px; top: 137px; width: 142px; height: 176px; }   /* 耳根补片，坐标必须和 ear-L 完全一致 */
-    .fx-fur-under-ear-L { left: 45px; top: 202px; width: 105px; height: 121px; }
-    .fx-head { left: 127px; top: 126px; width: 251px; height: 268px; }   /* head-base.png：眼珠已抠掉 */
-    .fx-pupil-L { left: 161px; top: 274px; width: 66px; height: 51px; }
-    .fx-pupil-R { left: 258px; top: 228px; width: 75px; height: 52px; }
-    .fx-part25 { left: 196px; top: 264px; width: 139px; height: 72px; }
-    .fx-mouth { left: 252px; top: 300px; width: 26px; height: 19px; }
-    .fx-layer13 { left: 70px; top: 58px; width: 126px; height: 116px; }
-    .fx-eye-L, .fx-eye-R, .fx-eye-strokes { left: 154px; top: 192px; width: 180px; height: 131px; }   /* 位置与原 eyes.png 完全一致 */
-    .fx-bangs { left: 63px; top: 82px; width: 375px; height: 293px; }
-    .fx-ear-R { left: 210px; top: 0px; width: 188px; height: 165px; }
-    .fx-fur-under-ear-R { left: 263px; top: 76px; width: 92px; height: 98px; }
-    .fx-hair-highlight { left: 124px; top: 177px; width: 211px; height: 98px; }
-    .fx-hair-tuft { left: 150px; top: 170px; width: 104px; height: 45px; }
+    .fx-tail-outer { left: 331px; top: 373px; width: 194px; height: 212px; }   /* 尾巴外圈/浅色 */
+    .fx-tail-inner { left: 331px; top: 373px; width: 156px; height: 165px; }   /* 尾巴橙色内层 */
+    .fx-shoes { left: 211px; top: 516px; width: 154px; height: 110px; }   /* 鞋 */
+    .fx-pants { left: 211px; top: 359px; width: 189px; height: 249px; }   /* 裤子 */
+    .fx-pants-front { left: 300px; top: 355px; width: 106px; height: 254px; }   /* 裤子前半片 */
+    .fx-leg-detail-L { left: 256px; top: 389px; width: 54px; height: 90px; }   /* 旧 layer19 那一类（用途待确认） */
+    .fx-leg-detail-R { left: 304px; top: 387px; width: 56px; height: 95px; }   /* 同上，另一侧 */
+    .fx-hair-back { left: 95px; top: 66px; width: 383px; height: 290px; }   /* 后发 */
+    .fx-neck-hands { left: 287px; top: 297px; width: 57px; height: 57px; }   /* 脖子/手 */
+    .fx-top { left: 242px; top: 288px; width: 162px; height: 143px; }   /* 黑上衣 */
+    .fx-top-inner { left: 236px; top: 291px; width: 148px; height: 148px; }   /* 上衣内层 */
+    .fx-ear-L { left: 17px; top: 118px; width: 155px; height: 160px; }   /* 左耳 */
+    .fx-fur-under-ear-L { left: 70px; top: 191px; width: 101px; height: 109px; }   /* 左耳根毛 */
+    .fx-head { left: 147px; top: 113px; width: 260px; height: 224px; }   /* 头部/脸 */
+    .fx-part25 { left: 217px; top: 253px; width: 145px; height: 78px; }   /* 领口那块（旧 part25） */
+    .fx-mouth { left: 277px; top: 297px; width: 34px; height: 15px; }   /* 嘴（待确认） */
+    .fx-eye-white-R { left: 286px; top: 227px; width: 62px; height: 48px; }   /* 右眼眼白 */
+    .fx-eye-white-L { left: 199px; top: 267px; width: 57px; height: 50px; }   /* 左眼眼白 */
+    .fx-iris-R { left: 299px; top: 231px; width: 37px; height: 41px; }   /* 右眼虹膜 */
+    .fx-iris-L { left: 215px; top: 274px; width: 37px; height: 37px; }   /* 左眼虹膜 */
+    .fx-lash-R-outer { left: 339px; top: 227px; width: 13px; height: 39px; }   /* 右眼外侧睫毛 */
+    .fx-lash-L-lower { left: 198px; top: 298px; width: 29px; height: 19px; }   /* 左眼下睫毛 */
+    .fx-lash-R-upper { left: 285px; top: 219px; width: 76px; height: 33px; }   /* 右眼上睫毛 */
+    .fx-lash-L-upper { left: 183px; top: 265px; width: 66px; height: 45px; }   /* 左眼上睫毛 */
+    .fx-brow-C { left: 258px; top: 181px; width: 43px; height: 31px; }   /* 两眼之间上方（待确认） */
+    .fx-brow-L { left: 175px; top: 239px; width: 47px; height: 31px; }   /* 左眉（待确认） */
+    .fx-brow-R { left: 283px; top: 227px; width: 19px; height: 14px; }   /* 右眉（待确认） */
+    .fx-lash-L-extra { left: 205px; top: 263px; width: 32px; height: 15px; }   /* 左眼上方细线（待确认） */
+    .fx-ear-R { left: 233px; top: -1px; width: 164px; height: 143px; }   /* 右耳 */
+    .fx-bangs { left: 82px; top: 67px; width: 366px; height: 278px; }   /* 刘海 */
+    .fx-fur-under-ear-R { left: 287px; top: 61px; width: 113px; height: 103px; }   /* 右耳根毛 */
+    .fx-hair-highlight { left: 144px; top: 165px; width: 219px; height: 102px; }   /* 发丝高光 */
+    .fx-hair-tuft { left: 171px; top: 157px; width: 108px; height: 48px; }   /* 呆毛 */
+    .fx-layer13 { left: 99px; top: 54px; width: 120px; height: 109px; }   /* 旧 layer13（用途待确认） */
 
   /* 小动画 */
-  /* 眨眼（2026-10-24 重做两轮）：画稿里两只眼睛是斜着的（右眼在上、左眼偏下 40 多 px），
-     原来整张眼睛图层绕「图层中心」压扁，闭眼时两条线会飘到脸中间。现在三件事：
-       ① eyes.png 拆成 eye-L / eye-R（眼珠+虹膜，各自绕自己的眼底压扁，眼底坐标 46,130 / 134,88）
-          和 eye-strokes（眉毛睫毛，静止不动 —— 眉毛跟着飞会很怪）；
-       ② 深色眼珠其实烤在 head.png 里，所以拆出 pupil-L / pupil-R，head-base.png 用肤色补上，
-          眼珠跟着一起压扁，闭眼时脸上不会留两颗睁着的眼珠；
-       ③ 开合由 JS 的 .blink 类驱动（尊重「眨眼开关」和睡眠状态），与方块形态共用。 */
-  .fx-eye-L { transform-origin: 46px 130px; transition: transform .09s ease-out; }
-  .fx-eye-R { transform-origin: 134px 88px;  transition: transform .09s ease-out; }
-  /* 眼珠（从 head-base.png 里抠出来的那两颗）也得跟着压扁，不然底下眼珠不动、
-     看起来只有睫毛在动。眉毛/睫毛在 eye-strokes.png，静止不动。 */
-  .fx-pupil-L, .fx-pupil-R { transform-origin: center bottom; transition: transform .09s ease-out; }
-  .pet.blink .fx-eye-L, .pet.blink .fx-eye-R { transform: scaleY(.12); }
-  .pet.blink .fx-pupil-L, .pet.blink .fx-pupil-R { transform: scaleY(.1); }
-  .fx-tail { transform-origin: 12% 8%; animation: foxTail 3.6s ease-in-out infinite; }
+  /* 眨眼（2026-10-29 按新画稿重做）：新 PSD 把眼睛拆成了眼白/虹膜/上睫毛/下睫毛/眉毛多层。
+     做法：以**眼白包围盒的底边中点**当枢轴（右眼 317,275 / 左眼 227,317），眨眼时把这一组层
+     一起 scaleY(.12) 收成一条线 —— 因为大家都收向同一个点，闭眼就是一条干净的睫毛线。
+     眉毛 brow-L / brow-C 不在眼睛范围内，保持静止（眉毛跟着飞会很怪）。
+     开合由 JS 的 .blink 类驱动：尊重「眨眼开关」、睡着不眨、随机间隔、偶尔连眨。 */
+  .fx-eye-white-R { transform-origin: 31px 48px; transition: transform .09s ease-out; }
+  .fx-iris-R { transform-origin: 18px 44px; transition: transform .09s ease-out; }
+  .fx-lash-R-upper { transform-origin: 32px 56px; transition: transform .09s ease-out; }
+  .fx-lash-R-outer { transform-origin: -22px 48px; transition: transform .09s ease-out; }
+  .fx-brow-R { transform-origin: 34px 48px; transition: transform .09s ease-out; }
+  .fx-eye-white-L { transform-origin: 28px 50px; transition: transform .09s ease-out; }
+  .fx-iris-L { transform-origin: 12px 43px; transition: transform .09s ease-out; }
+  .fx-lash-L-upper { transform-origin: 44px 52px; transition: transform .09s ease-out; }
+  .fx-lash-L-lower { transform-origin: 29px 19px; transition: transform .09s ease-out; }
+  .fx-lash-L-extra { transform-origin: 22px 54px; transition: transform .09s ease-out; }
+  .pet.blink .fx-eye-white-L,
+  .pet.blink .fx-iris-L,
+  .pet.blink .fx-lash-L-upper,
+  .pet.blink .fx-lash-L-lower,
+  .pet.blink .fx-lash-L-extra,
+  .pet.blink .fx-eye-white-R,
+  .pet.blink .fx-iris-R,
+  .pet.blink .fx-lash-R-upper,
+  .pet.blink .fx-lash-R-outer,
+  .pet.blink .fx-brow-R { transform: scaleY(.12); }
+  .fx-tail-outer, .fx-tail-inner { transform-origin: 12% 8%; animation: foxTail 3.6s ease-in-out infinite; }
   @keyframes foxTail { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg); } }
-  /* 耳根补片（2026-10-24）：左耳绕耳根转的时候，耳朵内侧会离开头发，露出一条背景色的缝。
-     补片 = ear-L 自己的像素，只留「任何角度下会露缝」的那块（x55..133），静止垫在耳朵下面：
-     静止时被耳朵完全盖住（0 像素露出），摆动时正好把缝填上（实测 -16°..+12° 全角度缝像素 0）。 */
-  .fx-ear-L-base { animation: none; }
-  /* ===== 耳朵（2026-10-23 加情绪版）=====
-     起点：耳根在各自下方（左耳 origin 70% 92%、右耳 30% 92%），所以旋转=绕耳根摆。
-     平时：每 5 秒抖一下（像真狐狸偶尔动耳）；情绪：开心竖起、生气压平、犯困耷拉、害羞轻抖。
-
-     ⚠️ 2026-10-24 耳根接缝：耳朵往「远离头部」那侧摆时，耳内侧会离开头发露出一条背景色的缝。
-     两个手段一起用（真机 312x253 悬浮窗截图逐角度量过，缝像素归零）：
-       ① 补片 .fx-ear-L-base（见上）：静止时完全被耳朵盖住，只在摆动时把缝填上；
-       ② 摆动时补偿一个很小的平移 —— 耳根反方向挪「1.6 × 角度」px 贴回头发。
-          因为耳朵内侧本来就压在 bangs/layer13 底下，多挪一点也看不出来（挪到头发下面）。
-          狐坐标系里 26px 只相当于屏幕上约 3px，肉眼几乎无感，但足以把缝堵死。
-     负角度（左耳往左上摆）= 远离头部那侧，才需要补偿；正角度不用。 */
+  /* ===== 耳朵 =====
+     起点：耳根在各自下方（左耳 origin 70% 92%、右耳 30% 92%），旋转=绕耳根摆。
+     平时每 5 秒抖一下；情绪：开心竖起、生气压平、犯困耷拉、害羞轻抖。
+     2026-10-29 换新画稿后，耳朵是完整的一层（藏在头发下的部分也画了），
+     先不用旧的「补片 + 反向平移」那套；摆动时若又露缝，用 tools/fox-ear-patch.py 的思路重新量。 */
   .fx-ear-L { transform-origin: 70% 92%; animation: foxEarTwitchL 5s ease-in-out infinite; }
   .fx-ear-R { transform-origin: 30% 92%; animation: foxEarTwitchR 5s ease-in-out infinite .7s; }
   @keyframes foxEarTwitchL {
     0%, 84%, 100% { transform: rotate(0); }
-    88%           { transform: translate(14px, 0) rotate(-9deg); }   /* 突然抖一下 */
+    88%           { transform: rotate(-9deg); }   /* 突然抖一下 */
     92%           { transform: rotate(4deg); }
-    96%           { transform: translate(3px, 0) rotate(-2deg); }
+    96%           { transform: rotate(-2deg); }
   }
   @keyframes foxEarTwitchR {
     0%, 84%, 100% { transform: rotate(0); }
@@ -839,15 +851,15 @@
   .pet[data-form="fox"].act-happy .fx-ear-R,
   .pet[data-form="fox"].act-celebrate .fx-ear-R { animation: foxEarHappyR .9s ease-in-out infinite; }
   /* 生气：往两边压平（飞机耳）*/
-  .pet[data-form="fox"].act-angry .fx-ear-L { animation: none; transform: translate(26px, 0) rotate(-16deg); }
+  .pet[data-form="fox"].act-angry .fx-ear-L { animation: none; transform: rotate(-16deg); }
   .pet[data-form="fox"].act-angry .fx-ear-R { animation: none; transform: rotate(16deg); }
   /* 犯困：慢慢耷拉下来 */
-  @keyframes foxEarSleepL { 0%,100% { transform: translate(16px, 0) rotate(-10deg); } 50% { transform: translate(10px, 0) rotate(-6deg); } }
+  @keyframes foxEarSleepL { 0%,100% { transform: rotate(-10deg); } 50% { transform: rotate(-6deg); } }
   @keyframes foxEarSleepR { 0%,100% { transform: rotate(10deg); } 50% { transform: rotate(6deg); } }
   .pet[data-form="fox"].act-sleepy .fx-ear-L { animation: foxEarSleepL 2.4s ease-in-out infinite; }
   .pet[data-form="fox"].act-sleepy .fx-ear-R { animation: foxEarSleepR 2.4s ease-in-out infinite; }
   /* 撒娇/害羞：小幅快抖 */
-  @keyframes foxEarShyL { 0%,100% { transform: translate(6px, 0) rotate(-4deg); } 50% { transform: rotate(3deg); } }
+  @keyframes foxEarShyL { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(3deg); } }
   @keyframes foxEarShyR { 0%,100% { transform: rotate(4deg); } 50% { transform: rotate(-3deg); } }
   .pet[data-form="fox"].act-cute .fx-ear-L,
   .pet[data-form="fox"].act-shy .fx-ear-L { animation: foxEarShyL .7s ease-in-out infinite; }
@@ -1145,31 +1157,40 @@
     <span class="ball b3"></span>
     <!-- 狐狐形态：20 个分层部件（主人画世界作品，PSD 逐层导出，去白边） -->
     <div class="fox"><span class="fox-shadow"></span><div class="fox-inner">
+      <img class="fx fx-tail-outer" src="fox/tail-outer.png" alt="">
+      <img class="fx fx-tail-inner" src="fox/tail-inner.png" alt="">
       <img class="fx fx-shoes" src="fox/shoes.png" alt="">
-      <img class="fx fx-tail" src="fox/tail.png" alt="">
       <img class="fx fx-pants" src="fox/pants.png" alt="">
-      <img class="fx fx-layer19" src="fox/layer19.png" alt="">
+      <img class="fx fx-pants-front" src="fox/pants-front.png" alt="">
+      <img class="fx fx-leg-detail-L" src="fox/leg-detail-L.png" alt="">
+      <img class="fx fx-leg-detail-R" src="fox/leg-detail-R.png" alt="">
       <img class="fx fx-hair-back" src="fox/hair-back.png" alt="">
       <img class="fx fx-neck-hands" src="fox/neck-hands.png" alt="">
       <img class="fx fx-top" src="fox/top.png" alt="">
-      <img class="fx fx-sleeves" src="fox/sleeves.png" alt="">
-      <img class="fx fx-ear-L-base" src="fox/ear-L-base.png" alt="">
+      <img class="fx fx-top-inner" src="fox/top-inner.png" alt="">
       <img class="fx fx-ear-L" src="fox/ear-L.png" alt="">
       <img class="fx fx-fur-under-ear-L" src="fox/fur-under-ear-L.png" alt="">
-      <img class="fx fx-head" src="fox/head-base.png" alt="">
-      <img class="fx fx-pupil-L" src="fox/pupil-L.png" alt="">
-      <img class="fx fx-pupil-R" src="fox/pupil-R.png" alt="">
+      <img class="fx fx-head" src="fox/head.png" alt="">
       <img class="fx fx-part25" src="fox/part25.png" alt="">
       <img class="fx fx-mouth" src="fox/mouth.png" alt="">
-      <img class="fx fx-layer13" src="fox/layer13.png" alt="">
-      <img class="fx fx-eye-L" src="fox/eye-L.png" alt="">
-      <img class="fx fx-eye-R" src="fox/eye-R.png" alt="">
-      <img class="fx fx-eye-strokes" src="fox/eye-strokes.png" alt="">
-      <img class="fx fx-bangs" src="fox/bangs.png" alt="">
+      <img class="fx fx-eye-white-R" src="fox/eye-white-R.png" alt="">
+      <img class="fx fx-eye-white-L" src="fox/eye-white-L.png" alt="">
+      <img class="fx fx-iris-R" src="fox/iris-R.png" alt="">
+      <img class="fx fx-iris-L" src="fox/iris-L.png" alt="">
+      <img class="fx fx-lash-R-outer" src="fox/lash-R-outer.png" alt="">
+      <img class="fx fx-lash-L-lower" src="fox/lash-L-lower.png" alt="">
+      <img class="fx fx-lash-R-upper" src="fox/lash-R-upper.png" alt="">
+      <img class="fx fx-lash-L-upper" src="fox/lash-L-upper.png" alt="">
+      <img class="fx fx-brow-C" src="fox/brow-C.png" alt="">
+      <img class="fx fx-brow-L" src="fox/brow-L.png" alt="">
+      <img class="fx fx-brow-R" src="fox/brow-R.png" alt="">
+      <img class="fx fx-lash-L-extra" src="fox/lash-L-extra.png" alt="">
       <img class="fx fx-ear-R" src="fox/ear-R.png" alt="">
+      <img class="fx fx-bangs" src="fox/bangs.png" alt="">
       <img class="fx fx-fur-under-ear-R" src="fox/fur-under-ear-R.png" alt="">
       <img class="fx fx-hair-highlight" src="fox/hair-highlight.png" alt="">
       <img class="fx fx-hair-tuft" src="fox/hair-tuft.png" alt="">
+      <img class="fx fx-layer13" src="fox/layer13.png" alt="">
     </div></div>
     <!-- 看窗外：窗框垫在身体下面（z-index:0），只露边框；里面的云/月亮/雨丝走 8 秒分镜 -->
     <span class="scene window"><span class="cloud"></span><span class="moon"></span><span class="rain"></span></span>
@@ -1231,7 +1252,7 @@
   }
 
   // 眨眼（设置可关）：间隔随机、偶尔连眨两下、睡着不眨。
-  // 方块形态靠 .blink .eye{height:2px} 生效，狐狐靠 .blink .fx-eye-L/R 的 scaleY，同一套类。
+  // 方块形态靠 .blink .eye{height:2px} 生效；狐狐靠 .blink 收眼睛那一组层（scaleY），同一套类。
   if (getPref('pref_blink', true)) {
     const blinkOnce = () => {
       pet.classList.add('blink');
