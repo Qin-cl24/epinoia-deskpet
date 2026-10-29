@@ -798,8 +798,8 @@
     .fx-bangs { left: 82px; top: 67px; width: 366px; height: 278px; }   /* 刘海 */
     .fx-fur-under-ear-R { left: 287px; top: 61px; width: 113px; height: 103px; }   /* 右耳根毛 */
     .fx-hair-highlight { left: 144px; top: 165px; width: 219px; height: 102px; }   /* 发丝高光 */
-    .fx-hair-tuft { left: 171px; top: 157px; width: 108px; height: 48px; }   /* 呆毛 */
-    .fx-layer13 { left: 99px; top: 54px; width: 120px; height: 109px; }   /* 旧 layer13（用途待确认） */
+    .fx-hair-tuft { left: 171px; top: 157px; width: 108px; height: 48px; }   /* 发尖（图层3） */
+    .fx-ahoge { left: 99px; top: 54px; width: 120px; height: 109px; }   /* 呆毛（图层13） */
 
   /* 小动画 */
   /* 眨眼（2026-10-29 按新画稿重做）：新 PSD 把眼睛拆成了眼白/虹膜/上睫毛/下睫毛/眉毛多层。
@@ -887,10 +887,11 @@
   /* 惊讶：两只耳朵同时竖到最直 */
   .pet[data-form="fox"].act-shock .fx-ear-L { animation: none; transform: rotate(12deg); }
   .pet[data-form="fox"].act-shock .fx-ear-R { animation: none; transform: rotate(-12deg); }
-  /* 呆毛（2026-10-29 主人要的）：原来 2.4 秒摆 5°，动作太明显、像在甩；
+  /* 呆毛（2026-10-29 主人要的，挂在 ahoge 上）：原来 2.4 秒摆 5°，动作太明显、像在甩；
      现在改成跟呼吸同一个周期 3.2 秒、只摆 2.2° 并微微上提 0.8px —— 看着像被呼吸带起来的，
      和 .idle-breathe 的 foxBreathe 同频，混在呼吸里几乎察觉不到是单独的动画。 */
-  .fx-hair-tuft { transform-origin: bottom left; animation: foxTuft 3.2s ease-in-out infinite; }
+  /* 呆毛 = 图层13（ahoge），是最上面那一撮；下面这层 hair-tuft（图层3）其实是发尖，不单独动。 */
+  .fx-ahoge { transform-origin: bottom left; animation: foxTuft 3.2s ease-in-out infinite; }
   @keyframes foxTuft {
     0%, 100% { transform: rotate(0deg) translateY(0); }
     50%      { transform: rotate(2.2deg) translateY(-.8px); }
@@ -1215,7 +1216,7 @@
       <img class="fx fx-fur-under-ear-R" src="fox/fur-under-ear-R.png" alt="">
       <img class="fx fx-hair-highlight" src="fox/hair-highlight.png" alt="">
       <img class="fx fx-hair-tuft" src="fox/hair-tuft.png" alt="">
-      <img class="fx fx-layer13" src="fox/layer13.png" alt="">
+      <img class="fx fx-ahoge" src="fox/ahoge.png" alt="">
     </div></div>
     <!-- 看窗外：窗框垫在身体下面（z-index:0），只露边框；里面的云/月亮/雨丝走 8 秒分镜 -->
     <span class="scene window"><span class="cloud"></span><span class="moon"></span><span class="rain"></span></span>
