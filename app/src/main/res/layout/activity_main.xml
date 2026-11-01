@@ -26,6 +26,18 @@
             android:textColor="#666666"
             android:textSize="12sp" />
 
+        <!-- 小屋入口（2026-10-29）：点进 assets/room.html，房间用 CSS 画，交互先跑通 -->
+        <Button
+            android:id="@+id/btn_room"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:backgroundTint="#FFE0B2"
+            android:text="🏠 进小屋看看"
+            android:textColor="#5D4037"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

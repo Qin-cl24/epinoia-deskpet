@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>狐狐的小屋</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; height:100%; overflow:hidden; font-family: system-ui, sans-serif;
+    background:#f6e3cf; user-select:none; }
+
+  /* ===== 房间：墙 + 地板 + 窗 ===== */
+  .room { position:fixed; inset:0; overflow:hidden; }
+  .wall { position:absolute; left:0; right:0; top:0; bottom:34%;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,.55) 0 3px, transparent 3px) 0 0/46px 46px,
+      radial-gradient(circle at 70% 70%, rgba(255,255,255,.45) 0 3px, transparent 3px) 0 0/46px 46px,
+      linear-gradient(#f7e7d3, #eed6bb); }
+  .floor { position:absolute; left:0; right:0; bottom:0; height:34%;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 1px, transparent 1px 42px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.045) 0 1px, transparent 1px 30px),
+      linear-gradient(#d8a677, #c2885b); }
+  .skirting { position:absolute; left:0; right:0; bottom:34%; height:9px; background:#b5764a;
+    box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+
+  .window { position:absolute; right:8%; top:9%; width:34%; height:26%; border-radius:10px;
+    background: linear-gradient(#bfe3f7, #e7f6ff); border:7px solid #d9b08c;
+    box-shadow: 0 6px 14px rgba(0,0,0,.14), inset 0 0 0 2px rgba(255,255,255,.6); overflow:hidden; }
+  .window::before { content:''; position:absolute; left:50%; top:0; bottom:0; width:6px; margin-left:-3px;
+    background:#d9b08c; }
+  .window::after { content:''; position:absolute; top:50%; left:0; right:0; height:6px; margin-top:-3px;
+    background:#d9b08c; }
+  .sun { position:absolute; right:12px; top:12px; width:34px; height:34px; border-radius:50%;
+    background:radial-gradient(circle, #ffe680, #ffcf40); box-shadow:0 0 18px rgba(255,214,64,.8); }
+  .cloud { position:absolute; left:10px; top:16px; width:52px; height:16px; border-radius:20px;
+    background:rgba(255,255,255,.9); box-shadow:14px -8px 0 -2px rgba(255,255,255,.9); animation: drift 9s ease-in-out infinite; }
+  @keyframes drift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(26px); } }
+
+  /* ===== 家具 ===== */
+  .bed { position:absolute; left:6%; bottom:34%; width:24%; height:15%; border-radius:14px 14px 6px 6px;
+    background:linear-gradient(#f3f0ff, #dcd6f7); box-shadow:0 8px 18px rgba(0,0,0,.18), inset 0 -6px 0 rgba(0,0,0,.06);
+    cursor:pointer; }
+  .bed::before { content:''; position:absolute; left:5%; top:14%; width:30%; height:44%; border-radius:10px;
+    background:linear-gradient(#fff, #f1eefc); box-shadow:0 2px 4px rgba(0,0,0,.12); }
+  .bed::after { content:'🛏️'; position:absolute; right:8px; top:6px; font-size:16px; opacity:.55; }
+  .bedleg { position:absolute; bottom:-8px; width:8px; height:12px; background:#c9a074; border-radius:2px; }
+  .bedleg.l { left:12%; } .bedleg.r { right:12%; }
+
+  .bowl { position:absolute; left:34%; bottom:26%; width:70px; height:34px; border-radius:0 0 36px 36px;
+    background:linear-gradient(#f0f0f0, #cfcfcf); box-shadow:0 6px 12px rgba(0,0,0,.2);
+    border-top:6px solid #ffb457; cursor:pointer; }
+  .bowl .food { position:absolute; left:8px; right:8px; top:-8px; height:12px; border-radius:10px;
+    background:radial-gradient(circle at 30% 50%, #ffd08a 0 4px, transparent 4px),
+               radial-gradient(circle at 65% 50%, #ffc46b 0 4px, transparent 4px), #ffb457; }
+
+  .radio { position:absolute; right:30%; bottom:26%; width:64px; height:46px; border-radius:8px;
+    background:linear-gradient(#8d6e63, #6d4c41); box-shadow:0 6px 12px rgba(0,0,0,.25); cursor:pointer; }
+  .radio::before { content:''; position:absolute; left:8px; top:8px; width:26px; height:26px; border-radius:50%;
+    background:radial-gradient(circle at 50% 50%, #fff 0 30%, #bdbdbd 32% 60%, #8d8d8d 62%); }
+  .radio::after { content:''; position:absolute; right:10px; top:12px; width:12px; height:12px; border-radius:50%;
+    background:#ffd54f; box-shadow:0 16px 0 -2px #ffd54f; }
+  .notes { position:absolute; right:26%; bottom:38%; font-size:16px; opacity:0; transition:opacity .3s; }
+  .notes.on { opacity:1; animation: floatUp 1.4s ease-in-out infinite; }
+  @keyframes floatUp { 0% { transform: translate(0,0); opacity:0; } 40% { opacity:1; } 100% { transform: translate(10px,-26px); opacity:0; } }
+
+  .rug { position:absolute; left:50%; bottom:6%; width:52%; height:13%; margin-left:-26%; border-radius:50%;
+    background:radial-gradient(ellipse at 50% 40%, #ffe3b8, #f3c98d); opacity:.85;
+    box-shadow: inset 0 0 0 5px rgba(255,255,255,.45); }
+
+  /* ===== 狐狐（图层来自 _layers.json）===== */
+  .foxwrap { position:absolute; left:50%; bottom:8%; width:0; height:0; }
+  .fox { position:absolute; left:0; bottom:0; width:543px; height:626px;
+    transform: translateX(-50%) scale(var(--foxs, .52)); transform-origin: bottom center;
+    transition: transform .25s ease; }
+  .fox.flip { transform: translateX(-50%) scale(var(--foxs, .52)) scaleX(-1); }
+  .fox-inner { position:absolute; inset:0; animation: idle 3.2s ease-in-out infinite; }
+  @keyframes idle { 0%,100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-2px) scaleY(.99); } }
+  .fox img.fx { position:absolute; display:block; }
+    .fx-tail-outer { left:331px; top:373px; width:194px; height:212px; }
+    .fx-tail-inner { left:331px; top:373px; width:156px; height:165px; }
+    .fx-shoes { left:211px; top:516px; width:154px; height:110px; }
+    .fx-pants { left:211px; top:359px; width:189px; height:249px; }
+    .fx-pants-front { left:300px; top:355px; width:106px; height:254px; }
+    .fx-leg-detail-L { left:256px; top:389px; width:54px; height:90px; }
+    .fx-leg-detail-R { left:304px; top:387px; width:56px; height:95px; }
+    .fx-hair-back { left:95px; top:66px; width:383px; height:290px; }
+    .fx-neck-hands { left:287px; top:297px; width:57px; height:57px; }
+    .fx-top { left:242px; top:288px; width:162px; height:143px; }
+    .fx-sleeves { left:236px; top:291px; width:148px; height:148px; }
+    .fx-ear-L { left:17px; top:118px; width:155px; height:160px; }
+    .fx-fur-under-ear-L { left:70px; top:191px; width:101px; height:109px; }
+    .fx-head { left:147px; top:113px; width:260px; height:224px; }
+    .fx-part25 { left:217px; top:253px; width:145px; height:78px; }
+    .fx-mouth { left:277px; top:297px; width:34px; height:15px; }
+    .fx-eye-white-R { left:286px; top:227px; width:62px; height:48px; }
+    .fx-eye-white-L { left:199px; top:267px; width:57px; height:50px; }
+    .fx-iris-R { left:299px; top:231px; width:37px; height:41px; }
+    .fx-iris-L { left:215px; top:274px; width:37px; height:37px; }
+    .fx-lash-R-upper { left:285px; top:219px; width:76px; height:33px; }
+    .fx-lash-L-lower { left:198px; top:298px; width:29px; height:19px; }
+    .fx-lash-L-upper { left:183px; top:265px; width:66px; height:45px; }
+    .fx-eyelid-R { left:339px; top:227px; width:13px; height:39px; }
+    .fx-brow-C { left:258px; top:181px; width:43px; height:31px; }
+    .fx-brow-L { left:175px; top:239px; width:47px; height:31px; }
+    .fx-brow-R { left:283px; top:227px; width:19px; height:14px; }
+    .fx-lash-L-extra { left:205px; top:263px; width:32px; height:15px; }
+    .fx-ear-R { left:233px; top:-1px; width:164px; height:143px; }
+    .fx-bangs { left:82px; top:67px; width:366px; height:278px; }
+    .fx-fur-under-ear-R { left:287px; top:61px; width:113px; height:103px; }
+    .fx-hair-highlight { left:144px; top:165px; width:219px; height:102px; }
+    .fx-hair-tuft { left:171px; top:157px; width:108px; height:48px; }
+    .fx-ahoge { left:99px; top:54px; width:120px; height:109px; }
+
+  /* 走 / 各动作 */
+  .walking .fox-inner { animation: sway .5s ease-in-out infinite; }
+  @keyframes sway { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+  .act-sleep .fox-inner { animation: lie 3s ease-in-out infinite; }
+  @keyframes lie { 0%,100% { transform: rotate(-9deg) translateY(10px) scaleY(.92); }
+                    50% { transform: rotate(-11deg) translateY(11px) scaleY(.9); } }
+  .act-eat .fox-inner { animation: chew .6s ease-in-out infinite; }
+  @keyframes chew { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px) scaleY(.98); } }
+  .act-look .fox-inner { animation: lookout 2.4s ease-in-out infinite; }
+  @keyframes lookout { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-4px) rotate(2deg); } }
+  .act-dance .fox-inner { animation: dance .55s ease-in-out infinite; }
+  @keyframes dance { 0%,100% { transform: rotate(-6deg) translateY(0); }
+                      50% { transform: rotate(6deg) translateY(-3px); } }
+  .pet-room.bounce .fox-inner { animation: hop .45s ease-out; }
+  @keyframes hop { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-14px) scaleY(1.04); } }
+
+  /* 眨眼：眼白/虹膜/睫毛收成一条线（枢轴=眼白底边中点）*/
+    .fx-eye-white-R { transform-origin: 31px 48px; transition: transform .09s ease-out; }
+    .fx-iris-R { transform-origin: 18px 44px; transition: transform .09s ease-out; }
+    .fx-lash-R-upper { transform-origin: 32px 56px; transition: transform .09s ease-out; }
+    .fx-brow-R { transform-origin: 34px 48px; transition: transform .09s ease-out; }
+    .fx-eyelid-R { transform-origin: -22px 48px; transition: transform .09s ease-out; }
+    .fx-eye-white-L { transform-origin: 28px 50px; transition: transform .09s ease-out; }
+    .fx-iris-L { transform-origin: 12px 43px; transition: transform .09s ease-out; }
+    .fx-lash-L-upper { transform-origin: 44px 52px; transition: transform .09s ease-out; }
+    .fx-lash-L-lower { transform-origin: 29px 19px; transition: transform .09s ease-out; }
+    .fx-lash-L-extra { transform-origin: 22px 54px; transition: transform .09s ease-out; }
+  .pet-room.blink .fx-eye-white-R,
+    .pet-room.blink .fx-iris-R,
+    .pet-room.blink .fx-lash-R-upper,
+    .pet-room.blink .fx-brow-R,
+    .pet-room.blink .fx-eyelid-R,
+    .pet-room.blink .fx-eye-white-L,
+    .pet-room.blink .fx-iris-L,
+    .pet-room.blink .fx-lash-L-upper,
+    .pet-room.blink .fx-lash-L-lower,
+    .pet-room.blink .fx-lash-L-extra { transform: scaleY(.12); }
+
+  .zzz { position:absolute; left:56%; top:8%; font-size:18px; opacity:0; }
+  .act-sleep .zzz { opacity:1; animation: zfloat 2.2s ease-in-out infinite; }
+  @keyframes zfloat { 0% { transform: translate(0,0) scale(.8); opacity:.3; }
+                       50% { transform: translate(10px,-16px) scale(1); opacity:1; }
+                       100% { transform: translate(20px,-32px) scale(.9); opacity:0; } }
+
+  /* ===== 说话气泡 ===== */
+  .bubble { position:absolute; left:50%; bottom:calc(8% + var(--bubbleup, 320px)); transform: translateX(-50%) scale(.9);
+    background:#fff; color:#5a4636; padding:8px 14px; border-radius:16px; font-size:15px;
+    box-shadow:0 6px 16px rgba(0,0,0,.16); opacity:0; transition: opacity .18s ease, transform .18s ease;
+    pointer-events:none; white-space:nowrap; }
+  .bubble.on { opacity:1; transform: translateX(-50%) scale(1); }
+
+  /* ===== 顶栏 ===== */
+  .top { position:absolute; left:0; right:0; top:0; height:52px; display:flex; align-items:center;
+    padding:0 12px; gap:10px; background:linear-gradient(rgba(255,248,240,.92), rgba(255,248,240,0)); }
+  .title { font-size:16px; font-weight:600; color:#6b5341; }
+  .hint { font-size:12px; color:#a58b74; margin-left:auto; }
+  .close { width:36px; height:36px; border:none; border-radius:50%; background:#f0dcc8; color:#6b5341;
+    font-size:18px; line-height:1; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="room pet-room" id="room">
+  <div class="wall"></div>
+  <div class="skirting"></div>
+  <div class="floor"></div>
+
+  <div class="window"><span class="sun"></span><span class="cloud"></span></div>
+
+  <div class="bed" data-act="sleep" data-x="20"><span class="bedleg l"></span><span class="bedleg r"></span></div>
+  <div class="bowl" data-act="eat" data-x="42"><span class="food"></span></div>
+  <div class="radio" data-act="dance" data-x="62"></div>
+  <div class="notes">🎵</div>
+  <div class="rug"></div>
+
+  <div class="foxwrap" id="foxwrap">
+    <div class="fox" id="fox">
+      <div class="fox-inner">
+    <img class="fx fx-tail-outer" src="fox/tail-outer.png" alt="">
+    <img class="fx fx-tail-inner" src="fox/tail-inner.png" alt="">
+    <img class="fx fx-shoes" src="fox/shoes.png" alt="">
+    <img class="fx fx-pants" src="fox/pants.png" alt="">
+    <img class="fx fx-pants-front" src="fox/pants-front.png" alt="">
+    <img class="fx fx-leg-detail-L" src="fox/leg-detail-L.png" alt="">
+    <img class="fx fx-leg-detail-R" src="fox/leg-detail-R.png" alt="">
+    <img class="fx fx-hair-back" src="fox/hair-back.png" alt="">
+    <img class="fx fx-neck-hands" src="fox/neck-hands.png" alt="">
+    <img class="fx fx-top" src="fox/top.png" alt="">
+    <img class="fx fx-sleeves" src="fox/sleeves.png" alt="">
+    <img class="fx fx-ear-L" src="fox/ear-L.png" alt="">
+    <img class="fx fx-fur-under-ear-L" src="fox/fur-under-ear-L.png" alt="">
+    <img class="fx fx-head" src="fox/head.png" alt="">
+    <img class="fx fx-part25" src="fox/part25.png" alt="">
+    <img class="fx fx-mouth" src="fox/mouth.png" alt="">
+    <img class="fx fx-eye-white-R" src="fox/eye-white-R.png" alt="">
+    <img class="fx fx-eye-white-L" src="fox/eye-white-L.png" alt="">
+    <img class="fx fx-iris-R" src="fox/iris-R.png" alt="">
+    <img class="fx fx-iris-L" src="fox/iris-L.png" alt="">
+    <img class="fx fx-lash-R-upper" src="fox/lash-R-upper.png" alt="">
+    <img class="fx fx-lash-L-lower" src="fox/lash-L-lower.png" alt="">
+    <img class="fx fx-lash-L-upper" src="fox/lash-L-upper.png" alt="">
+    <img class="fx fx-eyelid-R" src="fox/eyelid-R.png" alt="">
+    <img class="fx fx-brow-C" src="fox/brow-C.png" alt="">
+    <img class="fx fx-brow-L" src="fox/brow-L.png" alt="">
+    <img class="fx fx-brow-R" src="fox/brow-R.png" alt="">
+    <img class="fx fx-lash-L-extra" src="fox/lash-L-extra.png" alt="">
+    <img class="fx fx-ear-R" src="fox/ear-R.png" alt="">
+    <img class="fx fx-bangs" src="fox/bangs.png" alt="">
+    <img class="fx fx-fur-under-ear-R" src="fox/fur-under-ear-R.png" alt="">
+    <img class="fx fx-hair-highlight" src="fox/hair-highlight.png" alt="">
+    <img class="fx fx-hair-tuft" src="fox/hair-tuft.png" alt="">
+    <img class="fx fx-ahoge" src="fox/ahoge.png" alt="">
+      </div>
+      <span class="zzz">z z Z</span>
+    </div>
+  </div>
+
+  <div class="bubble" id="bubble"></div>
+
+  <div class="top">
+    <span class="title">🏠 狐狐的小屋</span>
+    <span class="hint">点床 / 饭碗 / 收音机 / 窗台试试</span>
+    <button class="close" id="close">✕</button>
+  </div>
+</div>
+<script>
+  var room = document.getElementById('room');
+  var wrap = document.getElementById('foxwrap');
+  var fox = document.getElementById('fox');
+  var bubble = document.getElementById('bubble');
+  var notes = document.querySelector('.notes');
+  var busy = false;
+
+  var SAY = {
+    sleep: ['有点困…', '睡一会儿', '（抱着尾巴睡着）'],
+    eat: ['好香！', '开动啦', '呼噜呼噜～'],
+    look: ['外面好亮', '云飘过去了', '有人路过呢'],
+    dance: ['一起听！', '这段好听', '啦啦啦～'],
+    idle: ['在屋里转转', '今天待在小屋', '要不要一起玩']
+  };
+  function say(t, ms) {
+    bubble.textContent = t;
+    bubble.classList.add('on');
+    clearTimeout(say._t);
+    say._t = setTimeout(function() { bubble.classList.remove('on'); }, ms || 1800);
+  }
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+
+  // 走：用 transform 平移，顺便按方向翻转（和桌面上「朝向跟随移动」一致）
+  function goTo(xPercent, ms) {
+    var target = (xPercent - 50) * 0.62;      // 百分比 → vw 偏移，0.62 是手感系数
+    var now = wrap.dataset.x ? parseFloat(wrap.dataset.x) : 0;
+    fox.classList.toggle('flip', target < now);
+    wrap.dataset.x = target;
+    wrap.style.transition = 'transform ' + ms + 'ms ease-in-out';
+    wrap.style.transform = 'translateX(' + target + 'vw)';
+    fox.classList.add('walking');
+    return new Promise(function(res) {
+      setTimeout(function() { fox.classList.remove('walking'); res(); }, ms);
+    });
+  }
+  function backHome(ms) { return goTo(50, ms); }
+
+  var ACT_CLASS = { sleep: 'act-sleep', eat: 'act-eat', look: 'act-look', dance: 'act-dance' };
+
+  function doAct(kind, xPercent) {
+    if (busy) return;
+    busy = true;
+    room.classList.remove('act-sleep', 'act-eat', 'act-look', 'act-dance');
+    say({ sleep: '去躺一下', eat: '肚子饿了', look: '去看看窗外', dance: '放首歌吧' }[kind] || '', 1200);
+    goTo(xPercent, 900).then(function() {
+      room.classList.add(ACT_CLASS[kind]);
+      if (kind === 'dance') notes.classList.add('on');
+      say(pick(SAY[kind]), 2200);
+      setTimeout(function() {
+        room.classList.remove(ACT_CLASS[kind]);
+        notes.classList.remove('on');
+        backHome(900).then(function() { busy = false; });
+      }, 2600);
+    });
+  }
+
+  document.querySelectorAll('[data-act]').forEach(function(el) {
+    el.addEventListener('click', function() { doAct(el.dataset.act, parseFloat(el.dataset.x)); });
+  });
+  // 窗台也能点
+  document.querySelector('.window').addEventListener('click', function() { doAct('look', 66); });
+  // 点狐狐：跳一下
+  fox.addEventListener('click', function() {
+    room.classList.add('bounce');
+    say(pick(SAY.idle), 1500);
+    setTimeout(function() { room.classList.remove('bounce'); }, 500);
+  });
+  document.getElementById('close').addEventListener('click', function() {
+    if (window.RoomBridge && window.RoomBridge.close) window.RoomBridge.close();
+    else say('（没有找到关闭桥）', 1200);
+  });
+
+  // 眨眼：随机间隔，偶尔连眨
+  (function blinkLoop() {
+    setTimeout(function() {
+      room.classList.add('blink');
+      setTimeout(function() { room.classList.remove('blink'); }, 110);
+      if (Math.random() < 0.18) setTimeout(function() {
+        room.classList.add('blink');
+        setTimeout(function() { room.classList.remove('blink'); }, 100);
+      }, 230);
+      blinkLoop();
+    }, 2600 + Math.random() * 4200);
+  })();
+
+  setTimeout(function() { say('欢迎来小屋～', 2000); }, 600);
+</script>
+</body>
+</html>

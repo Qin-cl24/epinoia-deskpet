@@ -45,6 +45,10 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="desktop pet overlay" />
         </service>
+        <activity
+            android:name=".RoomActivity"
+            android:exported="false"
+            android:label="狐狐的小屋" />
     </application>
 
 </manifest>

@@ -125,6 +125,10 @@ class MainActivity : AppCompatActivity() {
         bindLookBox(R.id.cb_idle_music, "pref_idle_music", false)
         bindLookBox(R.id.cb_idle_hop, "pref_idle_hop", false)
         bindLookBox(R.id.cb_toy_ball, "pref_toy_ball", true)
+        // 小屋入口（2026-10-29）
+        findViewById<Button>(R.id.btn_room).setOnClickListener {
+            startActivity(android.content.Intent(this, RoomActivity::class.java))
+        }
         bindLookBox(R.id.cb_life_acts, "pref_life_acts", true)
 
         val actSecs = listOf(8, 45, 150)
