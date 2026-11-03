@@ -59,12 +59,13 @@
   .item { position:absolute; left:0; top:0; transform-style:preserve-3d; }
   .pshadow { position:absolute; left:0; top:0; width:150px; height:150px; margin:-75px 0 0 -75px;
     border-radius:50%; background:rgba(70,40,16,.34); filter:blur(9px); transform: rotateX(-90deg); }
-  .sprite { position:absolute; left:0; bottom:0; transform: translateX(-50%); transform-origin: bottom center; }
+  .sprite { position:absolute; left:0; bottom:0; transform: translateX(-50%); transform-origin: bottom center;
+    transform-style: preserve-3d; }   /* 不开这个，里面的顶面/侧面会被拍平 */
 
   /* 地毯：平铺在地面上 */
   /* 地毯：先 translate 到位置、再 rotateX 躺平（顺序反了就会「掉到地板下面」）*/
   .rug { position:absolute; left:0; top:0; width:250px; height:190px;
-    transform: translate3d(215px, 2px, 300px) rotateX(-90deg) translate(-50%,-50%);
+    transform: translate3d(215px, -2px, 300px) rotateX(-90deg) translate(-50%,-50%);
     border-radius:50%;
     background: radial-gradient(ellipse at 50% 42%, #ffe9c6, #efc78a);
     box-shadow: inset 0 0 0 6px rgba(255,255,255,.5); }
