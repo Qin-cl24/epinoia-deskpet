@@ -36,7 +36,7 @@ EYE_GROUP = {
     "L": ["eye-white-L", "iris-L", "lash-L-upper", "lash-L-lower", "lash-L-extra"],
 }
 
-W, D, H = 360, 520, 380          # 房间底面宽 / 进深 / 墙高（CSS px）
+W, D, H = 360, 380, 430          # 房间底面宽 / 进深 / 墙高（CSS px）
 
 
 def build():
@@ -84,10 +84,10 @@ def build():
   /* ===== 3D 舞台：开口的立方体，只留一个角的底面 + 左右两面 ===== */
   .stage {{ position:fixed; inset:0; perspective: 1500px; perspective-origin: 50% 44%;
     background: radial-gradient(circle at 50% 26%, #372b1e, #17110b 72%); }}
-  .world {{ position:absolute; left:50%; top:44%; width:0; height:0;
+  .world {{ position:absolute; left:50%; top:40%; width:0; height:0;
     transform-style: preserve-3d;
     /* 先把房间的几何中心挪到原点，再套相机旋转（俯视 26°、水平转 -34°）*/
-    transform: scale(1.05) rotateX(26deg) rotateY(-34deg) translate3d(-{W//2}px, {H//2}px, -{D//2}px); }}
+    transform: scale(1.0) rotateX(16deg) rotateY(-32deg) translate3d(-{W//2}px, {H//2}px, -{D//2}px); }}
 
   /* 底面 */
   .floor {{ position:absolute; left:0; top:0; width:{W}px; height:{D}px;
@@ -223,6 +223,13 @@ def build():
   .room[data-form="fox"] #foxitem {{ display:block; }}
   .room[data-form="fox"] #blockitem {{ display:none; }}
 
+  /* ===== 机位微调面板（调试期用，调好我就把最终数值写死）===== */
+  .tuner {{ position:fixed; left:0; right:0; bottom:0; display:flex; gap:6px; justify-content:center;
+    padding:8px; background:rgba(30,20,12,.72); z-index:30; flex-wrap:wrap; }}
+  .tuner button {{ min-width:44px; border:none; border-radius:10px; padding:8px 6px; font-size:12px;
+    background:#f0dcc8; color:#5a4636; cursor:pointer; }}
+  .tuner .val {{ color:#ffd9a8; font-size:11px; align-self:center; padding:0 6px; }}
+
   /* ===== 顶栏 / 气泡 ===== */
   .top {{ position:fixed; left:0; right:0; top:0; height:52px; display:flex; align-items:center; gap:8px;
     padding:0 12px; background:linear-gradient(rgba(255,248,240,.92), rgba(255,248,240,0)); z-index:20; }}
@@ -248,28 +255,28 @@ def build():
       <div class="wall left"><span class="base left"></span></div>
       <div class="floor"></div>
 
-      <div class="rug" id="rugitem" style="transform: rotateX(-90deg) translate3d(180px,0,300px)"></div>
+      <div class="rug" id="rugitem" style="transform: rotateX(-90deg) translate3d(180px,0,210px)"></div>
 
-      <div class="item bed" id="beditem" data-act="sleep" data-x="95" data-z="230"
-           style="transform: translate3d(95px,0,230px)">
+      <div class="item bed" id="beditem" data-act="sleep" data-x="95" data-z="170"
+           style="transform: translate3d(95px,0,170px)">
         <span class="pshadow" style="width:190px;height:120px"></span>
         <div class="sprite"><div class="head"></div><div class="mattress"></div><div class="blanket"></div><div class="pillow"></div></div>
       </div>
 
-      <div class="item bowl" id="bowlitem" data-act="eat" data-x="265" data-z="420"
-           style="transform: translate3d(265px,0,420px)">
+      <div class="item bowl" id="bowlitem" data-act="eat" data-x="265" data-z="290"
+           style="transform: translate3d(265px,0,290px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
         <div class="sprite"><div class="cup"></div><div class="food"></div></div>
       </div>
 
-      <div class="item radio" id="radioitem" data-act="dance" data-x="300" data-z="150"
-           style="transform: translate3d(300px,0,150px)">
+      <div class="item radio" id="radioitem" data-act="dance" data-x="300" data-z="110"
+           style="transform: translate3d(300px,0,110px)">
         <span class="pshadow" style="width:120px;height:90px"></span>
         <div class="sprite"><div class="case"></div><div class="dial"></div><div class="lamp"></div></div>
         <span class="notes" id="notes">🎵</span>
       </div>
 
-      <div class="item" id="blockitem" style="transform: translate3d(180px,0,340px)">
+      <div class="item" id="blockitem" style="transform: translate3d(180px,0,240px)">
         <span class="pshadow" style="width:120px;height:95px"></span>
         <div class="sprite" id="blocksprite"><div class="blockpet"><div class="body">
           <div class="eye eye-left"></div><div class="eye eye-right"></div>
@@ -279,7 +286,7 @@ def build():
         </div></div></div>
       </div>
 
-      <div class="item" id="foxitem" style="transform: translate3d(180px,0,340px)">
+      <div class="item" id="foxitem" style="transform: translate3d(180px,0,240px)">
         <span class="pshadow" style="width:160px;height:120px"></span>
         <div class="sprite">
           <div class="fox" id="fox">
@@ -294,6 +301,18 @@ def build():
   </div>
 
   <div class="bubble" id="bubble"></div>
+
+  <div class="tuner" id="tuner">
+    <button data-k="tilt" data-d="-2">俯-</button>
+    <button data-k="tilt" data-d="2">俯+</button>
+    <button data-k="yaw" data-d="-2">横-</button>
+    <button data-k="yaw" data-d="2">横+</button>
+    <button data-k="zoom" data-d="-0.05">缩-</button>
+    <button data-k="zoom" data-d="0.05">缩+</button>
+    <button data-k="top" data-d="-2">上</button>
+    <button data-k="top" data-d="2">下</button>
+    <span class="val" id="tuneval">俯16 横-32 缩1.00 上40</span>
+  </div>
 
   <div class="top">
     <span class="title">🏠 小屋</span>
@@ -330,7 +349,7 @@ def build():
     idle:  ['在屋里转转', '今天待在小屋', '要不要一起玩']
   }};
   var ACT_CLASS = {{ sleep: 'act-sleep', eat: 'act-eat', look: 'act-look', dance: 'act-dance' }};
-  var HOME = {{ x: 180, z: 340 }};
+  var HOME = {{ x: 180, z: 240 }};
 
   function goTo(x, z, ms) {{
     var it = activeItem();
@@ -371,7 +390,7 @@ def build():
       doAct(el.dataset.act, parseFloat(el.dataset.x), parseFloat(el.dataset.z));
     }});
   }});
-  document.getElementById('window').addEventListener('click', function () {{ doAct('look', 250, 130); }});
+  document.getElementById('window').addEventListener('click', function () {{ doAct('look', 250, 90); }});
   document.getElementById('foxhit').addEventListener('click', function () {{
     note('tap fox'); room.classList.add('bounce'); say(pick(SAY.idle), 1500);
     setTimeout(function () {{ room.classList.remove('bounce'); }}, 500);
@@ -380,6 +399,26 @@ def build():
     note('tap block'); room.classList.add('bounce'); say(pick(SAY.idle), 1500);
     setTimeout(function () {{ room.classList.remove('bounce'); }}, 500);
   }});
+
+  // 机位状态（调好后把这里的初始值写死）
+  var CAM = {{ tilt: 16, yaw: -32, zoom: 1.0, top: 40 }};
+  function applyCam() {{
+    var w = document.querySelector('.world');
+    w.style.transform = 'scale(' + CAM.zoom.toFixed(2) + ') rotateX(' + CAM.tilt + 'deg) rotateY(' + CAM.yaw + 'deg)'
+      + ' translate3d(-{W // 2}px, {H // 2}px, -{D // 2}px)';
+    w.style.top = CAM.top + '%';
+    document.getElementById('tuneval').textContent =
+      '俯' + CAM.tilt + ' 横' + CAM.yaw + ' 缩' + CAM.zoom.toFixed(2) + ' 上' + CAM.top;
+  }}
+  document.querySelectorAll('#tuner button').forEach(function (b) {{
+    b.addEventListener('click', function () {{
+      var k = b.dataset.k, d = parseFloat(b.dataset.d);
+      CAM[k] = Math.round((CAM[k] + d) * 100) / 100;
+      applyCam();
+      note('tune tilt=' + CAM.tilt + ' yaw=' + CAM.yaw + ' zoom=' + CAM.zoom + ' top=' + CAM.top);
+    }});
+  }});
+  applyCam();
 
   function setForm(f) {{
     room.dataset.form = f;
