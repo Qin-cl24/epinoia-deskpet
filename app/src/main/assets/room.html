@@ -183,6 +183,12 @@
                         100% { transform:translate(-50%,-26px); opacity:0; } }
 
   /* ===== 方块形态 ===== */
+  /* ===== 转到房间外时：墙和墙上挂件隐藏背面 =====
+     yaw 放宽到 200° 后，镜头会绕到墙的另一侧；如果不隐藏背面，
+     挂钟/挂画会以镜像形式出现（挂钟是特意 rotateY(180) 面向屋里的）。
+     隐藏背面 = 转过去那面墙直接消失，露出屋里（像拆掉的玩具屋），不会出现反字。 */
+  .wall, .wall * { -webkit-backface-visibility: hidden; backface-visibility: hidden; }   /* 墙 + 墙里的一切（窗/画/钟/帘，含孙元素）*/
+
   /* ===== 墙面装饰通用：.deco 里的每个面都绝对定位、用负 margin 把盒子中心对齐锚点 ===== */
   .deco { position:absolute; left:0; top:0; transform-style:preserve-3d; }
   .deco > * { position:absolute; left:0; top:0; }
@@ -376,6 +382,10 @@
   .room[data-form="fox"] #foxitem { display:block; }
   .room[data-form="fox"] #blockitem { display:none; }
 
+  /* 桌宠显示/隐藏：主人要先只看屋子，屋子弄好再放进来（顶栏 👀 隐藏 / 🐣 / 🦊 三选一） */
+  .room[data-pet="off"] #foxitem,
+  .room[data-pet="off"] #blockitem { display:none; }
+
   /* ===== 机位微调面板（调试期用，调好我就把最终数值写死）===== */
   .tuner { position:fixed; left:0; right:0; bottom:0; display:flex; gap:6px; justify-content:center;
     padding:8px; background:rgba(30,20,12,.72); z-index:30; flex-wrap:wrap; }
@@ -399,7 +409,7 @@
 </style>
 </head>
 <body>
-<div class="room pet-room" id="room" data-form="block">
+<div class="room pet-room" id="room" data-form="block" data-pet="off">
   <div class="stage">
     <div class="world">
       <div class="wall back"><span class="base back"></span>
@@ -544,8 +554,9 @@
 
   <div class="top">
     <span class="title">🏠 小屋</span>
-    <button class="formbtn on" id="btn-block">🐣 方块</button>
+    <button class="formbtn" id="btn-block">🐣 方块</button>
     <button class="formbtn" id="btn-fox">🦊 狐狐</button>
+    <button class="formbtn on" id="btn-none">👀 隐藏</button>
     <span class="hint">点家具试试</span>
     <button class="close" id="gear">⚙️</button>
     <button class="close" id="close">✕</button>
@@ -631,9 +642,10 @@
   });
 
   // 调试：记录每次按下到底命中了哪个元素（点击不灵时用它定位，正式版可删）
-  document.querySelector('.stage').addEventListener('pointerdown', function (e) {
+  document.addEventListener('pointerdown', function (e) {
     var t = e.target;
-    note('hit ' + (t.id ? '#' + t.id : '') + (typeof t.className === 'string' && t.className ? '.' + t.className : '') + ' <' + t.tagName + '>');
+    note('hit ' + (t.id ? '#' + t.id : '') + (typeof t.className === 'string' && t.className ? '.' + t.className.split(' ')[0] : '') + ' <' + t.tagName + '>'
+      + ' @' + Math.round(e.clientX) + ',' + Math.round(e.clientY));
   }, true);
 
   // 挂钟：按真实时间走（分针/时针连续，秒针每秒跳一格）
@@ -741,8 +753,8 @@
       } else {
         // 机位范围是夹紧的：yaw 越过墙平面就会看到墙背面（挂钟/挂画镜像），
         // tilt 转到正数就等于从地板底下往上看（地板背面盖住整个房间、家具全点不到）。
-        CAM.yaw = Math.max(-88, Math.min(-2, Math.round((CAM.yaw + dx * 0.16) * 10) / 10));
-        CAM.tilt = Math.max(-72, Math.min(-6, Math.round((CAM.tilt - dy * 0.14) * 10) / 10));
+        CAM.yaw = Math.max(-160, Math.min(40, Math.round((CAM.yaw + dx * 0.16) * 10) / 10));
+        CAM.tilt = Math.max(-88, Math.min(-2, Math.round((CAM.tilt - dy * 0.14) * 10) / 10));
         applyCam();
       }
     });
@@ -770,10 +782,21 @@
     });
   })();
 
+  function syncPetButtons() {
+    var on = room.dataset.pet !== 'off';
+    document.getElementById('btn-block').classList.toggle('on', on && room.dataset.form === 'block');
+    document.getElementById('btn-fox').classList.toggle('on', on && room.dataset.form === 'fox');
+    document.getElementById('btn-none').classList.toggle('on', !on);
+  }
+  function setPetVisible(on) {
+    room.dataset.pet = on ? 'on' : 'off';
+    syncPetButtons();
+    note('pet=' + (on ? 'on' : 'off'));
+  }
   function setForm(f) {
     room.dataset.form = f;
-    document.getElementById('btn-block').classList.toggle('on', f === 'block');
-    document.getElementById('btn-fox').classList.toggle('on', f === 'fox');
+    room.dataset.pet = 'on';          // 选了形态就是要看桌宠
+    syncPetButtons();
     [foxitem, blockitem].forEach(function (it) {
       it.style.transition = 'none';
       it.style.transform = 'translate3d(' + HOME.x + 'px,0,' + HOME.z + 'px)';
@@ -784,7 +807,9 @@
   }
   document.getElementById('btn-block').addEventListener('click', function () { setForm('block'); });
   document.getElementById('btn-fox').addEventListener('click', function () { setForm('fox'); });
+  document.getElementById('btn-none').addEventListener('click', function () { setPetVisible(false); });
   setForm('block');
+  setPetVisible(false);     // 默认先不放桌宠：屋子还在施工，主人要看干净的屋子
 
   document.getElementById('gear').addEventListener('click', function () {
     note('open settings');
