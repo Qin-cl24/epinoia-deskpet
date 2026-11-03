@@ -36,7 +36,7 @@ EYE_GROUP = {
     "L": ["eye-white-L", "iris-L", "lash-L-upper", "lash-L-lower", "lash-L-extra"],
 }
 
-W, D, H = 360, 380, 430          # 房间底面宽 / 进深 / 墙高（CSS px）
+W, D, H = 420, 500, 300          # 房间底面宽 / 进深 / 墙高（CSS px）
 
 
 def build():
@@ -87,7 +87,7 @@ def build():
   .world {{ position:absolute; left:50%; top:40%; width:0; height:0;
     transform-style: preserve-3d;
     /* 先把房间的几何中心挪到原点，再套相机旋转（俯视 26°、水平转 -34°）*/
-    transform: scale(1.0) rotateX(16deg) rotateY(-32deg) translate3d(-{W//2}px, {H//2}px, -{D//2}px); }}
+    transform: scale(.85) rotateX(-32deg) rotateY(-30deg) translate3d(-{W//2}px, {H//2}px, -{D//2}px); }}
 
   /* 底面 */
   .floor {{ position:absolute; left:0; top:0; width:{W}px; height:{D}px;
@@ -255,28 +255,28 @@ def build():
       <div class="wall left"><span class="base left"></span></div>
       <div class="floor"></div>
 
-      <div class="rug" id="rugitem" style="transform: rotateX(-90deg) translate3d(180px,0,210px)"></div>
+      <div class="rug" id="rugitem" style="transform: rotateX(-90deg) translate3d(210px,0,290px)"></div>
 
-      <div class="item bed" id="beditem" data-act="sleep" data-x="95" data-z="170"
-           style="transform: translate3d(95px,0,170px)">
+      <div class="item bed" id="beditem" data-act="sleep" data-x="110" data-z="230"
+           style="transform: translate3d(110px,0,230px)">
         <span class="pshadow" style="width:190px;height:120px"></span>
         <div class="sprite"><div class="head"></div><div class="mattress"></div><div class="blanket"></div><div class="pillow"></div></div>
       </div>
 
-      <div class="item bowl" id="bowlitem" data-act="eat" data-x="265" data-z="290"
-           style="transform: translate3d(265px,0,290px)">
+      <div class="item bowl" id="bowlitem" data-act="eat" data-x="300" data-z="390"
+           style="transform: translate3d(300px,0,390px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
         <div class="sprite"><div class="cup"></div><div class="food"></div></div>
       </div>
 
-      <div class="item radio" id="radioitem" data-act="dance" data-x="300" data-z="110"
-           style="transform: translate3d(300px,0,110px)">
+      <div class="item radio" id="radioitem" data-act="dance" data-x="350" data-z="140"
+           style="transform: translate3d(350px,0,140px)">
         <span class="pshadow" style="width:120px;height:90px"></span>
         <div class="sprite"><div class="case"></div><div class="dial"></div><div class="lamp"></div></div>
         <span class="notes" id="notes">🎵</span>
       </div>
 
-      <div class="item" id="blockitem" style="transform: translate3d(180px,0,240px)">
+      <div class="item" id="blockitem" style="transform: translate3d(210px,0,310px)">
         <span class="pshadow" style="width:120px;height:95px"></span>
         <div class="sprite" id="blocksprite"><div class="blockpet"><div class="body">
           <div class="eye eye-left"></div><div class="eye eye-right"></div>
@@ -286,7 +286,7 @@ def build():
         </div></div></div>
       </div>
 
-      <div class="item" id="foxitem" style="transform: translate3d(180px,0,240px)">
+      <div class="item" id="foxitem" style="transform: translate3d(210px,0,310px)">
         <span class="pshadow" style="width:160px;height:120px"></span>
         <div class="sprite">
           <div class="fox" id="fox">
@@ -349,7 +349,7 @@ def build():
     idle:  ['在屋里转转', '今天待在小屋', '要不要一起玩']
   }};
   var ACT_CLASS = {{ sleep: 'act-sleep', eat: 'act-eat', look: 'act-look', dance: 'act-dance' }};
-  var HOME = {{ x: 180, z: 240 }};
+  var HOME = {{ x: 210, z: 310 }};
 
   function goTo(x, z, ms) {{
     var it = activeItem();
@@ -390,7 +390,7 @@ def build():
       doAct(el.dataset.act, parseFloat(el.dataset.x), parseFloat(el.dataset.z));
     }});
   }});
-  document.getElementById('window').addEventListener('click', function () {{ doAct('look', 250, 90); }});
+  document.getElementById('window').addEventListener('click', function () {{ doAct('look', 290, 120); }});
   document.getElementById('foxhit').addEventListener('click', function () {{
     note('tap fox'); room.classList.add('bounce'); say(pick(SAY.idle), 1500);
     setTimeout(function () {{ room.classList.remove('bounce'); }}, 500);
@@ -401,7 +401,7 @@ def build():
   }});
 
   // 机位状态（调好后把这里的初始值写死）
-  var CAM = {{ tilt: 16, yaw: -32, zoom: 1.0, top: 40 }};
+  var CAM = {{ tilt: -32, yaw: -30, zoom: 0.85, top: 40 }};
   function applyCam() {{
     var w = document.querySelector('.world');
     w.style.transform = 'scale(' + CAM.zoom.toFixed(2) + ') rotateX(' + CAM.tilt + 'deg) rotateY(' + CAM.yaw + 'deg)'

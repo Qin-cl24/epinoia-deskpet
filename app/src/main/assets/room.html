@@ -15,24 +15,24 @@
   .world { position:absolute; left:50%; top:40%; width:0; height:0;
     transform-style: preserve-3d;
     /* 先把房间的几何中心挪到原点，再套相机旋转（俯视 26°、水平转 -34°）*/
-    transform: scale(1.0) rotateX(16deg) rotateY(-32deg) translate3d(-180px, 215px, -190px); }
+    transform: scale(.85) rotateX(-32deg) rotateY(-30deg) translate3d(-210px, 150px, -250px); }
 
   /* 底面 */
-  .floor { position:absolute; left:0; top:0; width:360px; height:380px;
+  .floor { position:absolute; left:0; top:0; width:420px; height:500px;
     transform-origin:0 0; transform: rotateX(90deg);
     background:
       repeating-linear-gradient(90deg, rgba(96,60,28,.16) 0 2px, transparent 2px 45px),
       repeating-linear-gradient(0deg, rgba(96,60,28,.13) 0 2px, transparent 2px 45px),
       linear-gradient(150deg, #e9c69c, #cf9a6a 60%, #c08a5c); }
   /* 后墙（z=0 平面） */
-  .wall.back { position:absolute; left:0; top:-430px; width:360px; height:430px;
+  .wall.back { position:absolute; left:0; top:-300px; width:420px; height:300px;
     background:
       radial-gradient(circle at 18% 26%, rgba(255,255,255,.55) 0 3px, transparent 3px) 0 0/48px 48px,
       radial-gradient(circle at 68% 72%, rgba(255,255,255,.42) 0 3px, transparent 3px) 0 0/48px 48px,
       linear-gradient(180deg, #f8ecd9, #ecd6b8);
     box-shadow: inset 0 -14px 24px rgba(120,80,40,.18); }
   /* 左墙（x=0 平面，绕底边转 -90° 立起来） */
-  .wall.left { position:absolute; left:0; top:-430px; width:380px; height:430px;
+  .wall.left { position:absolute; left:0; top:-300px; width:500px; height:300px;
     transform-origin:0 100%; transform: rotateY(-90deg);
     background:
       radial-gradient(circle at 22% 30%, rgba(255,255,255,.45) 0 3px, transparent 3px) 0 0/48px 48px,
@@ -40,8 +40,8 @@
     box-shadow: inset 0 -14px 24px rgba(110,72,36,.24); }
   /* 踢脚线 */
   .base { position:absolute; background:#b57f52; }
-  .base.back { left:0; bottom:0; width:360px; height:12px; }
-  .base.left { left:0; bottom:0; width:380px; height:12px; }
+  .base.back { left:0; bottom:0; width:420px; height:12px; }
+  .base.left { left:0; bottom:0; width:500px; height:12px; }
 
   /* 窗：贴在后墙上 */
   .window { position:absolute; left:52%; top:16%; width:132px; height:104px; border-radius:8px; cursor:pointer;
@@ -234,28 +234,28 @@
       <div class="wall left"><span class="base left"></span></div>
       <div class="floor"></div>
 
-      <div class="rug" id="rugitem" style="transform: rotateX(-90deg) translate3d(180px,0,210px)"></div>
+      <div class="rug" id="rugitem" style="transform: rotateX(-90deg) translate3d(210px,0,290px)"></div>
 
-      <div class="item bed" id="beditem" data-act="sleep" data-x="95" data-z="170"
-           style="transform: translate3d(95px,0,170px)">
+      <div class="item bed" id="beditem" data-act="sleep" data-x="110" data-z="230"
+           style="transform: translate3d(110px,0,230px)">
         <span class="pshadow" style="width:190px;height:120px"></span>
         <div class="sprite"><div class="head"></div><div class="mattress"></div><div class="blanket"></div><div class="pillow"></div></div>
       </div>
 
-      <div class="item bowl" id="bowlitem" data-act="eat" data-x="265" data-z="290"
-           style="transform: translate3d(265px,0,290px)">
+      <div class="item bowl" id="bowlitem" data-act="eat" data-x="300" data-z="390"
+           style="transform: translate3d(300px,0,390px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
         <div class="sprite"><div class="cup"></div><div class="food"></div></div>
       </div>
 
-      <div class="item radio" id="radioitem" data-act="dance" data-x="300" data-z="110"
-           style="transform: translate3d(300px,0,110px)">
+      <div class="item radio" id="radioitem" data-act="dance" data-x="350" data-z="140"
+           style="transform: translate3d(350px,0,140px)">
         <span class="pshadow" style="width:120px;height:90px"></span>
         <div class="sprite"><div class="case"></div><div class="dial"></div><div class="lamp"></div></div>
         <span class="notes" id="notes">🎵</span>
       </div>
 
-      <div class="item" id="blockitem" style="transform: translate3d(180px,0,240px)">
+      <div class="item" id="blockitem" style="transform: translate3d(210px,0,310px)">
         <span class="pshadow" style="width:120px;height:95px"></span>
         <div class="sprite" id="blocksprite"><div class="blockpet"><div class="body">
           <div class="eye eye-left"></div><div class="eye eye-right"></div>
@@ -265,7 +265,7 @@
         </div></div></div>
       </div>
 
-      <div class="item" id="foxitem" style="transform: translate3d(180px,0,240px)">
+      <div class="item" id="foxitem" style="transform: translate3d(210px,0,310px)">
         <span class="pshadow" style="width:160px;height:120px"></span>
         <div class="sprite">
           <div class="fox" id="fox">
@@ -361,7 +361,7 @@
     idle:  ['在屋里转转', '今天待在小屋', '要不要一起玩']
   };
   var ACT_CLASS = { sleep: 'act-sleep', eat: 'act-eat', look: 'act-look', dance: 'act-dance' };
-  var HOME = { x: 180, z: 240 };
+  var HOME = { x: 210, z: 310 };
 
   function goTo(x, z, ms) {
     var it = activeItem();
@@ -402,7 +402,7 @@
       doAct(el.dataset.act, parseFloat(el.dataset.x), parseFloat(el.dataset.z));
     });
   });
-  document.getElementById('window').addEventListener('click', function () { doAct('look', 250, 90); });
+  document.getElementById('window').addEventListener('click', function () { doAct('look', 290, 120); });
   document.getElementById('foxhit').addEventListener('click', function () {
     note('tap fox'); room.classList.add('bounce'); say(pick(SAY.idle), 1500);
     setTimeout(function () { room.classList.remove('bounce'); }, 500);
@@ -413,11 +413,11 @@
   });
 
   // 机位状态（调好后把这里的初始值写死）
-  var CAM = { tilt: 16, yaw: -32, zoom: 1.0, top: 40 };
+  var CAM = { tilt: -32, yaw: -30, zoom: 0.85, top: 40 };
   function applyCam() {
     var w = document.querySelector('.world');
     w.style.transform = 'scale(' + CAM.zoom.toFixed(2) + ') rotateX(' + CAM.tilt + 'deg) rotateY(' + CAM.yaw + 'deg)'
-      + ' translate3d(-180px, 215px, -190px)';
+      + ' translate3d(-210px, 150px, -250px)';
     w.style.top = CAM.top + '%';
     document.getElementById('tuneval').textContent =
       '俯' + CAM.tilt + ' 横' + CAM.yaw + ' 缩' + CAM.zoom.toFixed(2) + ' 上' + CAM.top;
