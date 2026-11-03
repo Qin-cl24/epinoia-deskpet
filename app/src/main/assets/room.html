@@ -189,7 +189,7 @@
 
   /* ===== 挂画（后墙左侧）：正面画框 + 顶面 + 右侧面，厚 10px ===== */
   .pic-front { width:104px; height:78px; margin:-39px 0 0 -52px; cursor:pointer; padding:6px;
-    transform: translate3d(92px,74px,9px);
+    transform: translate3d(82px,74px,9px);
     background:linear-gradient(160deg,#c79a68,#a9784b); border-radius:3px;
     box-shadow:0 6px 14px rgba(60,35,15,.28); }
   .pic-front .art { position:absolute; inset:6px; display:block; border-radius:2px; overflow:hidden;
@@ -199,9 +199,9 @@
   .pic-front .art::after { content:''; position:absolute; left:-16%; bottom:-42%; width:150%; height:80%;
     border-radius:50%; background:linear-gradient(#9fc47f,#7ea863); }
   .pic-top { width:104px; height:10px; margin:-5px 0 0 -52px;
-    background:linear-gradient(#d3a978,#b98b5e); transform: translate3d(92px,35px,4px) rotateX(-90deg); }
+    background:linear-gradient(#d3a978,#b98b5e); transform: translate3d(82px,35px,4px) rotateX(-90deg); }
   .pic-side { width:10px; height:78px; margin:-39px 0 0 -5px;
-    background:linear-gradient(90deg,#c2915f,#93683c); transform: translate3d(144px,74px,4px) rotateY(90deg); }
+    background:linear-gradient(90deg,#c2915f,#93683c); transform: translate3d(134px,74px,4px) rotateY(90deg); }
 
   /* ===== 窗帘（后墙，围住那扇窗）：帘杆 + 左右两片帘，帘面有褶皱、会轻轻晃 ===== */
   .curtain-rod { width:200px; height:7px; margin:-3.5px 0 0 -100px; border-radius:4px;
@@ -459,9 +459,9 @@
         <div class="sprite"><div class="f m_head"></div><div class="f m_side"></div><div class="f m_front"></div><div class="f m_top"></div><div class="f m_quilt"></div><div class="f m_flap"></div><div class="f m_pillow"></div></div>
       </div>
 
-      <div class="item bowl" id="bowlitem" data-act="eat" data-x="300" data-z="390"
+      <div class="item bowl" id="bowlitem" data-act="eat" data-x="300" data-z="372"
            data-phys="74,26,38" data-drop="240" data-mass="1.5"
-           style="transform: translate3d(300px,0,390px)">
+           style="transform: translate3d(300px,0,372px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
         <div class="sprite"><div class="cup"></div><div class="brim-o"></div><div class="brim-i"></div><div class="meal"></div></div>
       </div>
@@ -739,8 +739,10 @@
         CAM.zoom = Math.min(1.8, Math.max(0.4, Math.round(startZoom * d / startDist * 100) / 100));
         applyCam();
       } else {
-        CAM.yaw = Math.round((CAM.yaw + dx * 0.16) * 10) / 10;
-        CAM.tilt = Math.max(-70, Math.min(70, Math.round((CAM.tilt - dy * 0.14) * 10) / 10));
+        // 机位范围是夹紧的：yaw 越过墙平面就会看到墙背面（挂钟/挂画镜像），
+        // tilt 转到正数就等于从地板底下往上看（地板背面盖住整个房间、家具全点不到）。
+        CAM.yaw = Math.max(-88, Math.min(-2, Math.round((CAM.yaw + dx * 0.16) * 10) / 10));
+        CAM.tilt = Math.max(-72, Math.min(-6, Math.round((CAM.tilt - dy * 0.14) * 10) / 10));
         applyCam();
       }
     });
