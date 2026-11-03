@@ -262,21 +262,21 @@ def build():
 
   /* ===== 地板和墙的厚度（直接挂在 .world 里，用世界坐标，不会被父层的旋转带跑）===== */
   .slab {{ position:absolute; left:0; top:0; }}
-  .floor-front {{ width:{W}px; height:56px; margin:-13px 0 0 -{W//2}px;
+  .floor-front {{ width:{W}px; height:56px; margin:-28px 0 0 -{W//2}px;
     background:linear-gradient(#b0763f, #7d4f28);
-    transform: translate3d({W//2}px, 27px, {D}px); }}
-  .floor-right {{ width:{D}px; height:56px; margin:-13px 0 0 -{D//2}px;
+    transform: translate3d({W//2}px, 28px, {D}px); }}
+  .floor-right {{ width:{D}px; height:56px; margin:-28px 0 0 -{D//2}px;
     background:linear-gradient(#bd8248, #8a5a2e);
-    transform: translate3d({W}px, 27px, {D//2}px) rotateY(-90deg); }}
-  .wall-back-top {{ width:{W}px; height:36px; margin:-8px 0 0 -{W//2}px;
+    transform: translate3d({W}px, 28px, {D//2}px) rotateY(-90deg); }}
+  .wall-back-top {{ width:{W}px; height:36px; margin:-18px 0 0 -{W//2}px;
     background:linear-gradient(#a98a63, #8a6c47);
     transform: translate3d({W//2}px, -{H}px, -18px) rotateX(-90deg); }}
-  .wall-left-top {{ width:{D}px; height:36px; margin:-8px 0 0 -{D//2}px;
+  .wall-left-top {{ width:{D}px; height:36px; margin:-18px 0 0 -{D//2}px;
     background:linear-gradient(#9d7f5c, #7f6242);
-    transform: translate3d(18px, -{H}px, {D//2}px) rotateX(-90deg) rotateZ(90deg); }}
+    transform: translate3d(-18px, -{H}px, {D//2}px) rotateX(-90deg) rotateZ(90deg); }}
 
   /* ===== 贴墙环境阴影（AO）：让墙和地之间有"转角"的暗部，立体感靠它 ===== */
-  .ao-floor-back {{ position:absolute; left:0; top:0; width:{W}px; height:60px; margin:0 0 0 -{W//2}px;
+  .ao-floor-back {{ position:absolute; left:0; top:0; width:{W}px; height:60px; margin:-30px 0 0 -{W//2}px;
     background:linear-gradient(180deg, rgba(70,40,16,.42), rgba(70,40,16,0));
     transform: translate3d({W//2}px, -1px, 30px) rotateX(-90deg); }}
   .ao-floor-left {{ position:absolute; left:0; top:0; width:60px; height:{D}px; margin:-{D//2}px 0 0 -30px;
