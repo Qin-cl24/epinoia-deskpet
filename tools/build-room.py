@@ -82,7 +82,7 @@ def build():
     font-family: system-ui, sans-serif; background:#1d150e; }}
 
   /* ===== 3D 舞台：开口的立方体，只留一个角的底面 + 左右两面 ===== */
-  .stage {{ position:fixed; inset:0; perspective: 1500px; perspective-origin: 50% 44%;
+  .stage {{ position:fixed; inset:0; perspective: 1500px; perspective-origin: 50% 44%; touch-action:none;
     background: radial-gradient(circle at 50% 26%, #372b1e, #17110b 72%); }}
   .world {{ position:absolute; left:50%; top:40%; width:0; height:0;
     transform-style: preserve-3d;
@@ -302,18 +302,6 @@ def build():
 
   <div class="bubble" id="bubble"></div>
 
-  <div class="tuner" id="tuner">
-    <button data-k="tilt" data-d="-2">俯-</button>
-    <button data-k="tilt" data-d="2">俯+</button>
-    <button data-k="yaw" data-d="-2">横-</button>
-    <button data-k="yaw" data-d="2">横+</button>
-    <button data-k="zoom" data-d="-0.05">缩-</button>
-    <button data-k="zoom" data-d="0.05">缩+</button>
-    <button data-k="top" data-d="-2">上</button>
-    <button data-k="top" data-d="2">下</button>
-    <span class="val" id="tuneval">俯16 横-32 缩1.00 上40</span>
-  </div>
-
   <div class="top">
     <span class="title">🏠 小屋</span>
     <button class="formbtn on" id="btn-block">🐣 方块</button>
@@ -407,18 +395,61 @@ def build():
     w.style.transform = 'scale(' + CAM.zoom.toFixed(2) + ') rotateX(' + CAM.tilt + 'deg) rotateY(' + CAM.yaw + 'deg)'
       + ' translate3d(-{W // 2}px, {H // 2}px, -{D // 2}px)';
     w.style.top = CAM.top + '%';
-    document.getElementById('tuneval').textContent =
-      '俯' + CAM.tilt + ' 横' + CAM.yaw + ' 缩' + CAM.zoom.toFixed(2) + ' 上' + CAM.top;
   }}
-  document.querySelectorAll('#tuner button').forEach(function (b) {{
-    b.addEventListener('click', function () {{
-      var k = b.dataset.k, d = parseFloat(b.dataset.d);
-      CAM[k] = Math.round((CAM[k] + d) * 100) / 100;
-      applyCam();
-      note('tune tilt=' + CAM.tilt + ' yaw=' + CAM.yaw + ' zoom=' + CAM.zoom + ' top=' + CAM.top);
-    }});
-  }});
   applyCam();
+
+  // ===== 手指控制机位：单指拖动旋转、双指捏合缩放，松手记一行日志 =====
+  (function () {{
+    var stage = document.querySelector('.stage');
+    var pts = {{}}, startDist = 0, startZoom = 1, moved = false, sx = 0, sy = 0;
+    function count() {{ return Object.keys(pts).length; }}
+    stage.addEventListener('pointerdown', function (e) {{
+      pts[e.pointerId] = {{ x: e.clientX, y: e.clientY }};
+      moved = false; sx = e.clientX; sy = e.clientY;
+      if (count() === 2) {{
+        var a = Object.values(pts);
+        startDist = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1;
+        startZoom = CAM.zoom;
+      }}
+      try {{ stage.setPointerCapture(e.pointerId); }} catch (err) {{}}
+    }});
+    stage.addEventListener('pointermove', function (e) {{
+      if (!pts[e.pointerId]) return;
+      var prev = pts[e.pointerId];
+      var dx = e.clientX - prev.x, dy = e.clientY - prev.y;
+      pts[e.pointerId] = {{ x: e.clientX, y: e.clientY }};
+      if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 10) moved = true;
+      if (count() >= 2) {{
+        var a = Object.values(pts);
+        var d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1;
+        CAM.zoom = Math.min(1.8, Math.max(0.4, Math.round(startZoom * d / startDist * 100) / 100));
+        applyCam();
+      }} else {{
+        CAM.yaw = Math.round((CAM.yaw + dx * 0.16) * 10) / 10;
+        CAM.tilt = Math.max(-70, Math.min(70, Math.round((CAM.tilt - dy * 0.14) * 10) / 10));
+        applyCam();
+      }}
+    }});
+    function up(e) {{
+      if (!pts[e.pointerId]) return;
+      delete pts[e.pointerId];
+      if (count() === 0 && moved) note('cam tilt=' + CAM.tilt + ' yaw=' + CAM.yaw + ' zoom=' + CAM.zoom + ' top=' + CAM.top);
+    }}
+    stage.addEventListener('pointerup', up);
+    stage.addEventListener('pointercancel', up);
+    // 双击空白处：机位复位到默认
+    var lastTap = 0;
+    stage.addEventListener('click', function (e) {{
+      if (e.target.closest('.item') || e.target.closest('.window')) return;
+      var now = Date.now();
+      if (now - lastTap < 320) {{
+        CAM.tilt = -32; CAM.yaw = -30; CAM.zoom = 0.85; CAM.top = 40;
+        applyCam();
+        note('cam reset tilt=-32 yaw=-30 zoom=0.85 top=40');
+      }}
+      lastTap = now;
+    }});
+  }})();
 
   function setForm(f) {{
     room.dataset.form = f;
