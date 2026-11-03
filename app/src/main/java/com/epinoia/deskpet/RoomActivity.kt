@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
 import androidx.appcompat.app.AppCompatActivity
 
 /**
@@ -26,12 +28,26 @@ class RoomActivity : AppCompatActivity() {
         web.settings.allowFileAccess = true
         web.setBackgroundColor(0xFFF6E3CF.toInt())
         web.webViewClient = WebViewClient()
+        // 页面的 console 送到 logcat（tag RoomDebug），排查交互问题用
+        web.webChromeClient = object : WebChromeClient() {
+            override fun onConsoleMessage(m: ConsoleMessage): Boolean {
+                android.util.Log.i("RoomDebug", "console[${m.messageLevel()}] ${m.message()} @${m.lineNumber()}")
+                return true
+            }
+        }
         web.addJavascriptInterface(RoomBridge(), "RoomBridge")
         web.loadUrl("file:///android_asset/room.html")
     }
 
-    /** 页面里的 ✕ 调这里关掉小屋 */
+    /** JS 桥：方法必须写在下面这个 inner class 里，注册到 WebView 的才是 RoomBridge 对象 */
     inner class RoomBridge {
+        /** 页面每次动作/移动上报一行状态，方便 adb logcat -s RoomDebug 验证交互 */
+        @JavascriptInterface
+        fun note(state: String) {
+            android.util.Log.i("RoomDebug", state)
+        }
+
+        /** 页面里的 ✕ 调这里关掉小屋 */
         @JavascriptInterface
         fun close() {
             runOnUiThread { finish() }

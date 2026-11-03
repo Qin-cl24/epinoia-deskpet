@@ -101,7 +101,7 @@ def build():
   @keyframes drift {{ 0%,100% {{ transform: translateX(0); }} 50% {{ transform: translateX(26px); }} }}
 
   /* ===== 家具 ===== */
-  .bed {{ position:absolute; left:6%; bottom:34%; width:24%; height:15%; border-radius:14px 14px 6px 6px;
+  .bed {{ position:absolute; left:5%; bottom:32%; width:32%; height:17%; border-radius:14px 14px 6px 6px;
     background:linear-gradient(#f3f0ff, #dcd6f7); box-shadow:0 8px 18px rgba(0,0,0,.18), inset 0 -6px 0 rgba(0,0,0,.06);
     cursor:pointer; }}
   .bed::before {{ content:''; position:absolute; left:5%; top:14%; width:30%; height:44%; border-radius:10px;
@@ -110,14 +110,14 @@ def build():
   .bedleg {{ position:absolute; bottom:-8px; width:8px; height:12px; background:#c9a074; border-radius:2px; }}
   .bedleg.l {{ left:12%; }} .bedleg.r {{ right:12%; }}
 
-  .bowl {{ position:absolute; left:34%; bottom:26%; width:70px; height:34px; border-radius:0 0 36px 36px;
+  .bowl {{ position:absolute; left:22%; bottom:27%; width:88px; height:42px; border-radius:0 0 36px 36px;
     background:linear-gradient(#f0f0f0, #cfcfcf); box-shadow:0 6px 12px rgba(0,0,0,.2);
     border-top:6px solid #ffb457; cursor:pointer; }}
   .bowl .food {{ position:absolute; left:8px; right:8px; top:-8px; height:12px; border-radius:10px;
     background:radial-gradient(circle at 30% 50%, #ffd08a 0 4px, transparent 4px),
                radial-gradient(circle at 65% 50%, #ffc46b 0 4px, transparent 4px), #ffb457; }}
 
-  .radio {{ position:absolute; right:30%; bottom:26%; width:64px; height:46px; border-radius:8px;
+  .radio {{ position:absolute; right:16%; bottom:27%; width:78px; height:56px; border-radius:8px;
     background:linear-gradient(#8d6e63, #6d4c41); box-shadow:0 6px 12px rgba(0,0,0,.25); cursor:pointer; }}
   .radio::before {{ content:''; position:absolute; left:8px; top:8px; width:26px; height:26px; border-radius:50%;
     background:radial-gradient(circle at 50% 50%, #fff 0 30%, #bdbdbd 32% 60%, #8d8d8d 62%); }}
@@ -127,19 +127,21 @@ def build():
   .notes.on {{ opacity:1; animation: floatUp 1.4s ease-in-out infinite; }}
   @keyframes floatUp {{ 0% {{ transform: translate(0,0); opacity:0; }} 40% {{ opacity:1; }} 100% {{ transform: translate(10px,-26px); opacity:0; }} }}
 
-  .rug {{ position:absolute; left:50%; bottom:6%; width:52%; height:13%; margin-left:-26%; border-radius:50%;
+  .rug {{ position:absolute; left:50%; bottom:5%; width:64%; height:15%; margin-left:-26%; border-radius:50%;
     background:radial-gradient(ellipse at 50% 40%, #ffe3b8, #f3c98d); opacity:.85;
     box-shadow: inset 0 0 0 5px rgba(255,255,255,.45); }}
 
   /* ===== 狐狐（图层来自 _layers.json）===== */
   .foxwrap {{ position:absolute; left:50%; bottom:8%; width:0; height:0; }}
   .fox {{ position:absolute; left:0; bottom:0; width:543px; height:626px;
-    transform: translateX(-50%) scale(var(--foxs, .52)); transform-origin: bottom center;
+    transform: translateX(-50%) scale(var(--foxs, .30)); transform-origin: bottom center;
     transition: transform .25s ease; }}
-  .fox.flip {{ transform: translateX(-50%) scale(var(--foxs, .52)) scaleX(-1); }}
-  .fox-inner {{ position:absolute; inset:0; animation: idle 3.2s ease-in-out infinite; }}
+  .fox.flip {{ transform: translateX(-50%) scale(var(--foxs, .30)) scaleX(-1); }}
+  .fox-inner {{ position:absolute; inset:0; animation: idle 3.2s ease-in-out infinite; pointer-events:none; }}  /* 不然它盖住 .fox-hit，点不到狐狐 */
   @keyframes idle {{ 0%,100% {{ transform: translateY(0) scaleY(1); }} 50% {{ transform: translateY(-2px) scaleY(.99); }} }}
-  .fox img.fx {{ position:absolute; display:block; }}
+  .fox img.fx {{ position:absolute; display:block; pointer-events:none; }}   /* 透明区域不该吃点击 */
+  .fox .fox-hit {{ position:absolute; left:27%; top:18%; width:48%; height:71%; cursor:pointer;
+    border-radius:45% 45% 40% 40%; }}
 {chr(10).join(geo)}
 
   /* 走 / 各动作 */
@@ -169,7 +171,7 @@ def build():
                        100% {{ transform: translate(20px,-32px) scale(.9); opacity:0; }} }}
 
   /* ===== 说话气泡 ===== */
-  .bubble {{ position:absolute; left:50%; bottom:calc(8% + var(--bubbleup, 320px)); transform: translateX(-50%) scale(.9);
+  .bubble {{ position:absolute; left:50%; bottom:calc(8% + var(--bubbleup, 150px)); transform: translateX(-50%) scale(.9);
     background:#fff; color:#5a4636; padding:8px 14px; border-radius:16px; font-size:15px;
     box-shadow:0 6px 16px rgba(0,0,0,.16); opacity:0; transition: opacity .18s ease, transform .18s ease;
     pointer-events:none; white-space:nowrap; }}
@@ -185,6 +187,7 @@ def build():
 </style>
 </head>
 <body>
+<script>console.log('BOOT ' + innerWidth + 'x' + innerHeight + ' RoomBridge=' + (typeof window.RoomBridge));</script>
 <div class="room pet-room" id="room">
   <div class="wall"></div>
   <div class="skirting"></div>
@@ -200,6 +203,7 @@ def build():
 
   <div class="foxwrap" id="foxwrap">
     <div class="fox" id="fox">
+      <div class="fox-hit" id="foxhit"></div>
       <div class="fox-inner">
 {chr(10).join(dom)}
       </div>
@@ -216,6 +220,9 @@ def build():
   </div>
 </div>
 <script>
+  console.log('MAIN start');
+  window.onerror = function (m, f, l) {{ console.log('JSERR ' + m + ' @' + l); }};
+  try {{
   var room = document.getElementById('room');
   var wrap = document.getElementById('foxwrap');
   var fox = document.getElementById('fox');
@@ -255,19 +262,26 @@ def build():
 
   var ACT_CLASS = {{ sleep: 'act-sleep', eat: 'act-eat', look: 'act-look', dance: 'act-dance' }};
 
+  function note(s) {{ try {{ window.RoomBridge && RoomBridge.note(s); }} catch (e) {{}} }}
+  var actTimer = null;
   function doAct(kind, xPercent) {{
-    if (busy) return;
+    note('click act=' + kind + ' target=' + xPercent + ' busy=' + busy);
+    // 允许打断：清掉上一个动作的计时器，直接开始新的
+    clearTimeout(actTimer);
+    room.classList.remove('act-sleep', 'act-eat', 'act-look', 'act-dance');
+    notes.classList.remove('on');
     busy = true;
     room.classList.remove('act-sleep', 'act-eat', 'act-look', 'act-dance');
     say({{ sleep: '去躺一下', eat: '肚子饿了', look: '去看看窗外', dance: '放首歌吧' }}[kind] || '', 1200);
     goTo(xPercent, 900).then(function() {{
+      note('arrived act=' + kind + ' dx=' + (wrap.dataset.x || 0));
       room.classList.add(ACT_CLASS[kind]);
       if (kind === 'dance') notes.classList.add('on');
       say(pick(SAY[kind]), 2200);
-      setTimeout(function() {{
+      actTimer = setTimeout(function() {{
         room.classList.remove(ACT_CLASS[kind]);
         notes.classList.remove('on');
-        backHome(900).then(function() {{ busy = false; }});
+        backHome(900).then(function() {{ busy = false; note('home'); }});
       }}, 2600);
     }});
   }}
@@ -278,7 +292,7 @@ def build():
   // 窗台也能点
   document.querySelector('.window').addEventListener('click', function() {{ doAct('look', 66); }});
   // 点狐狐：跳一下
-  fox.addEventListener('click', function() {{
+  document.getElementById('foxhit').addEventListener('click', function() {{ note('tap fox');
     room.classList.add('bounce');
     say(pick(SAY.idle), 1500);
     setTimeout(function() {{ room.classList.remove('bounce'); }}, 500);
@@ -301,7 +315,9 @@ def build():
     }}, 2600 + Math.random() * 4200);
   }})();
 
+  note('loaded size=' + innerWidth + 'x' + innerHeight);
   setTimeout(function() {{ say('欢迎来小屋～', 2000); }}, 600);
+  }} catch (e) {{ console.log('FATAL ' + e.message + ' @ ' + (e.stack || '').slice(0,300)); }}
 </script>
 </body>
 </html>

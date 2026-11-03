@@ -47,7 +47,7 @@
         </service>
         <activity
             android:name=".RoomActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="狐狐的小屋" />
     </application>
 
