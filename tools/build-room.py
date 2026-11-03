@@ -238,14 +238,14 @@ def build():
       radial-gradient(circle at 18% 26%, rgba(255,255,255,.55) 0 3px, transparent 3px) 0 0/48px 48px,
       radial-gradient(circle at 68% 72%, rgba(255,255,255,.42) 0 3px, transparent 3px) 0 0/48px 48px,
       linear-gradient(180deg, #f8ecd9, #ecd6b8);
-    box-shadow: inset 0 -14px 24px rgba(120,80,40,.18); }}
+}}
   /* 左墙（x=0 平面，绕底边转 -90° 立起来） */
   .wall.left {{ position:absolute; left:0; top:-{H}px; width:{D}px; height:{H}px;
     transform-origin:0 100%; transform: rotateY(-90deg); transform-style: preserve-3d;
     background:
       radial-gradient(circle at 22% 30%, rgba(255,255,255,.45) 0 3px, transparent 3px) 0 0/48px 48px,
       linear-gradient(180deg, #f2e2cb, #dcc2a0);
-    box-shadow: inset 0 -14px 24px rgba(110,72,36,.24); }}
+}}
   /* 踢脚线 */
   .base {{ position:absolute; background:#b57f52; }}
   .base.back {{ left:0; bottom:0; width:{W}px; height:12px; }}
@@ -263,45 +263,49 @@ def build():
     background:rgba(255,255,255,.92); box-shadow:11px -6px 0 -2px rgba(255,255,255,.92); animation: drift 9s ease-in-out infinite; }}
   @keyframes drift {{ 0%,100% {{ transform: translateX(0); }} 50% {{ transform: translateX(20px); }} }}
 
-  /* ===== 地板和墙的厚度（直接挂在 .world 里，用世界坐标，不会被父层的旋转带跑）===== */
+  /* ===== 地板和墙的厚度（薄板 24 / 18）=====
+     厚度值只在这里定义一次：T_FLOOR=24、T_WALL=18，改薄改厚都动这两个数。 */
   .slab {{ position:absolute; left:0; top:0; }}
-  .floor-front {{ width:{W}px; height:56px; margin:-28px 0 0 -{W//2}px;
+  /* 地面前沿厚板：盒心落在锚点（margin -h/2）后下移 h/2，正好贴住地板面 0..24；
+     高度多给 1px 并上移 0.5，压掉地板面与厚度板之间那条抗锯齿虚缝 */
+  .floor-front {{ width:{W}px; height:25px; margin:-12.5px 0 0 -{W//2}px;
     background:linear-gradient(#b0763f, #7d4f28);
-    transform: translate3d({W//2}px, 28px, {D}px); }}
-  .floor-right {{ width:{D}px; height:56px; margin:-28px 0 0 -{D//2}px;
+    transform: translate3d({W//2}px, 12px, {D}px); }}
+  .floor-right {{ width:{D}px; height:25px; margin:-12.5px 0 0 -{D//2}px;
     background:linear-gradient(#bd8248, #8a5a2e);
-    transform: translate3d({W}px, 28px, {D//2}px) rotateY(-90deg); }}
-  .wall-back-top {{ width:{W}px; height:36px; margin:-18px 0 0 -{W//2}px;
+    transform: translate3d({W}px, 12px, {D//2}px) rotateY(-90deg); }}
+  /* 墙顶厚板：盒心 -h/2，translate -H 后平面正好落在墙顶 y=-H */
+  .wall-back-top {{ width:{W}px; height:18px; margin:-9px 0 0 -{W//2}px;
     background:linear-gradient(#a98a63, #8a6c47);
-    transform: translate3d({W//2}px, -{H}px, -18px) rotateX(-90deg); }}
-  .wall-left-top {{ width:{D}px; height:36px; margin:-18px 0 0 -{D//2}px;
+    transform: translate3d({W//2}px, -{H}px, -9px) rotateX(-90deg); }}
+  .wall-left-top {{ width:{D}px; height:18px; margin:-9px 0 0 -{D//2}px;
     background:linear-gradient(#9d7f5c, #7f6242);
-    transform: translate3d(-18px, -{H}px, {D//2}px) rotateX(-90deg) rotateZ(90deg); }}
+    transform: translate3d(-9px, -{H}px, {D//2}px) rotateX(-90deg) rotateZ(90deg); }}
 
-  /* ===== 贴墙环境阴影（AO）：让墙和地之间有"转角"的暗部，立体感靠它 ===== */
-  .ao-floor-back {{ position:absolute; left:0; top:0; width:{W}px; height:60px; margin:-30px 0 0 -{W//2}px;
-    background:linear-gradient(180deg, rgba(70,40,16,.42), rgba(70,40,16,0));
-    transform: translate3d({W//2}px, -1px, 30px) rotateX(-90deg); }}
-  .ao-floor-left {{ position:absolute; left:0; top:0; width:60px; height:{D}px; margin:-{D//2}px 0 0 -30px;
-    background:linear-gradient(90deg, rgba(70,40,16,.45), rgba(70,40,16,0));
-    transform: translate3d(30px, -1px, {D//2}px) rotateX(-90deg) rotateZ(90deg); }}
-  .ao-corner {{ position:absolute; left:0; top:0; width:70px; height:{H}px; margin:-{H//2}px 0 0 -35px;
-    background:radial-gradient(ellipse at 100% 100%, rgba(90,55,25,.5), rgba(90,55,25,0) 70%);
-    transform: translate3d(0, -{H//2}px, 1px); }}
+  /* ===== 转折处填角 =====
+     两块墙顶厚板在墙角会留一个 18x18 的方缺口，地面前沿/右侧厚板在地板右前角
+     只会碰到一条棱。各补一块填角，把转折接顺。 */
+  .corner-top {{ position:absolute; left:0; top:0; width:18px; height:18px; margin:-9px 0 0 -9px;
+    background:linear-gradient(135deg, #b08f68, #7f6242);
+    transform: translate3d(-9px, -{H}px, -9px) rotateX(-90deg); }}
+  /* 地板角条：只负责盖住两条厚板交汇处的那道细缝，尺寸略小于台阶（0..24）不出尖 */
+  .corner-floor {{ position:absolute; left:0; top:0; width:4px; height:21px; margin:-10.5px 0 0 -2px;
+    background:linear-gradient(135deg, #a2683a, #6d4522);
+    transform: translate3d({W}px, 11.5px, {D}px) rotateY(-45deg); }}
 
   /* 墙的端面（后墙右端、左墙近端）：让墙看起来是有厚度的板 */
   .wall-end {{ position:absolute; left:0; top:0; }}
-  .wall-end.back {{ width:36px; height:{H}px; margin:-{H//2}px 0 0 -18px;
+  .wall-end.back {{ width:18px; height:{H}px; margin:-{H//2}px 0 0 -9px;
     background:linear-gradient(90deg, #c9ab84, #a98a63);
-    transform: translate3d({W}px, -{H//2}px, -18px) rotateY(-90deg); }}
-  .wall-end.left {{ width:36px; height:{H}px; margin:-{H//2}px 0 0 -18px;
+    transform: translate3d({W}px, -{H//2}px, -9px) rotateY(-90deg); }}
+  .wall-end.left {{ width:18px; height:{H}px; margin:-{H//2}px 0 0 -9px;
     background:linear-gradient(90deg, #c3a582, #a3855f);
-    transform: translate3d(-18px, -{H//2}px, {D}px); }}
+    transform: translate3d(-9px, -{H//2}px, {D}px); }}
 
   /* ===== 地面上的东西 ===== */
   .item {{ position:absolute; left:0; top:0; transform-style:preserve-3d; }}
-  .pshadow {{ position:absolute; left:0; top:0; width:150px; height:150px; margin:-75px 0 0 -75px;
-    border-radius:50%; background:rgba(70,40,16,.34); filter:blur(9px); transform: rotateX(-90deg); }}
+  /* 家具影子：主人说先不要（要恢复就把下面 display:none 删掉、把原规则贴回来）*/
+  .pshadow {{ display:none; }}
   .sprite {{ position:absolute; left:0; bottom:0; transform: translateX(-50%); transform-origin: bottom center;
     transform-style: preserve-3d; }}   /* 不开这个，里面的顶面/侧面会被拍平 */
 
@@ -500,9 +504,8 @@ def build():
       <span class="slab wall-left-top" id="wltop"></span>
       <span class="wall-end back" id="weback"></span>
       <span class="wall-end left" id="weleft"></span>
-      <span class="ao-floor-back" id="aob"></span>
-      <span class="ao-floor-left" id="aol"></span>
-      <span class="ao-corner" id="aoc"></span>
+      <span class="corner-top" id="ctop"></span>
+      <span class="corner-floor" id="cfloor"></span>
       <div class="floor" id="flooritem"></div>
 
       <div class="item" id="rugitem" style="transform: translate3d({RUGR[0]}px,-1px,{RUGR[1]}px)">
