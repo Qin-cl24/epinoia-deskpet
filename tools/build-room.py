@@ -145,26 +145,38 @@ def build():
     background: radial-gradient(ellipse at 50% 42%, #ffe9c6, #efc78a);
     box-shadow: inset 0 0 0 6px rgba(255,255,255,.5); }}
 
-  /* 床（靠左墙）*/
+  /* 床（2026-11-03 第三版，真立体）：床垫盒子（正面+顶面+右侧面）+ 床头板 + 枕头 + 被子
+     所有面都是 .sprite（preserve-3d）的子元素；盒子中心用负 margin 对齐锚点，再 translate3d 到各自位置。*/
   .bed {{ cursor:pointer; }}
-  .bed .mattress {{ position:absolute; left:0; bottom:0; width:150px; height:56px; transform: translateX(-50%);
-    border-radius:7px; background:linear-gradient(#ffffff, #ece7fb); box-shadow:0 6px 12px rgba(60,35,15,.28); }}
-  .bed .pillow {{ position:absolute; left:0; bottom:34px; width:52px; height:26px; transform: translateX(-98px);
-    border-radius:8px; background:linear-gradient(#fff, #f4f1fd); box-shadow:0 3px 6px rgba(60,35,15,.22); }}
-  .bed .blanket {{ position:absolute; left:0; bottom:2px; width:104px; height:44px; transform: translateX(-12px);
-    border-radius:6px; background:linear-gradient(#c3b2f4, #9d86e8); box-shadow:inset 0 -5px 0 rgba(0,0,0,.10); }}
-  .bed .head {{ position:absolute; left:0; bottom:0; width:14px; height:96px; transform: translateX(-82px) skewY(-6deg);
-    border-radius:6px 6px 3px 3px; background:linear-gradient(100deg, #d0a273, #a9794f); }}
-  /* 床面：平躺在 y=-56 的矩形，被子盖住右半边 */
-  .bed .btop {{ width:150px; height:110px; margin:-55px 0 0 -75px; border-radius:7px; background:linear-gradient(#ffffff, #efeafb);
-    box-shadow: inset 0 0 0 3px rgba(255,255,255,.6);
-    transform: translateY(-56px) rotateX(-90deg); }}
-  .bed .bblanket {{ width:104px; height:110px; margin:-55px 0 0 -32px; border-radius:6px;
-    background:linear-gradient(#c3b2f4, #a790ec); transform: translateY(-58px) rotateX(-90deg); }}
-
-  /* 通用：3D 面（顶面 / 侧面），给家具做出体积 */
-  .face {{ position:absolute; left:0; top:0; }}
-  .top {{ transform-origin: center center; }}
+  .bed .f {{ position:absolute; left:0; top:0; }}
+  /* 床垫正面（朝观察者，z=+55）*/
+  .bed .m_front {{ width:150px; height:40px; margin:-20px 0 0 -75px; border-radius:5px;
+    background:linear-gradient(#ffffff, #ece7fb); box-shadow:inset 0 -6px 0 rgba(0,0,0,.06);
+    transform: translate3d(0,-20px,55px); }}
+  /* 床垫顶面（平躺 y=-40）*/
+  .bed .m_top {{ width:150px; height:110px; margin:-55px 0 0 -75px; border-radius:5px;
+    background:linear-gradient(#ffffff, #f2eefc);
+    transform: translate3d(0,-40px,0) rotateX(-90deg); }}
+  /* 床垫右侧面（x=+75，朝右）*/
+  .bed .m_side {{ width:110px; height:40px; margin:-20px 0 0 -55px;
+    background:linear-gradient(90deg, #e6e0f8, #d3c9ef);
+    transform: translate3d(75px,-20px,0) rotateY(90deg); }}
+  /* 床头板：竖在左端、贴左墙（x=-75，朝右的面）*/
+  .bed .m_head {{ width:110px; height:92px; margin:-46px 0 0 -55px; border-radius:6px 6px 3px 3px;
+    background:linear-gradient(100deg, #d8ac7d, #a9794f); box-shadow:inset 0 4px 0 rgba(255,255,255,.25);
+    transform: translate3d(-75px,-46px,0) rotateY(90deg); }}
+  /* 枕头（躺在床面上，靠床头那头）*/
+  .bed .m_pillow {{ width:44px; height:62px; margin:-31px 0 0 -22px; border-radius:12px;
+    background:linear-gradient(#ffffff, #f4f1fd); box-shadow:0 2px 6px rgba(60,35,15,.18);
+    transform: translate3d(-46px,-42px,0) rotateX(-90deg); }}
+  /* 被子：铺在床面右半边（y=-41，比床面高 1px 免得打架）*/
+  .bed .m_quilt {{ width:92px; height:112px; margin:-56px 0 0 -46px; border-radius:5px;
+    background:linear-gradient(#c3b2f4, #9d86e8);
+    transform: translate3d(28px,-41px,0) rotateX(-90deg); }}
+  /* 被子垂下来的前挡（z=+56，正面）*/
+  .bed .m_flap {{ width:92px; height:24px; margin:-12px 0 0 -46px; border-radius:0 0 5px 5px;
+    background:linear-gradient(#a790ec, #8b73dd);
+    transform: translate3d(28px,-12px,56px); }}
 
   /* 饭碗 / 收音机（都带右侧暗面，看着有厚度）*/
   .bowl {{ cursor:pointer; }}
@@ -287,8 +299,8 @@ def build():
 
       <div class="item bed" id="beditem" data-act="sleep" data-x="110" data-z="230"
            style="transform: translate3d(110px,0,230px)">
-        <span class="pshadow" style="width:190px;height:120px"></span>
-        <div class="sprite"><div class="head"></div><div class="mattress"></div><div class="blanket"></div><div class="pillow"></div><div class="btop"></div><div class="bblanket"></div></div>
+        <span class="pshadow" style="width:180px;height:140px"></span>
+        <div class="sprite"><div class="f m_head"></div><div class="f m_side"></div><div class="f m_front"></div><div class="f m_top"></div><div class="f m_quilt"></div><div class="f m_flap"></div><div class="f m_pillow"></div></div>
       </div>
 
       <div class="item bowl" id="bowlitem" data-act="eat" data-x="300" data-z="390"
