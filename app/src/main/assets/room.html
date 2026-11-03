@@ -57,18 +57,18 @@
 
   /* ===== 地板和墙的厚度（直接挂在 .world 里，用世界坐标，不会被父层的旋转带跑）===== */
   .slab { position:absolute; left:0; top:0; }
-  .floor-front { width:420px; height:26px; margin:-13px 0 0 -210px;
+  .floor-front { width:420px; height:56px; margin:-13px 0 0 -210px;
     background:linear-gradient(#b0763f, #7d4f28);
-    transform: translate3d(210px, 12px, 500px); }
-  .floor-right { width:500px; height:26px; margin:-13px 0 0 -250px;
+    transform: translate3d(210px, 27px, 500px); }
+  .floor-right { width:500px; height:56px; margin:-13px 0 0 -250px;
     background:linear-gradient(#bd8248, #8a5a2e);
-    transform: translate3d(420px, 12px, 250px) rotateY(-90deg); }
-  .wall-back-top { width:420px; height:16px; margin:-8px 0 0 -210px;
+    transform: translate3d(420px, 27px, 250px) rotateY(-90deg); }
+  .wall-back-top { width:420px; height:36px; margin:-8px 0 0 -210px;
     background:linear-gradient(#a98a63, #8a6c47);
-    transform: translate3d(210px, -300px, -8px) rotateX(-90deg); }
-  .wall-left-top { width:500px; height:16px; margin:-8px 0 0 -250px;
+    transform: translate3d(210px, -300px, -18px) rotateX(-90deg); }
+  .wall-left-top { width:500px; height:36px; margin:-8px 0 0 -250px;
     background:linear-gradient(#9d7f5c, #7f6242);
-    transform: translate3d(8px, -300px, 250px) rotateX(-90deg) rotateZ(90deg); }
+    transform: translate3d(18px, -300px, 250px) rotateX(-90deg) rotateZ(90deg); }
 
   /* ===== 贴墙环境阴影（AO）：让墙和地之间有"转角"的暗部，立体感靠它 ===== */
   .ao-floor-back { position:absolute; left:0; top:0; width:420px; height:60px; margin:0 0 0 -210px;
@@ -80,6 +80,15 @@
   .ao-corner { position:absolute; left:0; top:0; width:70px; height:300px; margin:-150px 0 0 -35px;
     background:radial-gradient(ellipse at 100% 100%, rgba(90,55,25,.5), rgba(90,55,25,0) 70%);
     transform: translate3d(0, -150px, 1px); }
+
+  /* 墙的端面（后墙右端、左墙近端）：让墙看起来是有厚度的板 */
+  .wall-end { position:absolute; left:0; top:0; }
+  .wall-end.back { width:36px; height:300px; margin:-150px 0 0 -18px;
+    background:linear-gradient(90deg, #c9ab84, #a98a63);
+    transform: translate3d(420px, -150px, -18px) rotateY(-90deg); }
+  .wall-end.left { width:36px; height:300px; margin:-150px 0 0 -18px;
+    background:linear-gradient(90deg, #c3a582, #a3855f);
+    transform: translate3d(-18px, -150px, 500px); }
 
   /* ===== 地面上的东西 ===== */
   .item { position:absolute; left:0; top:0; transform-style:preserve-3d; }
@@ -174,7 +183,8 @@
                         100% { transform:translate(-50%,-26px); opacity:0; } }
 
   /* ===== 方块形态 ===== */
-  .blockpet { width:72px; height:50px; transform: scale(1.5); transform-origin: bottom center; }
+  .blockpet { width:72px; height:50px; transform: scale(1.5); transform-origin: bottom center;
+    transform-style: preserve-3d; position:relative; }
   .blockpet .body { position:relative; width:56px; height:36px; margin:4px auto 0; border-radius:4px;
     background:#e67e22;
     box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset -7px 0 0 rgba(0,0,0,.14), inset 0 -3px 0 rgba(0,0,0,.10);
@@ -189,6 +199,16 @@
     background:linear-gradient(180deg, #e67e22 0%, #d35400 58%); }
   .blockpet .leg-l1 { left:8px; } .blockpet .leg-l2 { left:17px; }
   .blockpet .leg-r1 { right:8px; } .blockpet .leg-r2 { right:17px; }
+  /* 立方体：顶面（平躺）+ 右侧面 + 左侧面（都贴在身体面上）*/
+  .blockpet .cb-top { position:absolute; left:0; top:0; width:56px; height:40px; margin:-20px 0 0 -28px;
+    background:linear-gradient(#f2944a, #e07b2a); border-radius:4px;
+    transform: translate3d(28px, -40px, 28px) rotateX(90deg); }
+  .blockpet .cb-right { position:absolute; left:0; top:0; width:40px; height:36px; margin:-18px 0 0 -20px;
+    background:linear-gradient(#d9752a, #b8590f); border-radius:0 4px 4px 0;
+    transform: translate3d(56px, -14px, 28px) rotateY(90deg); }
+  .blockpet .cb-left { position:absolute; left:0; top:0; width:40px; height:36px; margin:-18px 0 0 -20px;
+    background:linear-gradient(#e8863a, #cf7222); border-radius:4px 0 0 4px;
+    transform: translate3d(0, -14px, 28px) rotateY(-90deg); }
   @keyframes blockIdle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
   .walking #blockitem .blockpet .body { animation: blockWalk .45s ease-in-out infinite; }
   @keyframes blockWalk { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
@@ -311,6 +331,8 @@
       <span class="slab floor-right" id="redge"></span>
       <span class="slab wall-back-top" id="wbtop"></span>
       <span class="slab wall-left-top" id="wltop"></span>
+      <span class="wall-end back" id="weback"></span>
+      <span class="wall-end left" id="weleft"></span>
       <span class="ao-floor-back" id="aob"></span>
       <span class="ao-floor-left" id="aol"></span>
       <span class="ao-corner" id="aoc"></span>
@@ -341,12 +363,15 @@
 
       <div class="item" id="blockitem" style="transform: translate3d(210px,0,310px)">
         <span class="pshadow" style="width:120px;height:95px"></span>
-        <div class="sprite" id="blocksprite"><div class="blockpet"><div class="body">
+        <div class="sprite" id="blocksprite"><div class="blockpet">
+          <span class="cb-top"></span><span class="cb-left"></span><span class="cb-right"></span>
+          <div class="body">
           <div class="eye eye-left"></div><div class="eye eye-right"></div>
           <div class="arm arm-left"></div><div class="arm arm-right"></div>
           <div class="leg leg-l1"></div><div class="leg leg-l2"></div>
           <div class="leg leg-r1"></div><div class="leg leg-r2"></div>
         </div></div></div>
+        <!-- 立方体的三个额外面在上面 span 里 -->
       </div>
 
       <div class="item" id="foxitem" style="transform: translate3d(210px,0,310px)">
