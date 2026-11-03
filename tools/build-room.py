@@ -4,6 +4,11 @@
 按主人的描述：把小屋想成一个立方体，只保留**一个角的底面和左右两个面**，
 其余面全部去掉 —— 就是一个开口的立体盒子，从斜上方看进去。
 
+物理（2026-11-03 新增）：地板/床/碗/收音机/台灯挂 cannon-es 刚体，重力 9.8 m/s²，
+开场家具从半空自然下落到地板停住。物理胶水层是独立的 assets/room-physics.js
+（不塞进这个生成器，省掉给几百行 JS 转义大括号的麻烦）。
+墙上装饰（挂画 / 挂钟 / 窗帘）是贴墙件，不参与自由落体。
+
 实现：CSS 3D（perspective + preserve-3d）
     · .floor       底面：绕 X 轴转 90° 躺平，从角点向 +x / +z 铺开
     · .wall.back   后墙：z=0 平面，从角点向 +x 展开
@@ -14,8 +19,10 @@
 主人重导画稿后跑一次本脚本 + 重新编译，小屋里的狐狐就跟着更新。
 
 用法：
-    python3 tools/build-room3d.py            # 写 app/src/main/assets/room.html
-    python3 tools/build-room3d.py --stdout   # 只打印
+    python3 tools/build-room.py            # 写 app/src/main/assets/room.html
+    python3 tools/build-room.py --stdout   # 只打印
+
+⚠️ 改小屋的正确姿势：改这个脚本 → 跑一遍。room.html 是产物，别直接手改（会被覆盖）。
 """
 import json
 import os
@@ -38,6 +45,125 @@ EYE_GROUP = {
 
 W, D, H = 420, 500, 300
 RUGR = (215, 300)      # 地毯在地面上的中心点          # 房间底面宽 / 进深 / 墙高（CSS px）
+
+# ===== 墙面装饰 + 台灯：纯字符串（不用在 f-string 里写双层大括号）=====
+# 挂画/挂钟/窗帘都挂在墙上——它们是「贴墙件」，不参与物理自由落体；
+# 台灯是地面家具，和床/碗/收音机一样挂刚体（见 room-physics.js）。
+DECOR_CSS = """
+  /* ===== 墙面装饰通用：.deco 里的每个面都绝对定位、用负 margin 把盒子中心对齐锚点 ===== */
+  .deco { position:absolute; left:0; top:0; transform-style:preserve-3d; }
+  .deco > * { position:absolute; left:0; top:0; }
+
+  /* ===== 挂画（后墙左侧）：正面画框 + 顶面 + 右侧面，厚 10px ===== */
+  .pic-front { width:104px; height:78px; margin:-39px 0 0 -52px; cursor:pointer; padding:6px;
+    transform: translate3d(92px,74px,9px);
+    background:linear-gradient(160deg,#c79a68,#a9784b); border-radius:3px;
+    box-shadow:0 6px 14px rgba(60,35,15,.28); }
+  .pic-front .art { position:absolute; inset:6px; display:block; border-radius:2px; overflow:hidden;
+    background:linear-gradient(180deg,#bfe3f7 0 44%, #ffe6b8 44% 52%, #cfe6b8 52% 70%, #a8c98a 70% 100%); }
+  .pic-front .art::before { content:''; position:absolute; left:66%; top:14%; width:20px; height:20px;
+    border-radius:50%; background:radial-gradient(circle,#fff3b0,#ffd24d); box-shadow:0 0 12px rgba(255,214,64,.8); }
+  .pic-front .art::after { content:''; position:absolute; left:-16%; bottom:-42%; width:150%; height:80%;
+    border-radius:50%; background:linear-gradient(#9fc47f,#7ea863); }
+  .pic-top { width:104px; height:10px; margin:-5px 0 0 -52px;
+    background:linear-gradient(#d3a978,#b98b5e); transform: translate3d(92px,35px,4px) rotateX(-90deg); }
+  .pic-side { width:10px; height:78px; margin:-39px 0 0 -5px;
+    background:linear-gradient(90deg,#c2915f,#93683c); transform: translate3d(144px,74px,4px) rotateY(90deg); }
+
+  /* ===== 窗帘（后墙，围住那扇窗）：帘杆 + 左右两片帘，帘面有褶皱、会轻轻晃 ===== */
+  .curtain-rod { width:200px; height:7px; margin:-3.5px 0 0 -100px; border-radius:4px;
+    background:linear-gradient(#d8ac7d,#a9794f); transform: translate3d(242px,26px,11px); }
+  .curtain-rod::before, .curtain-rod::after { content:''; position:absolute; top:-4px; width:15px; height:15px;
+    border-radius:50%; background:radial-gradient(circle at 38% 32%, #eec49a, #a9794f); }
+  .curtain-rod::before { left:-10px; } .curtain-rod::after { right:-10px; }
+  .curtain-panel { width:26px; height:0; transform-style:preserve-3d; }
+  .curtain-panel .folds { display:block; width:26px; height:128px; border-radius:0 0 13px 13px;
+    transform-origin:50% 0; animation: curtainSway 5.4s ease-in-out infinite;
+    background:repeating-linear-gradient(90deg,#f0b3b3 0 5px,#dd9191 5px 9px,#f8c6c6 9px 13px);
+    box-shadow: inset 0 -8px 12px rgba(120,60,60,.22), 2px 2px 8px rgba(90,50,25,.18); }
+  .curtain-panel.cl { transform: translate3d(150px,33px,10px); }
+  .curtain-panel.cr { transform: translate3d(308px,33px,10px); }
+  .curtain-panel.cr .folds { animation-delay:-2.7s; }
+  @keyframes curtainSway { 0%,100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+
+  /* ===== 挂钟（左墙）=====
+     左墙是 rotateY(-90deg) 立起来的，子元素本地 +z 指向屋外(-x)：
+     所以整只钟先 translateZ(-10px) 挪进屋里、再 rotateY(180deg) 把表盘翻向屋内，
+     指针才是顺时针走（翻转后子元素的 translateZ 方向也自动反过来了，正好朝屋里）。 */
+  .clock { width:76px; height:76px; margin:-38px 0 0 -38px; cursor:pointer;
+    transform: translate3d(300px,96px,-10px) rotateY(180deg); transform-style:preserve-3d; }
+  .clock .disc { position:absolute; inset:0; border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, #fffdf5, #f4e7cd 62%, #e6d4b4);
+    box-shadow: inset 0 0 0 5px #b98b5e, inset 0 0 0 7px #d3a978, 0 4px 10px rgba(60,35,15,.3);
+    transform: translateZ(2px); }
+  .clock .tk { position:absolute; left:50%; top:50%; width:2px; height:7px; margin:-3.5px 0 0 -1px;
+    background:#8a6742; border-radius:1px; }
+  .clock .tk.major { width:3px; height:10px; margin:-5px 0 0 -1.5px; background:#6b5341; }
+  .clock .hands { position:absolute; inset:0; transform: translateZ(4px); }
+  .clock .hand { position:absolute; left:50%; bottom:50%; transform-origin:50% 100%; border-radius:2px; }
+  .clock .h-hour { width:4px; height:19px; margin-left:-2px; background:#6b5341; }
+  .clock .h-min { width:3px; height:27px; margin-left:-1.5px; background:#6b5341; }
+  .clock .h-sec { width:1.5px; height:31px; margin-left:-.75px; background:#c0392b; }
+  .clock .cap { position:absolute; left:50%; top:50%; width:8px; height:8px; margin:-4px 0 0 -4px;
+    border-radius:50%; background:radial-gradient(circle at 40% 35%, #8a6742, #5a4030); }
+
+  /* ===== 台灯（地面家具，挂物理刚体）：底座 + 灯杆 + 灯罩 + 暖光 + 地面光斑 ===== */
+  .lamp { cursor:pointer; }
+  .lamp .lampbase { position:absolute; left:0; bottom:0; width:44px; height:12px; margin-left:-22px;
+    border-radius:50%/55%; background:linear-gradient(#d8a878,#96632f);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.3), 0 4px 8px rgba(60,35,15,.28); }
+  .lamp .pole { position:absolute; left:0; bottom:10px; width:5px; height:62px; margin-left:-2.5px;
+    background:linear-gradient(90deg,#d8a878,#8a5a2e); border-radius:3px; }
+  .lamp .shade { position:absolute; left:0; bottom:64px; width:54px; height:34px; margin-left:-27px;
+    background:linear-gradient(#ffe9c0,#f0b263); border-radius:6px 6px 3px 3px;
+    clip-path: polygon(16% 0, 84% 0, 100% 100%, 0 100%);
+    box-shadow:0 4px 10px rgba(240,178,99,.5); }
+  .lamp .glow { position:absolute; left:0; bottom:34px; width:170px; height:120px; margin-left:-85px;
+    border-radius:50%; pointer-events:none; filter:blur(4px); transition:opacity .25s;
+    background:radial-gradient(ellipse at 50% 45%, rgba(255,220,140,.62), rgba(255,200,110,0) 68%); }
+  /* 地面光斑：和影子一样平躺在地面上（挂在 .item 上，不跟 .sprite 上下飞）*/
+  .lamp-pool { position:absolute; left:0; top:0; width:260px; height:180px; margin:-90px 0 0 -130px;
+    border-radius:50%; pointer-events:none; transform: rotateX(-90deg); filter:blur(6px);
+    transition:opacity .25s;
+    background:radial-gradient(ellipse at 50% 50%, rgba(255,206,120,.42), rgba(255,206,120,0) 62%); }
+  .item.lampoff .glow, .item.lampoff .lamp-pool { opacity:0; }
+  .item.lampoff .shade { filter:brightness(.78) saturate(.7); }
+"""
+# 挂钟的 12 个刻度：绕钟心转 i*30°，再向外推 30px（3/6/9/12 点用粗刻度）
+CLOCK_TICKS = "\n".join(
+    '            <span class="tk%s" style="transform: translateZ(3px) rotate(%ddeg) translateY(-30px)"></span>'
+    % (" major" if i % 3 == 0 else "", i * 30) for i in range(12))
+
+DECOR_DOM_BACK = """
+        <div class="deco pic" id="pic">
+          <span class="pic-top"></span><span class="pic-side"></span>
+          <div class="pic-front"><span class="art"></span></div>
+        </div>
+        <div class="deco curtain" id="curtain">
+          <span class="curtain-rod"></span>
+          <div class="curtain-panel cl"><span class="folds"></span></div>
+          <div class="curtain-panel cr"><span class="folds"></span></div>
+        </div>"""
+
+DECOR_DOM_LEFT = """
+        <div class="deco clock" id="clock">
+          <div class="disc"></div>
+""" + CLOCK_TICKS + """
+          <div class="hands">
+            <span class="hand h-hour" id="clk-hour"></span>
+            <span class="hand h-min" id="clk-min"></span>
+            <span class="hand h-sec" id="clk-sec"></span>
+            <span class="cap"></span>
+          </div>
+        </div>"""
+
+LAMP_DOM = """
+      <div class="item lamp" id="lampitem" data-x="60" data-z="330" data-phys="44,44,100"
+           data-drop="280" data-mass="3" style="transform: translate3d(60px,0,330px)">
+        <span class="pshadow" style="width:96px;height:76px"></span>
+        <span class="lamp-pool"></span>
+        <div class="sprite"><span class="lampbase"></span><span class="pole"></span><span class="shade"></span><span class="glow"></span></div>
+      </div>"""
 
 
 def build():
@@ -117,7 +243,7 @@ def build():
   .base.left {{ left:0; bottom:0; width:{D}px; height:12px; }}
 
   /* 窗：贴在后墙上 */
-  .window {{ position:absolute; left:52%; top:16%; width:132px; height:104px; border-radius:8px; cursor:pointer;
+  .window {{ position:absolute; left:42%; top:16%; width:132px; height:104px; border-radius:8px; cursor:pointer;
     background: linear-gradient(#bfe3f7, #e7f6ff); border:6px solid #d9b08c; overflow:hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,.16), inset 0 0 0 2px rgba(255,255,255,.6); }}
   .window::before {{ content:''; position:absolute; left:50%; top:0; bottom:0; width:5px; margin-left:-2.5px; background:#d9b08c; }}
@@ -255,7 +381,7 @@ def build():
   @keyframes floatUp {{ 0% {{ transform:translate(-50%,0); opacity:0; }} 40% {{ opacity:1; }}
                         100% {{ transform:translate(-50%,-26px); opacity:0; }} }}
 
-  /* ===== 方块形态 ===== */
+  /* ===== 方块形态 ===== */{DECOR_CSS}
   .blockpet {{ width:72px; height:50px; transform: scale(1.5); transform-origin: bottom center;
     transform-style: preserve-3d; position:relative; }}
   .blockpet .body {{ position:relative; width:56px; height:36px; margin:4px auto 0; border-radius:4px;
@@ -346,9 +472,10 @@ def build():
   <div class="stage">
     <div class="world">
       <div class="wall back"><span class="base back"></span>
-        <div class="window" id="window"><span class="sun"></span><span class="cloud"></span></div>
+        <div class="window" id="window"><span class="sun"></span><span class="cloud"></span></div>{DECOR_DOM_BACK}
       </div>
-      <div class="wall left"><span class="base left"></span></div>
+      <div class="wall left"><span class="base left"></span>{DECOR_DOM_LEFT}
+      </div>
       <span class="slab floor-front" id="fedge"></span>
       <span class="slab floor-right" id="redge"></span>
       <span class="slab wall-back-top" id="wbtop"></span>
@@ -365,23 +492,26 @@ def build():
       </div>
 
       <div class="item bed" id="beditem" data-act="sleep" data-x="78" data-z="140"
+           data-phys="150,110,44" data-drop="160" data-mass="24"
            style="transform: translate3d(78px,0,140px)">
         <span class="pshadow" style="width:180px;height:140px"></span>
         <div class="sprite"><div class="f m_head"></div><div class="f m_side"></div><div class="f m_front"></div><div class="f m_top"></div><div class="f m_quilt"></div><div class="f m_flap"></div><div class="f m_pillow"></div></div>
       </div>
 
       <div class="item bowl" id="bowlitem" data-act="eat" data-x="300" data-z="390"
+           data-phys="74,26,38" data-drop="240" data-mass="1.5"
            style="transform: translate3d(300px,0,390px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
         <div class="sprite"><div class="cup"></div><div class="brim-o"></div><div class="brim-i"></div><div class="meal"></div></div>
       </div>
 
       <div class="item radio" id="radioitem" data-act="dance" data-x="350" data-z="140"
+           data-phys="66,40,50" data-drop="200" data-mass="6"
            style="transform: translate3d(350px,0,140px)">
         <span class="pshadow" style="width:120px;height:90px"></span>
         <div class="sprite"><div class="case"></div><div class="rtop"></div><div class="rside"></div><div class="dial"></div><div class="lamp"></div><div class="ant"></div></div>
         <span class="notes" id="notes">🎵</span>
-      </div>
+      </div>{LAMP_DOM}
 
       <div class="item" id="blockitem" style="transform: translate3d(210px,0,310px)">
         <span class="pshadow" style="width:120px;height:95px"></span>
@@ -421,6 +551,8 @@ def build():
     <button class="close" id="close">✕</button>
   </div>
 </div>
+<script src="vendor/cannon-es.js"></script>
+<script src="room-physics.js"></script>
 <script>
   var room = document.getElementById('room');
   var foxitem = document.getElementById('foxitem');
@@ -488,7 +620,7 @@ def build():
       doAct(el.dataset.act, parseFloat(el.dataset.x), parseFloat(el.dataset.z));
     }});
   }});
-  document.getElementById('window').addEventListener('click', function () {{ doAct('look', 290, 120); }});
+  document.getElementById('window').addEventListener('click', function () {{ doAct('look', 242, 120); }});
   document.getElementById('foxhit').addEventListener('click', function () {{
     note('tap fox'); room.classList.add('bounce'); say(pick(SAY.idle), 1500);
     setTimeout(function () {{ room.classList.remove('bounce'); }}, 500);
@@ -496,6 +628,78 @@ def build():
   document.getElementById('blocksprite').addEventListener('click', function () {{
     note('tap block'); room.classList.add('bounce'); say(pick(SAY.idle), 1500);
     setTimeout(function () {{ room.classList.remove('bounce'); }}, 500);
+  }});
+
+  // 调试：记录每次按下到底命中了哪个元素（点击不灵时用它定位，正式版可删）
+  document.querySelector('.stage').addEventListener('pointerdown', function (e) {{
+    var t = e.target;
+    note('hit ' + (t.id ? '#' + t.id : '') + (typeof t.className === 'string' && t.className ? '.' + t.className : '') + ' <' + t.tagName + '>');
+  }}, true);
+
+  // 挂钟：按真实时间走（分针/时针连续，秒针每秒跳一格）
+  var clkH = document.getElementById('clk-hour'), clkM = document.getElementById('clk-min'),
+      clkS = document.getElementById('clk-sec');
+  function tickClock() {{
+    var d = new Date();
+    var s = d.getSeconds(), m = d.getMinutes() + s / 60, h = (d.getHours() % 12) + m / 60;
+    clkS.style.transform = 'rotate(' + (s * 6).toFixed(1) + 'deg)';
+    clkM.style.transform = 'rotate(' + (m * 6).toFixed(2) + 'deg)';
+    clkH.style.transform = 'rotate(' + (h * 30).toFixed(2) + 'deg)';
+  }}
+  tickClock();
+  setInterval(tickClock, 1000);
+  document.getElementById('clock').addEventListener('click', function () {{
+    var d = new Date();
+    say('现在 ' + d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2), 1600);
+  }});
+
+  // 台灯：点一下开/关（暖光 + 地面光斑一起灭）
+  function toggleLamp() {{
+    var el = document.getElementById('lampitem');
+    var off = el.classList.toggle('lampoff');
+    say(off ? '灯关掉了…' : '灯亮了', 1300);
+    note('lamp ' + (off ? 'off' : 'on'));
+  }}
+  document.getElementById('lampitem').addEventListener('click', toggleLamp);
+
+  // ===== 3D 命中兜底 =====
+  // preserve-3d 里，绘制是「逐像素」排序、命中测试却按「元素中心」排序：
+  // 左墙这种大平面的中心离镜头更近，就会把画在它前面的家具的点击抢走
+  // （真机实测：点台灯灯罩，elementFromPoint 说 .shade，真实点击说 .wall left）。
+  // 所以点击没落到任何 .item/.window/.deco 上时，再按屏幕矩形判一次，谁命中算谁的。
+  var HIT_FALLBACK = [
+    {{ id: 'beditem', act: 'sleep' }},
+    {{ id: 'bowlitem', act: 'eat' }},
+    {{ id: 'radioitem', act: 'dance' }},
+    {{ id: 'lampitem', lamp: true }}
+  ];
+  document.querySelector('.stage').addEventListener('click', function (e) {{
+    if (e.target.closest('.item') || e.target.closest('.window') || e.target.closest('.deco')) return;
+    for (var i = 0; i < HIT_FALLBACK.length; i++) {{
+      var f = HIT_FALLBACK[i], el = document.getElementById(f.id);
+      if (!el) continue;
+      var r = unionRect(el.querySelector('.sprite') || el);
+      if (r.width < 2 || r.height < 2) continue;
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) continue;
+      note('hit-fallback ' + f.id);
+      if (f.lamp) toggleLamp();
+      else doAct(f.act, parseFloat(el.dataset.x), parseFloat(el.dataset.z));
+      return;
+    }}
+  }});
+
+  // 地毯：抖一下 → 物理引擎把家具按重力重新落一遍（也是物理的调试入口）
+  document.getElementById('rugitem').addEventListener('click', function () {{
+    if (window.RoomPhys && window.RoomPhys.drop) {{ window.RoomPhys.drop(); say('再落一遍～', 1200); }}
+    else say('（物理引擎没起来）', 1400);
+  }});
+
+  // 挂画 / 窗帘：点一下要有反馈，不然像贴图
+  document.getElementById('pic').addEventListener('click', function () {{
+    say(pick(['画里是日落的山', '主人画的～', '这幅挂了好久']), 1600);
+  }});
+  document.getElementById('curtain').addEventListener('click', function () {{
+    say(pick(['有风', '窗帘在动']), 1200);
   }});
 
   // 机位状态（调好后把这里的初始值写死）
@@ -543,7 +747,10 @@ def build():
     function up(e) {{
       if (!pts[e.pointerId]) return;
       delete pts[e.pointerId];
-      if (count() === 0 && moved) note('cam tilt=' + CAM.tilt + ' yaw=' + CAM.yaw + ' zoom=' + CAM.zoom + ' top=' + CAM.top);
+      if (count() === 0 && moved) {{
+        note('cam tilt=' + CAM.tilt + ' yaw=' + CAM.yaw + ' zoom=' + CAM.zoom + ' top=' + CAM.top);
+        dumpRects('cam');
+      }}
     }}
     stage.addEventListener('pointerup', up);
     stage.addEventListener('pointercancel', up);
@@ -599,18 +806,66 @@ def build():
     }}, 2600 + Math.random() * 4200);
   }})();
 
-  note('loaded ' + innerWidth + 'x' + innerHeight);
+  note('loaded ' + innerWidth + 'x' + innerHeight + ' dpr=' + (window.devicePixelRatio || 1));
   // 临时：把各个 3D 元素的屏幕投影框报出来（便于 adb 点击验证）
-  setTimeout(function () {{
+  // 拼装体（床/台灯）的 .sprite 自身是 0x0，所以量不到就退化成「子元素并集」
+  function unionRect(el) {{
+    var r = el.getBoundingClientRect();
+    if (r.width > 1 || r.height > 1) return r;
+    var l = 1e9, t = 1e9, ri = -1e9, bo = -1e9, any = false;
+    for (var i = 0; i < el.children.length; i++) {{
+      var c = el.children[i].getBoundingClientRect();
+      if (c.width < 1 && c.height < 1) continue;
+      any = true;
+      l = Math.min(l, c.left); t = Math.min(t, c.top);
+      ri = Math.max(ri, c.right); bo = Math.max(bo, c.bottom);
+    }}
+    return any ? {{ left: l, top: t, width: ri - l, height: bo - t }} : r;
+  }}
+  function dumpRects(tag) {{
     var out = [];
-    ['flooritem','fedge','redge','wbtop','wltop','aob','aol','aoc','rugitem','beditem','bowlitem','radioitem','blockitem','window'].forEach(function (id) {{
+    ['flooritem','fedge','redge','wbtop','wltop','aob','aol','aoc','rugitem','beditem','bowlitem','radioitem','blockitem','window','pic','clock','curtain','lampitem'].forEach(function (id) {{
       var el = document.getElementById(id); if (!el) return;
-      var t = el.querySelector('.sprite') || el.querySelector('.rugface') || el;
-      var b = t.getBoundingClientRect();
+      var t = el.querySelector('.sprite') || el.querySelector('.pic-front')
+        || el.querySelector('.disc') || el.querySelector('.curtain-rod')
+        || el.querySelector('.rugface') || el;
+      var b = unionRect(t);
       out.push(id + '=' + Math.round(b.left) + ',' + Math.round(b.top) + ',' + Math.round(b.width) + 'x' + Math.round(b.height));
     }});
-    note('rects ' + out.join(' | '));
-  }}, 800);
+    // 单独量几个「拼装体」的零件：帘子两片、台灯三个可点部位
+    [['curtain-L', '#curtain .curtain-panel.cl .folds'],
+     ['curtain-R', '#curtain .curtain-panel.cr .folds'],
+     ['lamp-base', '#lampitem .lampbase'],
+     ['lamp-pole', '#lampitem .pole'],
+     ['lamp-shade', '#lampitem .shade']].forEach(function (pair) {{
+      var e = document.querySelector(pair[1]); if (!e) return;
+      var b = unionRect(e);
+      out.push(pair[0] + '=' + Math.round(b.left) + ',' + Math.round(b.top) + ',' + Math.round(b.width) + 'x' + Math.round(b.height));
+    }});
+    // 命中图：直接用浏览器的 elementFromPoint 问「这个 CSS 点最上层可点的是谁」，
+    // 用来分辨「是坐标算错了」还是「真有东西挡住了」（真机踩过：灯罩点不动）
+    function hitMap(sel, label) {{
+      var el = document.querySelector(sel); if (!el) return label + '=无';
+      var r = unionRect(el);
+      var hits = [];
+      for (var i = 0; i < 3; i++) {{
+        for (var j = 0; j < 3; j++) {{
+          var hx = r.left + r.width * (i + 0.5) / 3;
+          var hy = r.top + r.height * (j + 0.5) / 3;
+          var t = document.elementFromPoint(hx, hy);
+          hits.push(t ? (t.id ? '#' + t.id : (typeof t.className === 'string' && t.className ? '.' + t.className.split(' ')[0] : t.tagName))
+                      : 'null');
+        }}
+      }}
+      return label + '[' + hits.join(' ') + ']';
+    }}
+    out.push('hitmap ' + [hitMap('#lampitem .sprite', 'lamp'),
+                          hitMap('#beditem .sprite', 'bed'),
+                          hitMap('#bowlitem .sprite', 'bowl'),
+                          hitMap('#radioitem .sprite', 'radio')].join(' '));
+    note('rects' + (tag ? ' ' + tag : '') + ' ' + out.join(' | '));
+  }}
+  setTimeout(function () {{ dumpRects(''); }}, 3000);   // 3000ms：等物理落定后再量，否则量到的是半空坐标
   setTimeout(function () {{ say('欢迎来小屋～', 2000); }}, 600);
 </script>
 </body>
