@@ -268,39 +268,44 @@ def build():
   .slab {{ position:absolute; left:0; top:0; }}
   /* 地面前沿厚板：盒心落在锚点（margin -h/2）后下移 h/2，正好贴住地板面 0..24；
      高度多给 1px 并上移 0.5，压掉地板面与厚度板之间那条抗锯齿虚缝 */
-  .floor-front {{ width:{W}px; height:25px; margin:-12.5px 0 0 -{W//2}px;
+  .floor-front {{ width:{W + 9}px; height:13px; margin:-6.5px 0 0 -{(W + 9)//2}px;
     background:linear-gradient(#b0763f, #7d4f28);
-    transform: translate3d({W//2}px, 12px, {D}px); }}
-  .floor-right {{ width:{D}px; height:25px; margin:-12.5px 0 0 -{D//2}px;
+    transform: translate3d({W//2 - 4.5}px, 6px, {D}px); }}
+  .floor-right {{ width:{D}px; height:13px; margin:-6.5px 0 0 -{D//2}px;
     background:linear-gradient(#bd8248, #8a5a2e);
-    transform: translate3d({W}px, 12px, {D//2}px) rotateY(-90deg); }}
+    transform: translate3d({W}px, 6px, {D//2}px) rotateY(-90deg); }}
   /* 墙顶厚板：盒心 -h/2，translate -H 后平面正好落在墙顶 y=-H */
-  .wall-back-top {{ width:{W}px; height:18px; margin:-9px 0 0 -{W//2}px;
+  .wall-back-top {{ width:{W}px; height:9px; margin:-4.5px 0 0 -{W//2}px;
     background:linear-gradient(#a98a63, #8a6c47);
-    transform: translate3d({W//2}px, -{H}px, -9px) rotateX(-90deg); }}
-  .wall-left-top {{ width:{D}px; height:18px; margin:-9px 0 0 -{D//2}px;
+    transform: translate3d({W//2}px, -{H}px, -4.5px) rotateX(-90deg); }}
+  .wall-left-top {{ width:{D}px; height:9px; margin:-4.5px 0 0 -{D//2}px;
     background:linear-gradient(#9d7f5c, #7f6242);
-    transform: translate3d(-9px, -{H}px, {D//2}px) rotateX(-90deg) rotateZ(90deg); }}
+    transform: translate3d(-4.5px, -{H}px, {D//2}px) rotateX(-90deg) rotateZ(90deg); }}
 
   /* ===== 转折处填角 =====
      两块墙顶厚板在墙角会留一个 18x18 的方缺口，地面前沿/右侧厚板在地板右前角
      只会碰到一条棱。各补一块填角，把转折接顺。 */
-  .corner-top {{ position:absolute; left:0; top:0; width:18px; height:18px; margin:-9px 0 0 -9px;
+  .corner-top {{ position:absolute; left:0; top:0; width:9px; height:9px; margin:-4.5px 0 0 -4.5px;
     background:linear-gradient(135deg, #b08f68, #7f6242);
-    transform: translate3d(-9px, -{H}px, -9px) rotateX(-90deg); }}
+    transform: translate3d(-4.5px, -{H}px, -4.5px) rotateX(-90deg); }}
   /* 地板角条：只负责盖住两条厚板交汇处的那道细缝，尺寸略小于台阶（0..24）不出尖 */
-  .corner-floor {{ position:absolute; left:0; top:0; width:4px; height:21px; margin:-10.5px 0 0 -2px;
+  .corner-floor {{ position:absolute; left:0; top:0; width:3px; height:13px; margin:-6.5px 0 0 -1.5px;
     background:linear-gradient(135deg, #a2683a, #6d4522);
-    transform: translate3d({W}px, 11.5px, {D}px) rotateY(-45deg); }}
+    transform: translate3d({W}px, 6px, {D}px) rotateY(-45deg); }}
 
   /* 墙的端面（后墙右端、左墙近端）：让墙看起来是有厚度的板 */
   .wall-end {{ position:absolute; left:0; top:0; }}
-  .wall-end.back {{ width:18px; height:{H}px; margin:-{H//2}px 0 0 -9px;
+  .wall-end.back {{ width:9px; height:{H}px; margin:-{H//2}px 0 0 -4.5px;
     background:linear-gradient(90deg, #c9ab84, #a98a63);
-    transform: translate3d({W}px, -{H//2}px, -9px) rotateY(-90deg); }}
-  .wall-end.left {{ width:18px; height:{H}px; margin:-{H//2}px 0 0 -9px;
+    transform: translate3d({W}px, -{H//2}px, -4.5px) rotateY(-90deg); }}
+  .wall-end.left {{ width:9px; height:{H}px; margin:-{H//2}px 0 0 -4.5px;
     background:linear-gradient(90deg, #c3a582, #a3855f);
-    transform: translate3d(-9px, -{H//2}px, {D}px); }}
+    transform: translate3d(-4.5px, -{H//2}px, {D}px); }}
+
+  /* 两块墙在墙角外侧会留一个 9x9 的竖缺口（墙皮只各管一个方向），补一根角柱封住 */
+  .wall-outer-corner {{ position:absolute; left:0; top:0; width:13px; height:{H}px; margin:-{H//2}px 0 0 -6.5px;
+    background:linear-gradient(90deg, #cbb28e, #9d7f5c);
+    transform: translate3d(-4.5px, -{H//2}px, -4.5px) rotateY(-135deg); }}
 
   /* ===== 地面上的东西 ===== */
   .item {{ position:absolute; left:0; top:0; transform-style:preserve-3d; }}
@@ -506,6 +511,7 @@ def build():
       <span class="wall-end left" id="weleft"></span>
       <span class="corner-top" id="ctop"></span>
       <span class="corner-floor" id="cfloor"></span>
+      <span class="wall-outer-corner" id="woc"></span>
       <div class="floor" id="flooritem"></div>
 
       <div class="item" id="rugitem" style="transform: translate3d({RUGR[0]}px,-1px,{RUGR[1]}px)">
