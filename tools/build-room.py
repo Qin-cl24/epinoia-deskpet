@@ -101,35 +101,82 @@ def build():
   @keyframes drift {{ 0%,100% {{ transform: translateX(0); }} 50% {{ transform: translateX(26px); }} }}
 
   /* ===== 家具 ===== */
-  .bed {{ position:absolute; left:5%; bottom:32%; width:32%; height:17%; border-radius:14px 14px 6px 6px;
-    background:linear-gradient(#f3f0ff, #dcd6f7); box-shadow:0 8px 18px rgba(0,0,0,.18), inset 0 -6px 0 rgba(0,0,0,.06);
-    cursor:pointer; }}
-  .bed::before {{ content:''; position:absolute; left:5%; top:14%; width:30%; height:44%; border-radius:10px;
-    background:linear-gradient(#fff, #f1eefc); box-shadow:0 2px 4px rgba(0,0,0,.12); }}
-  .bed::after {{ content:'🛏️'; position:absolute; right:8px; top:6px; font-size:16px; opacity:.55; }}
-  .bedleg {{ position:absolute; bottom:-8px; width:8px; height:12px; background:#c9a074; border-radius:2px; }}
-  .bedleg.l {{ left:12%; }} .bedleg.r {{ right:12%; }}
+  /* 床（2026-11-03 重画）：床头板 + 床垫 + 枕头 + 被子 + 四条床腿，不再是圆角方块 */
+  .bed {{ position:absolute; left:4%; bottom:26%; width:34%; height:21%; cursor:pointer; }}
+  .bed .headboard {{ position:absolute; left:0; bottom:0; width:13%; height:100%; border-radius:8px 4px 4px 8px;
+    background:linear-gradient(#c99b6d, #a9794f); box-shadow:inset 0 2px 0 rgba(255,255,255,.25); }}
+  .bed .mattress {{ position:absolute; left:11%; bottom:22%; width:89%; height:52%; border-radius:6px;
+    background:linear-gradient(#ffffff, #ece7fb); box-shadow:0 3px 8px rgba(0,0,0,.16), inset 0 -3px 0 rgba(0,0,0,.05); }}
+  .bed .pillow {{ position:absolute; left:15%; bottom:40%; width:22%; height:26%; border-radius:7px;
+    background:linear-gradient(#fff, #f4f1fd); box-shadow:0 2px 5px rgba(0,0,0,.14); }}
+  .bed .blanket {{ position:absolute; left:36%; bottom:24%; width:64%; height:48%; border-radius:5px 8px 8px 5px;
+    background:linear-gradient(#b8a6f0, #9d86e8); box-shadow:inset 0 -4px 0 rgba(0,0,0,.10); }}
+  .bed .blanket::after {{ content:''; position:absolute; left:0; right:0; top:22%; height:3px;
+    background:rgba(255,255,255,.45); box-shadow:0 8px 0 rgba(255,255,255,.3); }}
+  .bedleg {{ position:absolute; bottom:-9%; width:7%; height:10%; background:#8f6440; border-radius:0 0 3px 3px; }}
+  .bedleg.l {{ left:14%; }} .bedleg.r {{ right:6%; }}
 
-  .bowl {{ position:absolute; left:22%; bottom:27%; width:88px; height:42px; border-radius:0 0 36px 36px;
+  .bowl {{ position:absolute; left:7%; bottom:7%; width:84px; height:40px; border-radius:0 0 36px 36px;
     background:linear-gradient(#f0f0f0, #cfcfcf); box-shadow:0 6px 12px rgba(0,0,0,.2);
     border-top:6px solid #ffb457; cursor:pointer; }}
   .bowl .food {{ position:absolute; left:8px; right:8px; top:-8px; height:12px; border-radius:10px;
     background:radial-gradient(circle at 30% 50%, #ffd08a 0 4px, transparent 4px),
                radial-gradient(circle at 65% 50%, #ffc46b 0 4px, transparent 4px), #ffb457; }}
 
-  .radio {{ position:absolute; right:16%; bottom:27%; width:78px; height:56px; border-radius:8px;
+  .radio {{ position:absolute; right:7%; bottom:7%; width:74px; height:54px; border-radius:8px;
     background:linear-gradient(#8d6e63, #6d4c41); box-shadow:0 6px 12px rgba(0,0,0,.25); cursor:pointer; }}
   .radio::before {{ content:''; position:absolute; left:8px; top:8px; width:26px; height:26px; border-radius:50%;
     background:radial-gradient(circle at 50% 50%, #fff 0 30%, #bdbdbd 32% 60%, #8d8d8d 62%); }}
   .radio::after {{ content:''; position:absolute; right:10px; top:12px; width:12px; height:12px; border-radius:50%;
     background:#ffd54f; box-shadow:0 16px 0 -2px #ffd54f; }}
-  .notes {{ position:absolute; right:26%; bottom:38%; font-size:16px; opacity:0; transition:opacity .3s; }}
+  .notes {{ position:absolute; right:5%; bottom:20%; font-size:16px; opacity:0; transition:opacity .3s; }}
   .notes.on {{ opacity:1; animation: floatUp 1.4s ease-in-out infinite; }}
   @keyframes floatUp {{ 0% {{ transform: translate(0,0); opacity:0; }} 40% {{ opacity:1; }} 100% {{ transform: translate(10px,-26px); opacity:0; }} }}
 
   .rug {{ position:absolute; left:50%; bottom:5%; width:64%; height:15%; margin-left:-26%; border-radius:50%;
     background:radial-gradient(ellipse at 50% 40%, #ffe3b8, #f3c98d); opacity:.85;
     box-shadow: inset 0 0 0 5px rgba(255,255,255,.45); }}
+
+
+  /* ===== 方块形态（2026-11-03 加，默认用它测交互）=====
+     和桌面上那个方块小人同一套画法：56x36 的橙色方块 + 竖眼睛 + 短手 + 四条腿。 */
+  .blockwrap {{ position:absolute; left:50%; bottom:10%; width:0; height:0; }}
+  .blockpet {{ position:absolute; left:0; bottom:0; transform: translateX(-50%) scale(2.6); transform-origin: bottom center;
+    transition: transform .25s ease; width:72px; height:50px; }}
+  .blockpet .body {{ position:relative; width:56px; height:36px; margin:4px auto 0; border-radius:4px;
+    background:#e67e22; box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -3px 0 rgba(0,0,0,.10); }}
+  .blockpet .eye {{ position:absolute; width:5px; height:10px; background:#000; top:9px; border-radius:2px;
+    transition: height .1s; }}
+  .blockpet .eye-left {{ left:12px; }} .blockpet .eye-right {{ right:12px; }}
+  .pet-room.blink .blockpet .eye {{ height:2px; }}
+  .blockpet .arm {{ position:absolute; width:10px; height:10px; top:12px; background:#e67e22;
+    background-image: linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.05)); }}
+  .blockpet .arm-left {{ left:-10px; }} .blockpet .arm-right {{ right:-10px; }}
+  .blockpet .leg {{ position:absolute; width:5px; height:10px; bottom:-10px;
+    background: linear-gradient(180deg, #e67e22 0%, #d35400 58%); }}
+  .blockpet .leg-l1 {{ left:8px; }} .blockpet .leg-l2 {{ left:17px; }}
+  .blockpet .leg-r1 {{ right:8px; }} .blockpet .leg-r2 {{ right:17px; }}
+  .blockpet .body {{ animation: blockIdle 2.6s ease-in-out infinite; }}
+  @keyframes blockIdle {{ 0%,100% {{ transform: translateY(0); }} 50% {{ transform: translateY(-2px); }} }}
+  .walking .blockpet .body {{ animation: blockWalk .45s ease-in-out infinite; }}
+  @keyframes blockWalk {{ 0%,100% {{ transform: rotate(-4deg); }} 50% {{ transform: rotate(4deg); }} }}
+  .room.act-sleep .blockpet {{ transform: translateX(-50%) scale(2.6) rotate(-12deg) translateY(14px); }}
+  .room.act-eat .blockpet .body {{ animation: blockEat .5s ease-in-out infinite; }}
+  @keyframes blockEat {{ 0%,100% {{ transform: translateY(0); }} 50% {{ transform: translateY(4px) scaleY(.97); }} }}
+  .room.act-look .blockpet {{ transform: translateX(-50%) scale(2.6) translateY(-6px); }}
+  .room.act-dance .blockpet {{ animation: blockDance .5s ease-in-out infinite; }}
+  @keyframes blockDance {{ 0%,100% {{ transform: translateX(-50%) scale(2.6) rotate(-7deg); }}
+                           50% {{ transform: translateX(-50%) scale(2.6) rotate(7deg) translateY(-4px); }} }}
+  .room.bounce .blockpet {{ animation: blockHop .45s ease-out; }}
+  @keyframes blockHop {{ 0%,100% {{ transform: translateX(-50%) scale(2.6) translateY(0); }}
+                         40% {{ transform: translateX(-50%) scale(2.6) translateY(-16px); }} }}
+  /* 形态切换：默认方块，切到狐狐才显示那 34 层 */
+  .foxwrap {{ display:none; }}
+  .room[data-form="fox"] .foxwrap {{ display:block; }}
+  .room[data-form="fox"] .blockwrap {{ display:none; }}
+  .formbtn {{ border:none; border-radius:14px; padding:4px 10px; font-size:12px; cursor:pointer;
+    background:#f0dcc8; color:#6b5341; }}
+  .formbtn.on {{ background:#e6a86b; color:#fff; }}
 
   /* ===== 狐狐（图层来自 _layers.json）===== */
   .foxwrap {{ position:absolute; left:50%; bottom:8%; width:0; height:0; }}
@@ -188,19 +235,32 @@ def build():
 </head>
 <body>
 <script>console.log('BOOT ' + innerWidth + 'x' + innerHeight + ' RoomBridge=' + (typeof window.RoomBridge));</script>
-<div class="room pet-room" id="room">
+<div class="room pet-room" id="room" data-form="block">
   <div class="wall"></div>
   <div class="skirting"></div>
   <div class="floor"></div>
 
   <div class="window"><span class="sun"></span><span class="cloud"></span></div>
 
-  <div class="bed" data-act="sleep" data-x="20"><span class="bedleg l"></span><span class="bedleg r"></span></div>
-  <div class="bowl" data-act="eat" data-x="42"><span class="food"></span></div>
-  <div class="radio" data-act="dance" data-x="62"></div>
+  <div class="bed" data-act="sleep" data-x="14">
+    <span class="headboard"></span><span class="mattress"></span><span class="blanket"></span>
+    <span class="pillow"></span><span class="bedleg l"></span><span class="bedleg r"></span>
+  </div>
+  <div class="bowl" data-act="eat" data-x="18"><span class="food"></span></div>
+  <div class="radio" data-act="dance" data-x="82"></div>
   <div class="notes">🎵</div>
   <div class="rug"></div>
 
+  <div class="blockwrap" id="blockwrap">
+    <div class="blockpet">
+      <div class="body">
+        <div class="eye eye-left"></div><div class="eye eye-right"></div>
+        <div class="arm arm-left"></div><div class="arm arm-right"></div>
+        <div class="leg leg-l1"></div><div class="leg leg-l2"></div>
+        <div class="leg leg-r1"></div><div class="leg leg-r2"></div>
+      </div>
+    </div>
+  </div>
   <div class="foxwrap" id="foxwrap">
     <div class="fox" id="fox">
       <div class="fox-hit" id="foxhit"></div>
@@ -215,7 +275,9 @@ def build():
 
   <div class="top">
     <span class="title">🏠 狐狐的小屋</span>
-    <span class="hint">点床 / 饭碗 / 收音机 / 窗台试试</span>
+    <button class="formbtn on" id="btn-block">🐣 方块</button>
+    <button class="formbtn" id="btn-fox">🦊 狐狐</button>
+    <span class="hint">点床 / 饭碗 / 收音机 / 窗台</span>
     <button class="close" id="close">✕</button>
   </div>
 </div>
@@ -224,7 +286,10 @@ def build():
   window.onerror = function (m, f, l) {{ console.log('JSERR ' + m + ' @' + l); }};
   try {{
   var room = document.getElementById('room');
-  var wrap = document.getElementById('foxwrap');
+  var foxwrap = document.getElementById('foxwrap');
+  var blockwrap = document.getElementById('blockwrap');
+  function activeWrap() {{ return room.dataset.form === 'fox' ? foxwrap : blockwrap; }}
+  var wrap = blockwrap;   // 默认方块形态
   var fox = document.getElementById('fox');
   var bubble = document.getElementById('bubble');
   var notes = document.querySelector('.notes');
@@ -249,7 +314,7 @@ def build():
   function goTo(xPercent, ms) {{
     var target = (xPercent - 50) * 0.62;      // 百分比 → vw 偏移，0.62 是手感系数
     var now = wrap.dataset.x ? parseFloat(wrap.dataset.x) : 0;
-    fox.classList.toggle('flip', target < now);
+    if (room.dataset.form === 'fox') fox.classList.toggle('flip', target < now);
     wrap.dataset.x = target;
     wrap.style.transition = 'transform ' + ms + 'ms ease-in-out';
     wrap.style.transform = 'translateX(' + target + 'vw)';
@@ -300,6 +365,30 @@ def build():
   document.getElementById('close').addEventListener('click', function() {{
     if (window.RoomBridge && window.RoomBridge.close) window.RoomBridge.close();
     else say('（没有找到关闭桥）', 1200);
+  }});
+
+  // 形态切换：默认方块（先拿它测交互），切到狐狐才显示那 34 层
+  function setForm(f) {{
+    room.dataset.form = f;
+    document.getElementById('btn-block').classList.toggle('on', f === 'block');
+    document.getElementById('btn-fox').classList.toggle('on', f === 'fox');
+    // 换形态回到中间，免得旧偏移留在另一个容器上
+    [foxwrap, blockwrap].forEach(function (w) {{
+      w.style.transition = 'none'; w.style.transform = 'translateX(0)'; w.dataset.x = 0;
+      setTimeout(function () {{ w.style.transition = ''; }}, 50);
+    }});
+    note('form=' + f);
+  }}
+  document.getElementById('btn-block').addEventListener('click', function () {{ setForm('block'); }});
+  document.getElementById('btn-fox').addEventListener('click', function () {{ setForm('fox'); }});
+  setForm('block');
+
+  // 点方块也能逗它
+  document.querySelector('.blockpet .body').addEventListener('click', function () {{
+    note('tap block');
+    room.classList.add('bounce');
+    say(pick(SAY.idle), 1500);
+    setTimeout(function () {{ room.classList.remove('bounce'); }}, 500);
   }});
 
   // 眨眼：随机间隔，偶尔连眨
