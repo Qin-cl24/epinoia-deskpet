@@ -54,7 +54,10 @@ DECOR_CSS = """
      yaw 放宽到 200° 后，镜头会绕到墙的另一侧；如果不隐藏背面，
      挂钟/挂画会以镜像形式出现（挂钟是特意 rotateY(180) 面向屋里的）。
      隐藏背面 = 转过去那面墙直接消失，露出屋里（像拆掉的玩具屋），不会出现反字。 */
-  .wall, .wall * { -webkit-backface-visibility: hidden; backface-visibility: hidden; }   /* 墙 + 墙里的一切（窗/画/钟/帘，含孙元素）*/
+  /* ⚠️ 只对「墙里的内容」隐藏背面，不能加上 .wall 本身：
+     左墙元素的朝向本来就朝屋外（一直靠双面都能画混着用），
+     一给墙本身加 backface hidden，整面左墙会直接消失（真机踩过）。*/
+  .wall * { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
 
   /* ===== 墙面装饰通用：.deco 里的每个面都绝对定位、用负 margin 把盒子中心对齐锚点 ===== */
   .deco { position:absolute; left:0; top:0; transform-style:preserve-3d; }
@@ -382,6 +385,11 @@ def build():
   .radio .ant {{ width:3px; height:34px; margin:0 0 0 -1.5px;
     background:linear-gradient(#e0e0e0, #9e9e9e); border-radius:2px;
     transform: translate3d(24px,-84px,4px) rotateZ(12deg); }}
+  /* ⚠️ 拼装体的零件必须绝对定位：不写 position:absolute 就会参与 .sprite 的正常流，
+     位置被兄弟元素的高度整体顶偏（真机踩过：收音机顶面/天线浮在机身斜上方一大截）。*/
+  .bowl .cup, .bowl .brim-o, .bowl .brim-i, .bowl .meal,
+  .radio .rtop, .radio .rside, .radio .ant {{ position:absolute; left:0; top:0; }}
+
   .notes {{ position:absolute; left:0; bottom:62px; transform:translateX(-50%); font-size:15px; opacity:0; }}
   .notes.on {{ opacity:1; animation: floatUp 1.4s ease-in-out infinite; }}
   @keyframes floatUp {{ 0% {{ transform:translate(-50%,0); opacity:0; }} 40% {{ opacity:1; }}
@@ -508,9 +516,9 @@ def build():
         <div class="sprite"><div class="f m_head"></div><div class="f m_side"></div><div class="f m_front"></div><div class="f m_top"></div><div class="f m_quilt"></div><div class="f m_flap"></div><div class="f m_pillow"></div></div>
       </div>
 
-      <div class="item bowl" id="bowlitem" data-act="eat" data-x="300" data-z="372"
+      <div class="item bowl" id="bowlitem" data-act="eat" data-x="272" data-z="352"
            data-phys="74,26,38" data-drop="240" data-mass="1.5"
-           style="transform: translate3d(300px,0,372px)">
+           style="transform: translate3d(272px,0,352px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
         <div class="sprite"><div class="cup"></div><div class="brim-o"></div><div class="brim-i"></div><div class="meal"></div></div>
       </div>
