@@ -47,6 +47,14 @@ class RoomActivity : AppCompatActivity() {
             android.util.Log.i("RoomDebug", state)
         }
 
+        /** 顶栏 ⚙️：打开设置页 */
+        @JavascriptInterface
+        fun openSettings() {
+            runOnUiThread {
+                startActivity(android.content.Intent(this@RoomActivity, MainActivity::class.java))
+            }
+        }
+
         /** 页面里的 ✕ 调这里关掉小屋 */
         @JavascriptInterface
         fun close() {

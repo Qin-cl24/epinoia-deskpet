@@ -101,20 +101,22 @@ def build():
   @keyframes drift {{ 0%,100% {{ transform: translateX(0); }} 50% {{ transform: translateX(26px); }} }}
 
   /* ===== 家具 ===== */
-  /* 床（2026-11-03 重画）：床头板 + 床垫 + 枕头 + 被子 + 四条床腿，不再是圆角方块 */
-  .bed {{ position:absolute; left:4%; bottom:26%; width:34%; height:21%; cursor:pointer; }}
-  .bed .headboard {{ position:absolute; left:0; bottom:0; width:13%; height:100%; border-radius:8px 4px 4px 8px;
-    background:linear-gradient(#c99b6d, #a9794f); box-shadow:inset 0 2px 0 rgba(255,255,255,.25); }}
-  .bed .mattress {{ position:absolute; left:11%; bottom:22%; width:89%; height:52%; border-radius:6px;
-    background:linear-gradient(#ffffff, #ece7fb); box-shadow:0 3px 8px rgba(0,0,0,.16), inset 0 -3px 0 rgba(0,0,0,.05); }}
-  .bed .pillow {{ position:absolute; left:15%; bottom:40%; width:22%; height:26%; border-radius:7px;
-    background:linear-gradient(#fff, #f4f1fd); box-shadow:0 2px 5px rgba(0,0,0,.14); }}
-  .bed .blanket {{ position:absolute; left:36%; bottom:24%; width:64%; height:48%; border-radius:5px 8px 8px 5px;
-    background:linear-gradient(#b8a6f0, #9d86e8); box-shadow:inset 0 -4px 0 rgba(0,0,0,.10); }}
-  .bed .blanket::after {{ content:''; position:absolute; left:0; right:0; top:22%; height:3px;
-    background:rgba(255,255,255,.45); box-shadow:0 8px 0 rgba(255,255,255,.3); }}
-  .bedleg {{ position:absolute; bottom:-9%; width:7%; height:10%; background:#8f6440; border-radius:0 0 3px 3px; }}
-  .bedleg.l {{ left:14%; }} .bedleg.r {{ right:6%; }}
+  /* 床（2026-11-03 第二版）：床头板 + 床架 + 床垫 + 被子（带折边）+ 枕头 + 两条床腿 */
+  .bed {{ position:absolute; left:5%; bottom:30%; width:33%; height:22%; cursor:pointer; }}
+  .bed .headboard {{ position:absolute; left:0; bottom:6%; width:14%; height:104%; border-radius:10px 6px 4px 10px;
+    background:linear-gradient(100deg, #d0a273, #a9794f); box-shadow:inset 0 3px 0 rgba(255,255,255,.28); }}
+  .bed .frame {{ position:absolute; left:10%; bottom:14%; width:90%; height:26%; border-radius:6px;
+    background:linear-gradient(#b98a5e, #9c6f47); }}
+  .bed .mattress {{ position:absolute; left:12%; bottom:34%; width:88%; height:28%; border-radius:8px;
+    background:linear-gradient(#ffffff, #f0ecfb); box-shadow:0 3px 8px rgba(0,0,0,.14); }}
+  .bed .pillow {{ position:absolute; left:16%; bottom:46%; width:23%; height:22%; border-radius:8px;
+    background:linear-gradient(#fff, #f5f2fe); box-shadow:0 2px 5px rgba(0,0,0,.12); }}
+  .bed .blanket {{ position:absolute; left:38%; bottom:36%; width:62%; height:34%; border-radius:6px 9px 9px 6px;
+    background:linear-gradient(#bcaaf2, #9d86e8); box-shadow:inset 0 -4px 0 rgba(0,0,0,.10); }}
+  .bed .blanket::after {{ content:''; position:absolute; left:0; right:0; top:26%; height:3px;
+    background:rgba(255,255,255,.5); box-shadow:0 9px 0 rgba(255,255,255,.32); }}
+  .bedleg {{ position:absolute; bottom:2%; width:8%; height:14%; background:#8f6440; border-radius:0 0 4px 4px; }}
+  .bedleg.l {{ left:16%; }} .bedleg.r {{ right:4%; }}
 
   .bowl {{ position:absolute; left:7%; bottom:7%; width:84px; height:40px; border-radius:0 0 36px 36px;
     background:linear-gradient(#f0f0f0, #cfcfcf); box-shadow:0 6px 12px rgba(0,0,0,.2);
@@ -133,15 +135,16 @@ def build():
   .notes.on {{ opacity:1; animation: floatUp 1.4s ease-in-out infinite; }}
   @keyframes floatUp {{ 0% {{ transform: translate(0,0); opacity:0; }} 40% {{ opacity:1; }} 100% {{ transform: translate(10px,-26px); opacity:0; }} }}
 
-  .rug {{ position:absolute; left:50%; bottom:5%; width:64%; height:15%; margin-left:-26%; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 40%, #ffe3b8, #f3c98d); opacity:.85;
-    box-shadow: inset 0 0 0 5px rgba(255,255,255,.45); }}
+  /* 地毯：铺在底部、比家具先画，碗和收音机就是「放在毯子上」，不会被毯子压住 */
+  .rug {{ position:absolute; left:50%; bottom:2%; width:88%; height:17%; margin-left:-44%; border-radius:50%;
+    background:radial-gradient(ellipse at 50% 40%, #ffe9c6, #f0c88b);
+    box-shadow: inset 0 0 0 6px rgba(255,255,255,.5), 0 6px 18px rgba(0,0,0,.08); }}
 
 
   /* ===== 方块形态（2026-11-03 加，默认用它测交互）=====
      和桌面上那个方块小人同一套画法：56x36 的橙色方块 + 竖眼睛 + 短手 + 四条腿。 */
   .blockwrap {{ position:absolute; left:50%; bottom:10%; width:0; height:0; }}
-  .blockpet {{ position:absolute; left:0; bottom:0; transform: translateX(-50%) scale(2.6); transform-origin: bottom center;
+  .blockpet {{ position:absolute; left:0; bottom:0; transform: translateX(-50%) scale(2.0); transform-origin: bottom center;
     transition: transform .25s ease; width:72px; height:50px; }}
   .blockpet .body {{ position:relative; width:56px; height:36px; margin:4px auto 0; border-radius:4px;
     background:#e67e22; box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -3px 0 rgba(0,0,0,.10); }}
@@ -160,16 +163,16 @@ def build():
   @keyframes blockIdle {{ 0%,100% {{ transform: translateY(0); }} 50% {{ transform: translateY(-2px); }} }}
   .walking .blockpet .body {{ animation: blockWalk .45s ease-in-out infinite; }}
   @keyframes blockWalk {{ 0%,100% {{ transform: rotate(-4deg); }} 50% {{ transform: rotate(4deg); }} }}
-  .room.act-sleep .blockpet {{ transform: translateX(-50%) scale(2.6) rotate(-12deg) translateY(14px); }}
+  .room.act-sleep .blockpet {{ transform: translateX(-50%) scale(2.0) rotate(-12deg) translateY(14px); }}
   .room.act-eat .blockpet .body {{ animation: blockEat .5s ease-in-out infinite; }}
   @keyframes blockEat {{ 0%,100% {{ transform: translateY(0); }} 50% {{ transform: translateY(4px) scaleY(.97); }} }}
-  .room.act-look .blockpet {{ transform: translateX(-50%) scale(2.6) translateY(-6px); }}
+  .room.act-look .blockpet {{ transform: translateX(-50%) scale(2.0) translateY(-6px); }}
   .room.act-dance .blockpet {{ animation: blockDance .5s ease-in-out infinite; }}
-  @keyframes blockDance {{ 0%,100% {{ transform: translateX(-50%) scale(2.6) rotate(-7deg); }}
-                           50% {{ transform: translateX(-50%) scale(2.6) rotate(7deg) translateY(-4px); }} }}
+  @keyframes blockDance {{ 0%,100% {{ transform: translateX(-50%) scale(2.0) rotate(-7deg); }}
+                           50% {{ transform: translateX(-50%) scale(2.0) rotate(7deg) translateY(-4px); }} }}
   .room.bounce .blockpet {{ animation: blockHop .45s ease-out; }}
-  @keyframes blockHop {{ 0%,100% {{ transform: translateX(-50%) scale(2.6) translateY(0); }}
-                         40% {{ transform: translateX(-50%) scale(2.6) translateY(-16px); }} }}
+  @keyframes blockHop {{ 0%,100% {{ transform: translateX(-50%) scale(2.0) translateY(0); }}
+                         40% {{ transform: translateX(-50%) scale(2.0) translateY(-16px); }} }}
   /* 形态切换：默认方块，切到狐狐才显示那 34 层 */
   .foxwrap {{ display:none; }}
   .room[data-form="fox"] .foxwrap {{ display:block; }}
@@ -239,17 +242,18 @@ def build():
   <div class="wall"></div>
   <div class="skirting"></div>
   <div class="floor"></div>
+  <div class="rug"></div>
 
   <div class="window"><span class="sun"></span><span class="cloud"></span></div>
 
   <div class="bed" data-act="sleep" data-x="14">
-    <span class="headboard"></span><span class="mattress"></span><span class="blanket"></span>
-    <span class="pillow"></span><span class="bedleg l"></span><span class="bedleg r"></span>
+    <span class="headboard"></span><span class="frame"></span><span class="mattress"></span>
+    <span class="blanket"></span><span class="pillow"></span>
+    <span class="bedleg l"></span><span class="bedleg r"></span>
   </div>
   <div class="bowl" data-act="eat" data-x="18"><span class="food"></span></div>
   <div class="radio" data-act="dance" data-x="82"></div>
   <div class="notes">🎵</div>
-  <div class="rug"></div>
 
   <div class="blockwrap" id="blockwrap">
     <div class="blockpet">
@@ -277,7 +281,8 @@ def build():
     <span class="title">🏠 狐狐的小屋</span>
     <button class="formbtn on" id="btn-block">🐣 方块</button>
     <button class="formbtn" id="btn-fox">🦊 狐狐</button>
-    <span class="hint">点床 / 饭碗 / 收音机 / 窗台</span>
+    <span class="hint">点家具试试</span>
+    <button class="close" id="gear" title="设置">⚙️</button>
     <button class="close" id="close">✕</button>
   </div>
 </div>
@@ -361,6 +366,11 @@ def build():
     room.classList.add('bounce');
     say(pick(SAY.idle), 1500);
     setTimeout(function() {{ room.classList.remove('bounce'); }}, 500);
+  }});
+  document.getElementById('gear').addEventListener('click', function() {{
+    note('open settings');
+    try {{ window.RoomBridge && RoomBridge.openSettings && RoomBridge.openSettings(); }}
+    catch (e) {{ say('打不开设置：' + e.message, 1500); }}
   }});
   document.getElementById('close').addEventListener('click', function() {{
     if (window.RoomBridge && window.RoomBridge.close) window.RoomBridge.close();

@@ -25,15 +25,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
 
-        <!-- 设置界面 -->
+        <!-- 设置界面（入口在小屋顶栏的 ⚙️） -->
         <activity
             android:name="com.epinoia.deskpet.MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="true" />
 
         <!-- 悬浮窗核心服务 -->
         <service
@@ -45,10 +40,16 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="desktop pet overlay" />
         </service>
+        <!-- 小屋：App 的启动页（设置从顶栏 ⚙️ 进） -->
         <activity
             android:name=".RoomActivity"
             android:exported="true"
-            android:label="狐狐的小屋" />
+            android:label="狐狐的小屋">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
