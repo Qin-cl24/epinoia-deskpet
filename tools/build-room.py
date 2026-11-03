@@ -136,9 +136,11 @@ def build():
     transform-style: preserve-3d; }}   /* 不开这个，里面的顶面/侧面会被拍平 */
 
   /* 地毯：平铺在地面上 */
-  /* 地毯：先 translate 到位置、再 rotateX 躺平（顺序反了就会「掉到地板下面」）*/
-  .rug {{ position:absolute; left:0; top:0; width:250px; height:190px;
-    transform: translate3d({RUGR[0]}px, -2px, {RUGR[1]}px) rotateX(-90deg) translate(-50%,-50%);
+  /* 地毯：用「负 margin 把盒子居中到锚点，然后只做 rotateX」的写法。
+     ⚠️ 关键：盒子中心必须正好落在锚点上，否则 transform-origin 在元素中心，
+     旋转后整块会偏到地板下面去（上一版就是这样掉了 90px）。*/
+  .rugface {{ position:absolute; left:0; top:0; width:250px; height:190px;
+    margin:-95px 0 0 -125px; transform: rotateX(-90deg);
     border-radius:50%;
     background: radial-gradient(ellipse at 50% 42%, #ffe9c6, #efc78a);
     box-shadow: inset 0 0 0 6px rgba(255,255,255,.5); }}
@@ -154,11 +156,11 @@ def build():
   .bed .head {{ position:absolute; left:0; bottom:0; width:14px; height:96px; transform: translateX(-82px) skewY(-6deg);
     border-radius:6px 6px 3px 3px; background:linear-gradient(100deg, #d0a273, #a9794f); }}
   /* 床面：平躺在 y=-56 的矩形，被子盖住右半边 */
-  .bed .btop {{ width:150px; height:110px; border-radius:7px; background:linear-gradient(#ffffff, #efeafb);
+  .bed .btop {{ width:150px; height:110px; margin:-55px 0 0 -75px; border-radius:7px; background:linear-gradient(#ffffff, #efeafb);
     box-shadow: inset 0 0 0 3px rgba(255,255,255,.6);
-    transform: translateY(-56px) translate(-50%,-50%) rotateX(-90deg); }}
-  .bed .bblanket {{ width:104px; height:110px; border-radius:6px; background:linear-gradient(#c3b2f4, #a790ec);
-    transform: translate(20px,-58px) translate(-50%,-50%) rotateX(-90deg); }}
+    transform: translateY(-56px) rotateX(-90deg); }}
+  .bed .bblanket {{ width:104px; height:110px; margin:-55px 0 0 -32px; border-radius:6px;
+    background:linear-gradient(#c3b2f4, #a790ec); transform: translateY(-58px) rotateX(-90deg); }}
 
   /* 通用：3D 面（顶面 / 侧面），给家具做出体积 */
   .face {{ position:absolute; left:0; top:0; }}
@@ -172,9 +174,9 @@ def build():
   .bowl .food {{ position:absolute; left:0; bottom:30px; width:62px; height:14px; transform: translateX(-50%);
     border-radius:10px; background:#ffb457; box-shadow: inset 0 3px 0 rgba(255,255,255,.35); }}
   /* 碗口：平躺在 y=-38 的椭圆，读起来就有碗的开口 */
-  .bowl .brim {{ width:74px; height:26px; border-radius:50%; background:#ffb457;
+  .bowl .brim {{ width:74px; height:26px; margin:-13px 0 0 -37px; border-radius:50%; background:#ffb457;
     box-shadow: inset 0 0 0 4px rgba(255,255,255,.55), inset 0 6px 10px rgba(150,80,20,.35);
-    transform: translateY(-38px) translate(-50%,-50%) rotateX(-90deg); }}
+    transform: translateY(-38px) rotateX(-90deg); }}
   .radio {{ cursor:pointer; }}
   .radio .case {{ position:absolute; left:0; bottom:0; width:66px; height:50px; transform: translateX(-50%);
     border-radius:7px; background:linear-gradient(#8d6e63, #6d4c41);
@@ -184,8 +186,8 @@ def build():
   .radio .lamp {{ position:absolute; left:14px; bottom:26px; width:9px; height:9px; border-radius:50%;
     background:#ffd54f; box-shadow:0 -13px 0 -1px #ffd54f; }}
   /* 收音机顶面（平躺在 y=-50 的平面）和右侧面（x=+33 的平面）*/
-  .radio .rtop {{ width:66px; height:40px; background:linear-gradient(#a1887f, #8d6e63);
-    transform: translateY(-50px) translate(-50%,-50%) rotateX(-90deg); border-radius:4px;
+  .radio .rtop {{ width:66px; height:40px; margin:-20px 0 0 -33px; background:linear-gradient(#a1887f, #8d6e63);
+    transform: translateY(-50px) rotateX(-90deg); border-radius:4px;
     box-shadow: inset 0 0 0 2px rgba(255,255,255,.16); }}
   .radio .rside {{ width:40px; height:50px; background:linear-gradient(90deg, #7a5a4f, #5d4037);
     transform: translate(33px,-50px) rotateY(-90deg) translate(-0%,-50%); border-radius:0 4px 4px 0; }}
@@ -277,9 +279,11 @@ def build():
         <div class="window" id="window"><span class="sun"></span><span class="cloud"></span></div>
       </div>
       <div class="wall left"><span class="base left"></span></div>
-      <div class="floor"></div>
+      <div class="floor" id="flooritem"></div>
 
-      <div class="rug" id="rugitem"></div>
+      <div class="item" id="rugitem" style="transform: translate3d({RUGR[0]}px,-1px,{RUGR[1]}px)">
+        <span class="rugface"></span>
+      </div>
 
       <div class="item bed" id="beditem" data-act="sleep" data-x="110" data-z="230"
            style="transform: translate3d(110px,0,230px)">
@@ -517,9 +521,9 @@ def build():
   // 临时：把各个 3D 元素的屏幕投影框报出来（便于 adb 点击验证）
   setTimeout(function () {{
     var out = [];
-    ['beditem','bowlitem','radioitem','blockitem','foxitem','window'].forEach(function (id) {{
+    ['flooritem','rugitem','beditem','bowlitem','radioitem','blockitem','window'].forEach(function (id) {{
       var el = document.getElementById(id); if (!el) return;
-      var t = el.querySelector('.sprite') || el;
+      var t = el.querySelector('.sprite') || el.querySelector('.rugface') || el;
       var b = t.getBoundingClientRect();
       out.push(id + '=' + Math.round(b.left) + ',' + Math.round(b.top) + ',' + Math.round(b.width) + 'x' + Math.round(b.height));
     }});
