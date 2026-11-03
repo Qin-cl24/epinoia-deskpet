@@ -92,13 +92,13 @@ def build():
 
   /* 底面：做成一块有厚度的板（正面沿 + 右侧沿各一条薄边）*/
   .floor {{ position:absolute; left:0; top:0; width:{W}px; height:{D}px;
-    transform-origin:0 0; transform: rotateX(90deg);
+    transform-origin:0 0; transform: rotateX(90deg); transform-style: preserve-3d;
     background:
       repeating-linear-gradient(90deg, rgba(96,60,28,.16) 0 2px, transparent 2px 45px),
       repeating-linear-gradient(0deg, rgba(96,60,28,.13) 0 2px, transparent 2px 45px),
       linear-gradient(150deg, #e9c69c, #cf9a6a 60%, #c08a5c); }}
   /* 后墙（z=0 平面） */
-  .wall.back {{ position:absolute; left:0; top:-{H}px; width:{W}px; height:{H}px;
+  .wall.back {{ position:absolute; left:0; top:-{H}px; width:{W}px; height:{H}px; transform-style: preserve-3d;
     background:
       radial-gradient(circle at 18% 26%, rgba(255,255,255,.55) 0 3px, transparent 3px) 0 0/48px 48px,
       radial-gradient(circle at 68% 72%, rgba(255,255,255,.42) 0 3px, transparent 3px) 0 0/48px 48px,
@@ -106,24 +106,12 @@ def build():
     box-shadow: inset 0 -14px 24px rgba(120,80,40,.18); }}
   /* 左墙（x=0 平面，绕底边转 -90° 立起来） */
   .wall.left {{ position:absolute; left:0; top:-{H}px; width:{D}px; height:{H}px;
-    transform-origin:0 100%; transform: rotateY(-90deg);
+    transform-origin:0 100%; transform: rotateY(-90deg); transform-style: preserve-3d;
     background:
       radial-gradient(circle at 22% 30%, rgba(255,255,255,.45) 0 3px, transparent 3px) 0 0/48px 48px,
       linear-gradient(180deg, #f2e2cb, #dcc2a0);
     box-shadow: inset 0 -14px 24px rgba(110,72,36,.24); }}
-  /* 地板厚度：前沿（z=D，朝观察者）和右沿（x=W）两条薄边 */
-  .floor-edge {{ position:absolute; left:0; top:0; }}
-  .floor-edge.front {{ width:{W}px; height:16px; background:linear-gradient(#a9713f, #7d4f28);
-    transform: translate3d(0,0,{D}px); }}
-  .floor-edge.right {{ width:{D}px; height:16px; background:linear-gradient(#b57c48, #8a5a2e);
-    transform: translate3d({W}px,0,0) rotateY(90deg); }}
   /* 踢脚线 */
-  /* 墙厚度：墙顶各一条薄片（平躺 14px 宽）*/
-  .wall-edge {{ position:absolute; left:0; top:0; }}
-  .wall-edge.back-top {{ width:{W}px; height:14px; margin:-7px 0 0 0; background:linear-gradient(#e6cfae, #cdb28c);
-    transform: translate3d(0,-{H}px,-7px) rotateX(-90deg); }}
-  .wall-edge.left-top {{ width:{D}px; height:14px; margin:-7px 0 0 0; background:linear-gradient(#dcc4a3, #c3a882);
-    transform: translate3d(7px,-{H}px,0) rotateY(90deg); }}
   .base {{ position:absolute; background:#b57f52; }}
   .base.back {{ left:0; bottom:0; width:{W}px; height:12px; }}
   .base.left {{ left:0; bottom:0; width:{D}px; height:12px; }}
@@ -139,6 +127,32 @@ def build():
   .cloud {{ position:absolute; left:8px; top:12px; width:40px; height:12px; border-radius:20px;
     background:rgba(255,255,255,.92); box-shadow:11px -6px 0 -2px rgba(255,255,255,.92); animation: drift 9s ease-in-out infinite; }}
   @keyframes drift {{ 0%,100% {{ transform: translateX(0); }} 50% {{ transform: translateX(20px); }} }}
+
+  /* ===== 地板和墙的厚度（直接挂在 .world 里，用世界坐标，不会被父层的旋转带跑）===== */
+  .slab {{ position:absolute; left:0; top:0; }}
+  .floor-front {{ width:{W}px; height:26px; margin:-13px 0 0 -{W//2}px;
+    background:linear-gradient(#b0763f, #7d4f28);
+    transform: translate3d({W//2}px, 12px, {D}px); }}
+  .floor-right {{ width:{D}px; height:26px; margin:-13px 0 0 -{D//2}px;
+    background:linear-gradient(#bd8248, #8a5a2e);
+    transform: translate3d({W}px, 12px, {D//2}px) rotateY(-90deg); }}
+  .wall-back-top {{ width:{W}px; height:16px; margin:-8px 0 0 -{W//2}px;
+    background:linear-gradient(#a98a63, #8a6c47);
+    transform: translate3d({W//2}px, -{H}px, -8px) rotateX(-90deg); }}
+  .wall-left-top {{ width:{D}px; height:16px; margin:-8px 0 0 -{D//2}px;
+    background:linear-gradient(#9d7f5c, #7f6242);
+    transform: translate3d(8px, -{H}px, {D//2}px) rotateX(-90deg) rotateZ(90deg); }}
+
+  /* ===== 贴墙环境阴影（AO）：让墙和地之间有"转角"的暗部，立体感靠它 ===== */
+  .ao-floor-back {{ position:absolute; left:0; top:0; width:{W}px; height:60px; margin:0 0 0 -{W//2}px;
+    background:linear-gradient(180deg, rgba(70,40,16,.42), rgba(70,40,16,0));
+    transform: translate3d({W//2}px, -1px, 30px) rotateX(-90deg); }}
+  .ao-floor-left {{ position:absolute; left:0; top:0; width:60px; height:{D}px; margin:-{D//2}px 0 0 -30px;
+    background:linear-gradient(90deg, rgba(70,40,16,.45), rgba(70,40,16,0));
+    transform: translate3d(30px, -1px, {D//2}px) rotateX(-90deg) rotateZ(90deg); }}
+  .ao-corner {{ position:absolute; left:0; top:0; width:70px; height:{H}px; margin:-{H//2}px 0 0 -35px;
+    background:radial-gradient(ellipse at 100% 100%, rgba(90,55,25,.5), rgba(90,55,25,0) 70%);
+    transform: translate3d(0, -{H//2}px, 1px); }}
 
   /* ===== 地面上的东西 ===== */
   .item {{ position:absolute; left:0; top:0; transform-style:preserve-3d; }}
@@ -311,11 +325,18 @@ def build():
 <div class="room pet-room" id="room" data-form="block">
   <div class="stage">
     <div class="world">
-      <div class="wall back"><span class="base back"></span><span class="wall-edge back-top"></span>
+      <div class="wall back"><span class="base back"></span>
         <div class="window" id="window"><span class="sun"></span><span class="cloud"></span></div>
       </div>
-      <div class="wall left"><span class="base left"></span><span class="wall-edge left-top"></span></div>
-      <div class="floor" id="flooritem"><span class="floor-edge front"></span><span class="floor-edge right"></span></div>
+      <div class="wall left"><span class="base left"></span></div>
+      <span class="slab floor-front" id="fedge"></span>
+      <span class="slab floor-right" id="redge"></span>
+      <span class="slab wall-back-top" id="wbtop"></span>
+      <span class="slab wall-left-top" id="wltop"></span>
+      <span class="ao-floor-back" id="aob"></span>
+      <span class="ao-floor-left" id="aol"></span>
+      <span class="ao-corner" id="aoc"></span>
+      <div class="floor" id="flooritem"></div>
 
       <div class="item" id="rugitem" style="transform: translate3d({RUGR[0]}px,-1px,{RUGR[1]}px)">
         <span class="rugface"></span>
@@ -557,7 +578,7 @@ def build():
   // 临时：把各个 3D 元素的屏幕投影框报出来（便于 adb 点击验证）
   setTimeout(function () {{
     var out = [];
-    ['flooritem','rugitem','beditem','bowlitem','radioitem','blockitem','window'].forEach(function (id) {{
+    ['flooritem','fedge','redge','wbtop','wltop','aob','aol','aoc','rugitem','beditem','bowlitem','radioitem','blockitem','window'].forEach(function (id) {{
       var el = document.getElementById(id); if (!el) return;
       var t = el.querySelector('.sprite') || el.querySelector('.rugface') || el;
       var b = t.getBoundingClientRect();
