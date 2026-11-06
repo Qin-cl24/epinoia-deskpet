@@ -178,21 +178,146 @@
     transform: translateY(-4.5px) rotateX(-90deg); }
   .bed-p .bx-d { width:44px; height:56px; margin:-28.0px 0 0 -22.0px; background:#e4dff4;
     transform: translateY(4.5px) rotateX(90deg); }
-  .bowl3d { position:absolute; left:0; bottom:0px; width:74px; height:32px; margin-left:-37.0px;
-    transform: translate3d(0px,0,0px); transform-style:preserve-3d; }
-  .bowl3d > i { position:absolute; left:50%; top:50%; display:block; }
-  .bowl3d .bx-f { width:74px; height:32px; margin:-16.0px 0 0 -37.0px; border-radius:0 0 24px 24px;
-    background:linear-gradient(#fbfbfb,#cfcfcf 72%,#b9b9b9); transform: translateZ(13.0px); }
-  .bowl3d .bx-b { width:74px; height:32px; margin:-16.0px 0 0 -37.0px; border-radius:0 0 24px 24px;
-    background:#c9c9c9; transform: translateZ(-13.0px) rotateY(180deg); }
-  .bowl3d .bx-l { width:26px; height:32px; margin:-16.0px 0 0 -13.0px; border-radius:0 0 13px 13px;
-    background:linear-gradient(90deg,#ececec,#b6b6b6); transform: translateX(-37.0px) rotateY(-90deg); }
-  .bowl3d .bx-r { width:26px; height:32px; margin:-16.0px 0 0 -13.0px; border-radius:0 0 13px 13px;
-    background:linear-gradient(90deg,#ececec,#b6b6b6); transform: translateX(37.0px) rotateY(90deg); }
-  .bowl3d .bx-t { width:74px; height:26px; margin:-13.0px 0 0 -37.0px; background:transparent;
-    transform: translateY(-16.0px) rotateX(-90deg); }
-  .bowl3d .bx-d { width:74px; height:26px; margin:-13.0px 0 0 -37.0px; background:#b0b0b0;
-    transform: translateY(16.0px) rotateX(90deg); }
+  /* 圆碗：两段圆柱 + 圆底收口，24 面/段；靠每面亮度差异出球面感 */
+  .bowl8 { position:absolute; left:0; top:0; width:0; height:0; transform-style:preserve-3d; }
+  .bowl8 > i { position:absolute; left:0; top:0; display:block; }
+  .bowl8 .s0 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(223,220,217), rgb(176,170,164));
+    transform: translate3d(28.00px, -16.00px, 0.00px)
+      rotateY(90.00deg); }
+  .bowl8 .s1 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(229,226,223), rgb(181,175,169));
+    transform: translate3d(27.05px, -16.00px, 7.25px)
+      rotateY(75.00deg); }
+  .bowl8 .s2 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(235,232,229), rgb(186,180,174));
+    transform: translate3d(24.25px, -16.00px, 14.00px)
+      rotateY(60.00deg); }
+  .bowl8 .s3 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(240,237,234), rgb(190,184,178));
+    transform: translate3d(19.80px, -16.00px, 19.80px)
+      rotateY(45.00deg); }
+  .bowl8 .s4 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(244,241,238), rgb(193,187,181));
+    transform: translate3d(14.00px, -16.00px, 24.25px)
+      rotateY(30.00deg); }
+  .bowl8 .s5 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(247,244,241), rgb(195,189,183));
+    transform: translate3d(7.25px, -16.00px, 27.05px)
+      rotateY(15.00deg); }
+  .bowl8 .s6 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(248,245,242), rgb(196,190,184));
+    transform: translate3d(0.00px, -16.00px, 28.00px)
+      rotateY(0.00deg); }
+  .bowl8 .s7 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(247,244,241), rgb(195,189,183));
+    transform: translate3d(-7.25px, -16.00px, 27.05px)
+      rotateY(-15.00deg); }
+  .bowl8 .s8 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(244,241,238), rgb(193,187,181));
+    transform: translate3d(-14.00px, -16.00px, 24.25px)
+      rotateY(-30.00deg); }
+  .bowl8 .s9 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(240,237,234), rgb(190,184,178));
+    transform: translate3d(-19.80px, -16.00px, 19.80px)
+      rotateY(-45.00deg); }
+  .bowl8 .s10 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(235,232,229), rgb(186,180,174));
+    transform: translate3d(-24.25px, -16.00px, 14.00px)
+      rotateY(-60.00deg); }
+  .bowl8 .s11 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(229,226,223), rgb(181,175,169));
+    transform: translate3d(-27.05px, -16.00px, 7.25px)
+      rotateY(-75.00deg); }
+  .bowl8 .s12 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(223,220,217), rgb(176,170,164));
+    transform: translate3d(-28.00px, -16.00px, 0.00px)
+      rotateY(-90.00deg); }
+  .bowl8 .s13 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(216,213,210), rgb(171,165,159));
+    transform: translate3d(-27.05px, -16.00px, -7.25px)
+      rotateY(-105.00deg); }
+  .bowl8 .s14 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(210,207,204), rgb(166,160,154));
+    transform: translate3d(-24.25px, -16.00px, -14.00px)
+      rotateY(-120.00deg); }
+  .bowl8 .s15 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(205,202,199), rgb(162,156,150));
+    transform: translate3d(-19.80px, -16.00px, -19.80px)
+      rotateY(-135.00deg); }
+  .bowl8 .s16 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(201,198,195), rgb(159,153,147));
+    transform: translate3d(-14.00px, -16.00px, -24.25px)
+      rotateY(-150.00deg); }
+  .bowl8 .s17 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(199,196,193), rgb(157,151,145));
+    transform: translate3d(-7.25px, -16.00px, -27.05px)
+      rotateY(-165.00deg); }
+  .bowl8 .s18 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(198,195,192), rgb(156,150,144));
+    transform: translate3d(-0.00px, -16.00px, -28.00px)
+      rotateY(-180.00deg); }
+  .bowl8 .s19 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(199,196,193), rgb(157,151,145));
+    transform: translate3d(7.25px, -16.00px, -27.05px)
+      rotateY(-195.00deg); }
+  .bowl8 .s20 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(201,198,195), rgb(159,153,147));
+    transform: translate3d(14.00px, -16.00px, -24.25px)
+      rotateY(-210.00deg); }
+  .bowl8 .s21 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(205,202,199), rgb(162,156,150));
+    transform: translate3d(19.80px, -16.00px, -19.80px)
+      rotateY(-225.00deg); }
+  .bowl8 .s22 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(210,207,204), rgb(166,160,154));
+    transform: translate3d(24.25px, -16.00px, -14.00px)
+      rotateY(-240.00deg); }
+  .bowl8 .s23 { width:9.50px; height:32.00px;
+    margin:-16.00px 0 0 -4.75px; border-radius:0 0 4.75px 4.75px;
+    background:linear-gradient(180deg, rgb(216,213,210), rgb(171,165,159));
+    transform: translate3d(27.05px, -16.00px, -7.25px)
+      rotateY(-255.00deg); }
+  /* 碗口：橘色圆环（中空能看到里面）→ 内壁 → 食物；底部一块椭圆收口 */
+  .bowl .rim { width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%;
+    border:4px solid #ffa93f; background:transparent;
+    box-shadow:0 0 0 1px rgba(255,236,200,.65) inset;
+    transform: translate3d(0,-31.6px,0) rotateX(-90deg); }
+  .bowl .hollow { width:45px; height:45px;
+    margin:-22px 0 0 -22px; border-radius:50%;
+    background:radial-gradient(circle at 50% 62%, #f6d9a8 0 26%, #d8b077 46%, #b8894c 74%, #9a6c36 100%);
+    transform: translate3d(0,-30.8px,0) rotateX(-90deg); }
+  .bowl .meal { width:29px; height:29px;
+    margin:-14px 0 0 -14px; border-radius:50%;
+    background:radial-gradient(circle at 50% 40%, #ffd08a, #ffab52);
+    transform: translate3d(0,-31px,0) rotateX(-90deg); }
+  .bowl .bdisc { width:54px; height:54px;
+    margin:-27px 0 0 -27px; border-radius:50%;
+    background:radial-gradient(circle at 50% 40%, #e2e2e2, #adadad);
+    transform: translate3d(0,-0.5px,0) rotateX(-90deg); }
   .radio3d { position:absolute; left:0; bottom:0px; width:66px; height:50px; margin-left:-33.0px;
     transform: translate3d(0px,0,0px); transform-style:preserve-3d; }
   .radio3d > i { position:absolute; left:50%; top:50%; display:block; }
@@ -241,9 +366,9 @@
   .lamp-shade3d { position:absolute; left:0; bottom:72px; width:52px; height:32px; margin-left:-26.0px;
     transform: translate3d(0px,0,0px); transform-style:preserve-3d; }
   .lamp-shade3d > i { position:absolute; left:50%; top:50%; display:block; }
-  .lamp-shade3d .bx-f { width:52px; height:32px; margin:-16.0px 0 0 -26.0px; border-radius:5px;
+  .lamp-shade3d .bx-f { width:52px; height:32px; margin:-16.0px 0 0 -26.0px; border-radius:2px;
     background:linear-gradient(#ffe9c0,#f0b263); transform: translateZ(20.0px); }
-  .lamp-shade3d .bx-b { width:52px; height:32px; margin:-16.0px 0 0 -26.0px; border-radius:5px;
+  .lamp-shade3d .bx-b { width:52px; height:32px; margin:-16.0px 0 0 -26.0px; border-radius:2px;
     background:#e7a95c; transform: translateZ(-20.0px) rotateY(180deg); }
   .lamp-shade3d .bx-l { width:40px; height:32px; margin:-16.0px 0 0 -20.0px; border-radius:0;
     background:linear-gradient(90deg,#f8cd90,#e2a256); transform: translateX(-26.0px) rotateY(-90deg); }
@@ -253,15 +378,10 @@
     transform: translateY(-16.0px) rotateX(-90deg); }
   .lamp-shade3d .bx-d { width:52px; height:40px; margin:-20.0px 0 0 -26.0px; background:#f4b76a;
     transform: translateY(16.0px) rotateX(90deg); }
-  /* 碗口/食物/碗底这些椭圆的细节面（贴在盒子上） */
-  .bowl .brim-o { width:74px; height:26px; margin:-13px 0 0 -37px; border-radius:50%;
-    background:linear-gradient(#ffc978, #ff9f3d); transform: translate3d(0,-34px,0) rotateX(-90deg); }
-  .bowl .brim-i { width:60px; height:20px; margin:-10px 0 0 -30px; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 40%, #fff3dd, #e9c79a);
-    transform: translate3d(0,-35px,0) rotateX(-90deg); }
-  .bowl .meal { width:42px; height:13px; margin:-6px 0 0 -21px; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 35%, #ffd08a, #ffab52);
-    transform: translate3d(0,-36px,0) rotateX(-90deg); }
+  /* 灯罩上窄下宽：四个侧面切梯形，顶面缩小成灯口 */
+  .lamp-shade3d .bx-f, .lamp-shade3d .bx-b, .lamp-shade3d .bx-l, .lamp-shade3d .bx-r {
+    clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%); }
+  .lamp-shade3d .bx-t { width:34px; height:26px; margin:-13px 0 0 -17px; }
   /* 收音机细节：喇叭 + 两个旋钮 + 天线 */
   .radio .dial { position:absolute; left:9px; bottom:13px; width:24px; height:24px; border-radius:50%;
     background:radial-gradient(circle at 50% 50%, #fff 0 30%, #bdbdbd 32% 60%, #8d8d8d 62%);
@@ -271,8 +391,8 @@
   .radio .ant { position:absolute; left:47px; bottom:50px; width:3px; height:34px;
     background:linear-gradient(#e0e0e0,#9e9e9e); border-radius:2px; transform-origin:50% 100%;
     transform: translateZ(4px) rotate(12deg); }
-  /* 碗口这三个椭圆细节必须绝对定位 + 锚点居中（老坑：漏了会参与正常流被顶偏） */
-  .bowl .brim-o, .bowl .brim-i, .bowl .meal { position:absolute; left:0; top:0; }
+  /* 碗口/食物椭圆：绝对定位 + 锚点居中（老坑：漏了会参与正常流被顶偏） */
+  .bowl .rim, .bowl .hollow, .bowl .meal, .bowl .bdisc { position:absolute; left:0; top:0; }
   
 
   .notes { position:absolute; left:0; bottom:62px; transform:translateX(-50%); font-size:15px; opacity:0; }
@@ -571,10 +691,10 @@
       </div>
 
       <div class="item bowl" id="bowlitem" data-act="eat" data-x="272" data-z="352"
-           data-phys="74,26,38" data-drop="240" data-mass="1.5"
+           data-phys="56,56,36" data-drop="240" data-mass="1.5"
            style="transform: translate3d(272px,0,352px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
-        <div class="sprite"><div class="bowl3d"><i class="bx-f"></i><i class="bx-b"></i><i class="bx-l"></i><i class="bx-r"></i><i class="bx-t"></i><i class="bx-d"></i></div><span class="brim-o"></span><span class="brim-i"></span><span class="meal"></span></div>
+        <div class="sprite"><div class="bowl8"><i class="s0"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i><i class="s6"></i><i class="s7"></i></div><span class="bdisc"></span><span class="rim"></span><span class="hollow"></span><span class="meal"></span></div>
       </div>
 
       <div class="item radio" id="radioitem" data-act="dance" data-x="350" data-z="140"

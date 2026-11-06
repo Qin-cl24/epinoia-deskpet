@@ -25,6 +25,7 @@
 ⚠️ 改小屋的正确姿势：改这个脚本 → 跑一遍。room.html 是产物，别直接手改（会被覆盖）。
 """
 import json
+import math
 import os
 import sys
 
@@ -201,6 +202,63 @@ def box_dom(name):
             '<i class="bx-r"></i><i class="bx-t"></i><i class="bx-d"></i></div>')
 
 
+def bowl_css(name='bowl8', r=28, h=32, n=24):
+    """半圆中空的圆碗：用「两段半径 + 圆底」拼出碗的收口轮廓。
+    上段半径 r（碗沿），下段收到 0.8r，底部再用一块椭圆收口；
+    每段 n 个侧面、面宽多给 30% 让相邻面重叠消缝（8 个面会露出棱，24 个才顺）。"""
+    bands = [(1.00, -h, 0)]   # 单段圆筒：每面底部半圆角，整体轮廓就是「半个球」
+    css = [f"""
+  /* 圆碗：两段圆柱 + 圆底收口，{n} 面/段；靠每面亮度差异出球面感 */
+  .{name} {{ position:absolute; left:0; top:0; width:0; height:0; transform-style:preserve-3d; }}
+  .{name} > i {{ position:absolute; left:0; top:0; display:block; }}"""]
+    idx = 0
+    for bi, (fr, y_top, y_bot) in enumerate(bands):
+        rr = r * fr
+        w = 2 * rr * math.sin(math.pi / n) * 1.3
+        bh = y_bot - y_top
+        for k in range(n):
+            phi = (360.0 / n) * k + (180.0 / n) * bi
+            rad = math.radians(phi)
+            shade = 0.80 + 0.20 * (math.sin(rad) * 0.5 + 0.5)
+            top = int(248 * shade); bot = int(196 * shade)
+            r_bottom = w / 2
+            css.append(f"""
+  .{name} .s{idx} {{ width:{w:.2f}px; height:{bh:.2f}px;
+    margin:{-bh / 2:.2f}px 0 0 {-w / 2:.2f}px; border-radius:0 0 {r_bottom:.2f}px {r_bottom:.2f}px;
+    background:linear-gradient(180deg, rgb({top},{top - 3},{top - 6}), rgb({bot},{bot - 6},{bot - 12}));
+    transform: translate3d({rr * math.cos(rad):.2f}px, {y_top + bh / 2:.2f}px, {rr * math.sin(rad):.2f}px)
+      rotateY({90 - phi:.2f}deg); }}""")
+            idx += 1
+    css.append(f"""
+  /* 碗口：橘色圆环（中空能看到里面）→ 内壁 → 食物；底部一块椭圆收口 */
+  .bowl .rim {{ width:{2 * r}px; height:{2 * r}px; margin:{-r}px 0 0 {-r}px; border-radius:50%;
+    border:{max(4, r // 6)}px solid #ffa93f; background:transparent;
+    box-shadow:0 0 0 1px rgba(255,236,200,.65) inset;
+    transform: translate3d(0,{-h + 0.4}px,0) rotateX(-90deg); }}
+  .bowl .hollow {{ width:{int(1.62 * r)}px; height:{int(1.62 * r)}px;
+    margin:{-int(0.81 * r)}px 0 0 {-int(0.81 * r)}px; border-radius:50%;
+    background:radial-gradient(circle at 50% 62%, #f6d9a8 0 26%, #d8b077 46%, #b8894c 74%, #9a6c36 100%);
+    transform: translate3d(0,{-h + 1.2}px,0) rotateX(-90deg); }}
+  .bowl .meal {{ width:{int(1.05 * r)}px; height:{int(1.05 * r)}px;
+    margin:{-int(0.525 * r)}px 0 0 {-int(0.525 * r)}px; border-radius:50%;
+    background:radial-gradient(circle at 50% 40%, #ffd08a, #ffab52);
+    transform: translate3d(0,{-h + 1}px,0) rotateX(-90deg); }}
+  .bowl .bdisc {{ width:{int(1.94 * r)}px; height:{int(1.94 * r)}px;
+    margin:{-int(0.97 * r)}px 0 0 {-int(0.97 * r)}px; border-radius:50%;
+    background:radial-gradient(circle at 50% 40%, #e2e2e2, #adadad);
+    transform: translate3d(0,-0.5px,0) rotateX(-90deg); }}""")
+    return ''.join(css)
+
+
+def bowl_dom(name='bowl8', n=8):
+    return ('<div class="' + name + '">' + ''.join(f'<i class="s{k}"></i>' for k in range(n)) + '</div>')
+
+
+BOWL8_SPRITE = ('<div class="sprite">' + bowl_dom() +
+                '<span class="bdisc"></span><span class="rim"></span><span class="hollow"></span><span class="meal"></span></div>')
+
+
+
 # ── 四件家具按真盒子重建 ──
 FURN_CSS = (
     box_css('bed-m', 150, 40, 110, front='linear-gradient(#ffffff,#ece7fb)',
@@ -213,9 +271,7 @@ FURN_CSS = (
             bottom='#8b73dd', radius='4px') +
     box_css('bed-p', 44, 9, 56, x0=-46, y0=40, front='#fbfaff', back='#eeeaf8',
             side='#eae6f8', top='linear-gradient(#ffffff,#f4f1fd)', bottom='#e4dff4', radius='8px') +
-    box_css('bowl3d', 74, 32, 26, front='linear-gradient(#fbfbfb,#cfcfcf 72%,#b9b9b9)',
-            back='#c9c9c9', side='linear-gradient(90deg,#ececec,#b6b6b6)',
-            top='transparent', bottom='#b0b0b0', radius='0 0 24px 24px', side_radius='0 0 13px 13px') +
+    bowl_css() +
     box_css('radio3d', 66, 50, 40, front='linear-gradient(#8d6e63,#6d4c41)',
             back='#5a3f36', side='linear-gradient(90deg,#7a5a4f,#57403a)',
             top='linear-gradient(#a1887f,#8d6e63)', bottom='#46302a', radius='6px') +
@@ -225,17 +281,13 @@ FURN_CSS = (
             back='#9a6a38', side='#b07f45', top='#d8a878', bottom='#8a5a2e', radius='3px') +
     box_css('lamp-shade3d', 52, 32, 40, y0=72, front='linear-gradient(#ffe9c0,#f0b263)',
             back='#e7a95c', side='linear-gradient(90deg,#f8cd90,#e2a256)',
-            top='linear-gradient(#fff7e2,#ffe6b8)', bottom='#f4b76a', radius='5px') +
+            top='linear-gradient(#fff7e2,#ffe6b8)', bottom='#f4b76a', radius='2px') +
     """
-  /* 碗口/食物/碗底这些椭圆的细节面（贴在盒子上） */
-  .bowl .brim-o { width:74px; height:26px; margin:-13px 0 0 -37px; border-radius:50%;
-    background:linear-gradient(#ffc978, #ff9f3d); transform: translate3d(0,-34px,0) rotateX(-90deg); }
-  .bowl .brim-i { width:60px; height:20px; margin:-10px 0 0 -30px; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 40%, #fff3dd, #e9c79a);
-    transform: translate3d(0,-35px,0) rotateX(-90deg); }
-  .bowl .meal { width:42px; height:13px; margin:-6px 0 0 -21px; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 35%, #ffd08a, #ffab52);
-    transform: translate3d(0,-36px,0) rotateX(-90deg); }
+  /* 灯罩上窄下宽：四个侧面切梯形，顶面缩小成灯口 */
+  .lamp-shade3d .bx-f, .lamp-shade3d .bx-b, .lamp-shade3d .bx-l, .lamp-shade3d .bx-r {
+    clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%); }
+  .lamp-shade3d .bx-t { width:34px; height:26px; margin:-13px 0 0 -17px; }""" +
+    """
   /* 收音机细节：喇叭 + 两个旋钮 + 天线 */
   .radio .dial { position:absolute; left:9px; bottom:13px; width:24px; height:24px; border-radius:50%;
     background:radial-gradient(circle at 50% 50%, #fff 0 30%, #bdbdbd 32% 60%, #8d8d8d 62%);
@@ -245,13 +297,12 @@ FURN_CSS = (
   .radio .ant { position:absolute; left:47px; bottom:50px; width:3px; height:34px;
     background:linear-gradient(#e0e0e0,#9e9e9e); border-radius:2px; transform-origin:50% 100%;
     transform: translateZ(4px) rotate(12deg); }
-  /* 碗口这三个椭圆细节必须绝对定位 + 锚点居中（老坑：漏了会参与正常流被顶偏） */
-  .bowl .brim-o, .bowl .brim-i, .bowl .meal { position:absolute; left:0; top:0; }
+  /* 碗口/食物椭圆：绝对定位 + 锚点居中（老坑：漏了会参与正常流被顶偏） */
+  .bowl .rim, .bowl .hollow, .bowl .meal, .bowl .bdisc { position:absolute; left:0; top:0; }
   """)
 
 BED_SPRITE = '<div class="sprite">' + box_dom('bed-m') + box_dom('bed-h') + box_dom('bed-q') + box_dom('bed-p') + '</div>'
-BOWL_SPRITE = ('<div class="sprite">' + box_dom('bowl3d') +
-               '<span class="brim-o"></span><span class="brim-i"></span><span class="meal"></span></div>')
+BOWL_SPRITE = BOWL8_SPRITE
 RADIO_SPRITE = ('<div class="sprite">' + box_dom('radio3d') +
                 '<span class="dial"></span><span class="lamp"></span><span class="ant"></span></div>')
 LAMP_SPRITE = ('<div class="sprite">' + box_dom('lamp-base3d') + box_dom('lamp-pole3d') +
@@ -546,7 +597,7 @@ def build():
       </div>
 
       <div class="item bowl" id="bowlitem" data-act="eat" data-x="272" data-z="352"
-           data-phys="74,26,38" data-drop="240" data-mass="1.5"
+           data-phys="56,56,36" data-drop="240" data-mass="1.5"
            style="transform: translate3d(272px,0,352px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
         {BOWL_SPRITE}
