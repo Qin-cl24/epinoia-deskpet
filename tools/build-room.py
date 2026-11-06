@@ -271,9 +271,10 @@ def build():
   .floor-front {{ width:{W + 9}px; height:13px; margin:-6.5px 0 0 -{(W + 9)//2}px;
     background:linear-gradient(#b0763f, #7d4f28);
     transform: translate3d({W//2 - 4.5}px, 6px, {D}px); }}
-  .floor-right {{ width:{D}px; height:13px; margin:-6.5px 0 0 -{D//2}px;
+  /* 与左墙侧同理：向右加宽一个墙厚（9px）到 z=-9，铺到后墙右端面正下方，右后角连成一条 */
+  .floor-right {{ width:{D + 9}px; height:13px; margin:-6.5px 0 0 -{(D + 9)//2}px;
     background:linear-gradient(#bd8248, #8a5a2e);
-    transform: translate3d({W}px, 6px, {D//2}px) rotateY(-90deg); }}
+    transform: translate3d({W}px, 6px, {D//2 - 4.5}px) rotateY(-90deg); }}
   /* 墙顶厚板：盒心 -h/2，translate -H 后平面正好落在墙顶 y=-H */
   .wall-back-top {{ width:{W}px; height:9px; margin:-4.5px 0 0 -{W//2}px;
     background:linear-gradient(#a98a63, #8a6c47);
@@ -360,8 +361,9 @@ def build():
   /* 饭碗 / 收音机（都带右侧暗面，看着有厚度）*/
   .bowl {{ cursor:pointer; }}
   .bowl .cup {{ width:74px; height:36px; margin:-18px 0 0 -37px; border-radius:0 0 34px 34px;
-    background:linear-gradient(#f4f4f4, #c6c6c6);
-    box-shadow: inset -9px 0 0 rgba(0,0,0,.10), inset 0 -8px 0 rgba(0,0,0,.06);
+    background:linear-gradient(#fbfbfb, #cfcfcf 72%, #b9b9b9);
+    box-shadow: inset -14px 0 10px -8px rgba(0,0,0,.22), inset 0 -9px 8px -6px rgba(0,0,0,.16),
+      inset 10px 0 10px -10px rgba(255,255,255,.75);
     transform: translate3d(0,-18px,0); }}
   /* 碗口外圈（平躺 y=-36）*/
   .bowl .brim-o {{ width:74px; height:26px; margin:-13px 0 0 -37px; border-radius:50%;
@@ -375,6 +377,14 @@ def build():
   .bowl .meal {{ width:42px; height:13px; margin:-6px 0 0 -21px; border-radius:50%;
     background:radial-gradient(ellipse at 50% 35%, #ffd08a, #ffab52);
     transform: translate3d(0,-38px,0) rotateX(-90deg); }}
+  /* 立体感补面（2026-11-04）：碗底椭圆 + 内壁暗环 + 右侧面，原来只有正脸和三个平躺椭圆 */
+  .bowl .foot {{ width:44px; height:14px; margin:-7px 0 0 -22px; border-radius:50%;
+    background:radial-gradient(ellipse at 50% 40%, #cfcfcf, #8f8f8f);
+    transform: translate3d(0,-1px,0) rotateX(-90deg); }}
+  .bowl .inner {{ width:64px; height:20px; margin:-10px 0 0 -32px; border-radius:50%;
+    background:radial-gradient(ellipse at 50% 45%, #d9b483, #b0854f);
+    transform: translate3d(0,-34px,0) rotateX(-90deg); }}
+  /* 侧面这块去掉了：碗身是圆弧，垂直侧板在投影上会脱开成一片舌头，改由碗身自身明暗表现圆度 */
   .radio {{ cursor:pointer; }}
   .radio .case {{ position:absolute; left:0; bottom:0; width:66px; height:50px; transform: translateX(-50%);
     border-radius:7px; background:linear-gradient(#8d6e63, #6d4c41);
@@ -397,6 +407,7 @@ def build():
   /* ⚠️ 拼装体的零件必须绝对定位：不写 position:absolute 就会参与 .sprite 的正常流，
      位置被兄弟元素的高度整体顶偏（真机踩过：收音机顶面/天线浮在机身斜上方一大截）。*/
   .bowl .cup, .bowl .brim-o, .bowl .brim-i, .bowl .meal,
+  .bowl .foot, .bowl .inner, .bowl .side,
   .radio .rtop, .radio .rside, .radio .ant {{ position:absolute; left:0; top:0; }}
 
   .notes {{ position:absolute; left:0; bottom:62px; transform:translateX(-50%); font-size:15px; opacity:0; }}
@@ -529,7 +540,7 @@ def build():
            data-phys="74,26,38" data-drop="240" data-mass="1.5"
            style="transform: translate3d(272px,0,352px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
-        <div class="sprite"><div class="cup"></div><div class="brim-o"></div><div class="brim-i"></div><div class="meal"></div></div>
+        <div class="sprite"><div class="foot"></div><div class="cup"></div><div class="brim-o"></div><div class="inner"></div><div class="brim-i"></div><div class="meal"></div></div>
       </div>
 
       <div class="item radio" id="radioitem" data-act="dance" data-x="350" data-z="140"
