@@ -166,12 +166,104 @@ DECOR_DOM_LEFT = """
           </div>
         </div>"""
 
-LAMP_DOM = """
+# ===== 真 6 面盒子（2026-11-04 宝宝要求：家具做成真立方体，方便以后单个物体旋转）=====
+def box_css(name, w, h, d, y0=0, x0=0, z0=0, front='#fff', back=None, side=None,
+            top=None, bottom=None, radius='0', side_radius='0'):
+    """生成一个真 6 面盒子：w 宽 / h 高 / d 深（CSS px）。
+    盒子底边落在锚点上方 y0 处；x0/z0 是相对锚点的偏移。
+    面：front 朝观察者(+z)、back 朝后(-z)、left/right 左右、top 朝上、bottom 朝下。
+    y 向下为正，所以「上」是负 y：top 面用 rotateX(-90deg)、bottom 用 rotateX(90deg)。"""
+    back = back if back is not None else front
+    side = side if side is not None else front
+    top = top if top is not None else front
+    bottom = bottom if bottom is not None else side
+    c = name
+    return f"""
+  .{c} {{ position:absolute; left:0; bottom:{y0}px; width:{w}px; height:{h}px; margin-left:{-w / 2}px;
+    transform: translate3d({x0}px,0,{z0}px); transform-style:preserve-3d; }}
+  .{c} > i {{ position:absolute; left:50%; top:50%; display:block; }}
+  .{c} .bx-f {{ width:{w}px; height:{h}px; margin:{-h / 2}px 0 0 {-w / 2}px; border-radius:{radius};
+    background:{front}; transform: translateZ({d / 2}px); }}
+  .{c} .bx-b {{ width:{w}px; height:{h}px; margin:{-h / 2}px 0 0 {-w / 2}px; border-radius:{radius};
+    background:{back}; transform: translateZ({-d / 2}px) rotateY(180deg); }}
+  .{c} .bx-l {{ width:{d}px; height:{h}px; margin:{-h / 2}px 0 0 {-d / 2}px; border-radius:{side_radius};
+    background:{side}; transform: translateX({-w / 2}px) rotateY(-90deg); }}
+  .{c} .bx-r {{ width:{d}px; height:{h}px; margin:{-h / 2}px 0 0 {-d / 2}px; border-radius:{side_radius};
+    background:{side}; transform: translateX({w / 2}px) rotateY(90deg); }}
+  .{c} .bx-t {{ width:{w}px; height:{d}px; margin:{-d / 2}px 0 0 {-w / 2}px; background:{top};
+    transform: translateY({-h / 2}px) rotateX(-90deg); }}
+  .{c} .bx-d {{ width:{w}px; height:{d}px; margin:{-d / 2}px 0 0 {-w / 2}px; background:{bottom};
+    transform: translateY({h / 2}px) rotateX(90deg); }}"""
+
+
+def box_dom(name):
+    return ('<div class="' + name + '"><i class="bx-f"></i><i class="bx-b"></i><i class="bx-l"></i>'
+            '<i class="bx-r"></i><i class="bx-t"></i><i class="bx-d"></i></div>')
+
+
+# ── 四件家具按真盒子重建 ──
+FURN_CSS = (
+    box_css('bed-m', 150, 40, 110, front='linear-gradient(#ffffff,#ece7fb)',
+            back='#e2dbf3', side='linear-gradient(90deg,#e6e0f8,#d8cff1)',
+            top='linear-gradient(#ffffff,#f2eefc)', bottom='#cfc7e6', radius='5px') +
+    box_css('bed-h', 13, 92, 110, x0=-74, front='linear-gradient(100deg,#d8ac7d,#a9794f)',
+            back='#b8865a', side='#c9a070', top='#e2bd90', bottom='#a9794f', radius='6px 6px 3px 3px') +
+    box_css('bed-q', 92, 7, 114, x0=28, y0=40, front='linear-gradient(#b6a2f1,#9d86e8)',
+            back='#9d86e8', side='#a790ec', top='linear-gradient(#cbbcf6,#a893ec)',
+            bottom='#8b73dd', radius='4px') +
+    box_css('bed-p', 44, 9, 56, x0=-46, y0=40, front='#fbfaff', back='#eeeaf8',
+            side='#eae6f8', top='linear-gradient(#ffffff,#f4f1fd)', bottom='#e4dff4', radius='8px') +
+    box_css('bowl3d', 74, 32, 26, front='linear-gradient(#fbfbfb,#cfcfcf 72%,#b9b9b9)',
+            back='#c9c9c9', side='linear-gradient(90deg,#ececec,#b6b6b6)',
+            top='transparent', bottom='#b0b0b0', radius='0 0 24px 24px', side_radius='0 0 13px 13px') +
+    box_css('radio3d', 66, 50, 40, front='linear-gradient(#8d6e63,#6d4c41)',
+            back='#5a3f36', side='linear-gradient(90deg,#7a5a4f,#57403a)',
+            top='linear-gradient(#a1887f,#8d6e63)', bottom='#46302a', radius='6px') +
+    box_css('lamp-base3d', 40, 12, 40, front='#c98f4f', back='#a9743c', side='#bb8347',
+            top='linear-gradient(#e0ad74,#c98f4f)', bottom='#8a5a2e', radius='50%/40%') +
+    box_css('lamp-pole3d', 7, 62, 7, y0=12, front='linear-gradient(#d8a878,#8a5a2e)',
+            back='#9a6a38', side='#b07f45', top='#d8a878', bottom='#8a5a2e', radius='3px') +
+    box_css('lamp-shade3d', 52, 32, 40, y0=72, front='linear-gradient(#ffe9c0,#f0b263)',
+            back='#e7a95c', side='linear-gradient(90deg,#f8cd90,#e2a256)',
+            top='linear-gradient(#fff7e2,#ffe6b8)', bottom='#f4b76a', radius='5px') +
+    """
+  /* 碗口/食物/碗底这些椭圆的细节面（贴在盒子上） */
+  .bowl .brim-o { width:74px; height:26px; margin:-13px 0 0 -37px; border-radius:50%;
+    background:linear-gradient(#ffc978, #ff9f3d); transform: translate3d(0,-34px,0) rotateX(-90deg); }
+  .bowl .brim-i { width:60px; height:20px; margin:-10px 0 0 -30px; border-radius:50%;
+    background:radial-gradient(ellipse at 50% 40%, #fff3dd, #e9c79a);
+    transform: translate3d(0,-35px,0) rotateX(-90deg); }
+  .bowl .meal { width:42px; height:13px; margin:-6px 0 0 -21px; border-radius:50%;
+    background:radial-gradient(ellipse at 50% 35%, #ffd08a, #ffab52);
+    transform: translate3d(0,-36px,0) rotateX(-90deg); }
+  /* 收音机细节：喇叭 + 两个旋钮 + 天线 */
+  .radio .dial { position:absolute; left:9px; bottom:13px; width:24px; height:24px; border-radius:50%;
+    background:radial-gradient(circle at 50% 50%, #fff 0 30%, #bdbdbd 32% 60%, #8d8d8d 62%);
+    transform: translateZ(20.5px); }
+  .radio .lamp { position:absolute; left:44px; bottom:20px; width:9px; height:9px; border-radius:50%;
+    background:#ffd54f; box-shadow:0 12px 0 -1px #ffd54f; transform: translateZ(20.5px); }
+  .radio .ant { position:absolute; left:47px; bottom:50px; width:3px; height:34px;
+    background:linear-gradient(#e0e0e0,#9e9e9e); border-radius:2px; transform-origin:50% 100%;
+    transform: translateZ(4px) rotate(12deg); }
+  /* 碗口这三个椭圆细节必须绝对定位 + 锚点居中（老坑：漏了会参与正常流被顶偏） */
+  .bowl .brim-o, .bowl .brim-i, .bowl .meal { position:absolute; left:0; top:0; }
+  """)
+
+BED_SPRITE = '<div class="sprite">' + box_dom('bed-m') + box_dom('bed-h') + box_dom('bed-q') + box_dom('bed-p') + '</div>'
+BOWL_SPRITE = ('<div class="sprite">' + box_dom('bowl3d') +
+               '<span class="brim-o"></span><span class="brim-i"></span><span class="meal"></span></div>')
+RADIO_SPRITE = ('<div class="sprite">' + box_dom('radio3d') +
+                '<span class="dial"></span><span class="lamp"></span><span class="ant"></span></div>')
+LAMP_SPRITE = ('<div class="sprite">' + box_dom('lamp-base3d') + box_dom('lamp-pole3d') +
+               box_dom('lamp-shade3d') + '<span class="glow"></span></div>')
+
+
+LAMP_DOM = f"""
       <div class="item lamp" id="lampitem" data-x="60" data-z="330" data-phys="44,44,100"
            data-drop="280" data-mass="3" style="transform: translate3d(60px,0,330px)">
         <span class="pshadow" style="width:96px;height:76px"></span>
         <span class="lamp-pool"></span>
-        <div class="sprite"><span class="lampbase"></span><span class="pole"></span><span class="shade"></span><span class="glow"></span></div>
+        {LAMP_SPRITE}
       </div>"""
 
 
@@ -325,90 +417,7 @@ def build():
     background: radial-gradient(ellipse at 50% 42%, #ffe9c6, #efc78a);
     box-shadow: inset 0 0 0 6px rgba(255,255,255,.5); }}
 
-  /* 床（2026-11-03 第三版，真立体）：床垫盒子（正面+顶面+右侧面）+ 床头板 + 枕头 + 被子
-     所有面都是 .sprite（preserve-3d）的子元素；盒子中心用负 margin 对齐锚点，再 translate3d 到各自位置。*/
-  .bed {{ cursor:pointer; }}
-  .bed .f {{ position:absolute; left:0; top:0; }}
-  /* 床垫正面（朝观察者，z=+55）*/
-  .bed .m_front {{ width:150px; height:40px; margin:-20px 0 0 -75px; border-radius:5px;
-    background:linear-gradient(#ffffff, #ece7fb); box-shadow:inset 0 -6px 0 rgba(0,0,0,.06);
-    transform: translate3d(0,-20px,55px); }}
-  /* 床垫顶面（平躺 y=-40）*/
-  .bed .m_top {{ width:150px; height:110px; margin:-55px 0 0 -75px; border-radius:5px;
-    background:linear-gradient(#ffffff, #f2eefc);
-    transform: translate3d(0,-40px,0) rotateX(-90deg); }}
-  /* 床垫右侧面（x=+75，朝右）*/
-  .bed .m_side {{ width:110px; height:40px; margin:-20px 0 0 -55px;
-    background:linear-gradient(90deg, #e6e0f8, #d3c9ef);
-    transform: translate3d(75px,-20px,0) rotateY(90deg); }}
-  /* 床头板：竖在左端、贴左墙（x=-75，朝右的面）*/
-  .bed .m_head {{ width:110px; height:92px; margin:-46px 0 0 -55px; border-radius:6px 6px 3px 3px;
-    background:linear-gradient(100deg, #d8ac7d, #a9794f); box-shadow:inset 0 4px 0 rgba(255,255,255,.25);
-    transform: translate3d(-75px,-46px,0) rotateY(90deg); }}
-  /* 枕头（躺在床面上，靠床头那头）*/
-  .bed .m_pillow {{ width:44px; height:62px; margin:-31px 0 0 -22px; border-radius:12px;
-    background:linear-gradient(#ffffff, #f4f1fd); box-shadow:0 2px 6px rgba(60,35,15,.18);
-    transform: translate3d(-46px,-42px,0) rotateX(-90deg); }}
-  /* 被子：铺在床面右半边（y=-41，比床面高 1px 免得打架）*/
-  .bed .m_quilt {{ width:92px; height:112px; margin:-56px 0 0 -46px; border-radius:5px;
-    background:linear-gradient(#c3b2f4, #9d86e8);
-    transform: translate3d(28px,-41px,0) rotateX(-90deg); }}
-  /* 被子垂下来的前挡（z=+56，正面）*/
-  .bed .m_flap {{ width:92px; height:24px; margin:-12px 0 0 -46px; border-radius:0 0 5px 5px;
-    background:linear-gradient(#a790ec, #8b73dd);
-    transform: translate3d(28px,-12px,56px); }}
-
-  /* 饭碗 / 收音机（都带右侧暗面，看着有厚度）*/
-  .bowl {{ cursor:pointer; }}
-  .bowl .cup {{ width:74px; height:36px; margin:-18px 0 0 -37px; border-radius:0 0 34px 34px;
-    background:linear-gradient(#fbfbfb, #cfcfcf 72%, #b9b9b9);
-    box-shadow: inset -14px 0 10px -8px rgba(0,0,0,.22), inset 0 -9px 8px -6px rgba(0,0,0,.16),
-      inset 10px 0 10px -10px rgba(255,255,255,.75);
-    transform: translate3d(0,-18px,0); }}
-  /* 碗口外圈（平躺 y=-36）*/
-  .bowl .brim-o {{ width:74px; height:26px; margin:-13px 0 0 -37px; border-radius:50%;
-    background:linear-gradient(#ffc978, #ff9f3d);
-    transform: translate3d(0,-36px,0) rotateX(-90deg); }}
-  /* 碗口内壁（稍高一点、稍小）*/
-  .bowl .brim-i {{ width:60px; height:20px; margin:-10px 0 0 -30px; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 40%, #fff3dd, #e9c79a);
-    transform: translate3d(0,-37px,0) rotateX(-90deg); }}
-  /* 碗里的食物 */
-  .bowl .meal {{ width:42px; height:13px; margin:-6px 0 0 -21px; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 35%, #ffd08a, #ffab52);
-    transform: translate3d(0,-38px,0) rotateX(-90deg); }}
-  /* 立体感补面（2026-11-04）：碗底椭圆 + 内壁暗环 + 右侧面，原来只有正脸和三个平躺椭圆 */
-  .bowl .foot {{ width:44px; height:14px; margin:-7px 0 0 -22px; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 40%, #cfcfcf, #8f8f8f);
-    transform: translate3d(0,-1px,0) rotateX(-90deg); }}
-  .bowl .inner {{ width:64px; height:20px; margin:-10px 0 0 -32px; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 45%, #d9b483, #b0854f);
-    transform: translate3d(0,-34px,0) rotateX(-90deg); }}
-  /* 侧面这块去掉了：碗身是圆弧，垂直侧板在投影上会脱开成一片舌头，改由碗身自身明暗表现圆度 */
-  .radio {{ cursor:pointer; }}
-  .radio .case {{ position:absolute; left:0; bottom:0; width:66px; height:50px; transform: translateX(-50%);
-    border-radius:7px; background:linear-gradient(#8d6e63, #6d4c41);
-    box-shadow:0 8px 14px rgba(60,35,15,.34), inset -8px 0 0 rgba(0,0,0,.18); }}
-  .radio .dial {{ position:absolute; left:-18px; bottom:22px; width:22px; height:22px; border-radius:50%;
-    background:radial-gradient(circle at 50% 50%, #fff 0 30%, #bdbdbd 32% 60%, #8d8d8d 62%); }}
-  .radio .lamp {{ position:absolute; left:14px; bottom:26px; width:9px; height:9px; border-radius:50%;
-    background:#ffd54f; box-shadow:0 -13px 0 -1px #ffd54f; }}
-  /* 收音机顶面（平躺在 y=-50 的平面）和右侧面（x=+33 的平面）*/
-  .radio .rtop {{ width:66px; height:40px; margin:-20px 0 0 -33px; background:linear-gradient(#a1887f, #8d6e63);
-    transform: translateY(-50px) rotateX(-90deg); border-radius:4px;
-    box-shadow: inset 0 0 0 2px rgba(255,255,255,.16); }}
-  .radio .rside {{ width:40px; height:50px; margin:-25px 0 0 -20px;
-    background:linear-gradient(90deg, #7a5a4f, #5d4037);
-    transform: translate3d(33px,-25px,0) rotateY(90deg); border-radius:0 4px 4px 0; }}
-  /* 天线：细杆立在右侧顶上 */
-  .radio .ant {{ width:3px; height:34px; margin:0 0 0 -1.5px;
-    background:linear-gradient(#e0e0e0, #9e9e9e); border-radius:2px;
-    transform: translate3d(24px,-84px,4px) rotateZ(12deg); }}
-  /* ⚠️ 拼装体的零件必须绝对定位：不写 position:absolute 就会参与 .sprite 的正常流，
-     位置被兄弟元素的高度整体顶偏（真机踩过：收音机顶面/天线浮在机身斜上方一大截）。*/
-  .bowl .cup, .bowl .brim-o, .bowl .brim-i, .bowl .meal,
-  .bowl .foot, .bowl .inner, .bowl .side,
-  .radio .rtop, .radio .rside, .radio .ant {{ position:absolute; left:0; top:0; }}
+{FURN_CSS}
 
   .notes {{ position:absolute; left:0; bottom:62px; transform:translateX(-50%); font-size:15px; opacity:0; }}
   .notes.on {{ opacity:1; animation: floatUp 1.4s ease-in-out infinite; }}
@@ -533,21 +542,21 @@ def build():
            data-phys="150,110,44" data-drop="160" data-mass="24"
            style="transform: translate3d(78px,0,140px)">
         <span class="pshadow" style="width:180px;height:140px"></span>
-        <div class="sprite"><div class="f m_head"></div><div class="f m_side"></div><div class="f m_front"></div><div class="f m_top"></div><div class="f m_quilt"></div><div class="f m_flap"></div><div class="f m_pillow"></div></div>
+        {BED_SPRITE}
       </div>
 
       <div class="item bowl" id="bowlitem" data-act="eat" data-x="272" data-z="352"
            data-phys="74,26,38" data-drop="240" data-mass="1.5"
            style="transform: translate3d(272px,0,352px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
-        <div class="sprite"><div class="foot"></div><div class="cup"></div><div class="brim-o"></div><div class="inner"></div><div class="brim-i"></div><div class="meal"></div></div>
+        {BOWL_SPRITE}
       </div>
 
       <div class="item radio" id="radioitem" data-act="dance" data-x="350" data-z="140"
            data-phys="66,40,50" data-drop="200" data-mass="6"
            style="transform: translate3d(350px,0,140px)">
         <span class="pshadow" style="width:120px;height:90px"></span>
-        <div class="sprite"><div class="case"></div><div class="rtop"></div><div class="rside"></div><div class="dial"></div><div class="lamp"></div><div class="ant"></div></div>
+        {RADIO_SPRITE}
         <span class="notes" id="notes">🎵</span>
       </div>{LAMP_DOM}
 
