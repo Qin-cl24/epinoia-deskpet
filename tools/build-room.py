@@ -559,6 +559,16 @@ def build():
   .formbtn.on {{ background:#e6a86b; color:#fff; }}
   .close {{ width:34px; height:34px; border-radius:50%; font-size:16px; }}
   .hint {{ font-size:11px; color:#a58b74; margin-left:auto; }}
+  /* ===== 交互菜单：点角色时在它头顶弹出的一排按钮 ===== */
+  .actmenu {{ position:fixed; left:0; top:0; display:flex; flex-wrap:wrap; justify-content:center;
+    gap:6px; padding:8px 10px; border-radius:16px; max-width:min(320px, 84vw);
+    background:rgba(60,40,24,.86); box-shadow:0 8px 22px rgba(0,0,0,.35); z-index:30;
+    transform:translate(-50%,-100%) scale(.92); transform-origin:50% 100%;
+    opacity:0; pointer-events:none; transition:opacity .14s, transform .14s; }}
+  .actmenu.on {{ opacity:1; pointer-events:auto; transform:translate(-50%,-100%) scale(1); }}
+  .actmenu button {{ border:none; border-radius:12px; padding:8px 9px; font-size:12px; cursor:pointer;
+    background:#f0dcc8; color:#5a4636; white-space:nowrap; }}
+  .actmenu button:active {{ background:#e6a86b; color:#fff; }}
   .bubble {{ position:fixed; left:50%; top:22%; transform:translateX(-50%); background:#fff; color:#5a4636;
     padding:8px 14px; border-radius:16px; font-size:14px; box-shadow:0 6px 16px rgba(0,0,0,.22);
     opacity:0; transition: opacity .18s, transform .18s; pointer-events:none; white-space:nowrap; z-index:20; }}
@@ -638,14 +648,23 @@ def build():
     </div>
   </div>
 
+  <div class="actmenu" id="actmenu">
+    <button data-menu="sleep">😴 睡</button>
+    <button data-menu="eat">🍚 吃</button>
+    <button data-menu="dance">🎵 听</button>
+    <button data-menu="look">🪟 窗</button>
+    <button data-menu="form">🔁 换</button>
+    <button data-menu="hide">🙈 收</button>
+  </div>
   <div class="bubble" id="bubble"></div>
 
   <div class="top">
     <span class="title">🏠 小屋</span>
-    <button class="formbtn" id="btn-block">🐣 方块</button>
+    <button class="formbtn on" id="btn-block">🐣 方块</button>
     <button class="formbtn" id="btn-fox">🦊 狐狐</button>
-    <button class="formbtn on" id="btn-none">👀 隐藏</button>
-    <span class="hint">点家具试试</span>
+    <button class="formbtn" id="btn-none">👀 隐藏</button>
+    <button class="formbtn" id="btn-drop">🔄 重落</button>
+    <span class="hint">点角色试试</span>
     <button class="close" id="gear">⚙️</button>
     <button class="close" id="close">✕</button>
   </div>
@@ -720,14 +739,6 @@ def build():
     }});
   }});
   document.getElementById('window').addEventListener('click', function () {{ doAct('look', 242, 120); }});
-  document.getElementById('foxhit').addEventListener('click', function () {{
-    note('tap fox'); room.classList.add('bounce'); say(pick(SAY.idle), 1500);
-    setTimeout(function () {{ room.classList.remove('bounce'); }}, 500);
-  }});
-  document.getElementById('blocksprite').addEventListener('click', function () {{
-    note('tap block'); room.classList.add('bounce'); say(pick(SAY.idle), 1500);
-    setTimeout(function () {{ room.classList.remove('bounce'); }}, 500);
-  }});
 
   // 调试：记录每次按下到底命中了哪个元素（点击不灵时用它定位，正式版可删）
   document.addEventListener('pointerdown', function (e) {{
@@ -774,6 +785,17 @@ def build():
     {{ id: 'lampitem', lamp: true }}
   ];
   document.querySelector('.stage').addEventListener('click', function (e) {{
+    // ① 角色优先：用屏幕矩形判（大平面会按「元素中心」抢走命中，见 docs/memory.md）
+    var pet = activeItem();
+    var pr = unionRect(pet.querySelector('.sprite') || pet);
+    if (pr.width > 2 && e.clientX >= pr.left && e.clientX <= pr.right
+        && e.clientY >= pr.top && e.clientY <= pr.bottom) {{
+      note('tap ' + (room.dataset.form === 'fox' ? 'fox' : 'block'));
+      room.classList.add('bounce'); say(pick(SAY.idle), 1200);
+      setTimeout(function () {{ room.classList.remove('bounce'); }}, 500);
+      openMenu();
+      return;
+    }}
     if (e.target.closest('.item') || e.target.closest('.window') || e.target.closest('.deco')) return;
     for (var i = 0; i < HIT_FALLBACK.length; i++) {{
       var f = HIT_FALLBACK[i], el = document.getElementById(f.id);
@@ -788,8 +810,8 @@ def build():
     }}
   }});
 
-  // 地毯：抖一下 → 物理引擎把家具按重力重新落一遍（也是物理的调试入口）
-  document.getElementById('rugitem').addEventListener('click', function () {{
+  // 物理重落：顶栏「🔄 重落」按钮（原来挂在地毯上，会抢角色的点击，已挪走）
+  document.getElementById('btn-drop').addEventListener('click', function () {{
     if (window.RoomPhys && window.RoomPhys.drop) {{ window.RoomPhys.drop(); say('再落一遍～', 1200); }}
     else say('（物理引擎没起来）', 1400);
   }});
@@ -859,6 +881,10 @@ def build():
     // 双击空白处：机位复位到默认
     var lastTap = 0;
     stage.addEventListener('click', function (e) {{
+      // 点在物件/角色上不动菜单（角色点自己会开菜单）；只有点空地才收起
+      if (!e.target.closest('.item') && !e.target.closest('.window') && !e.target.closest('.deco')) {{
+        if (actmenu.classList.contains('on')) openMenu(false);
+      }}
       if (e.target.closest('.item') || e.target.closest('.window')) return;
       var now = Date.now();
       if (now - lastTap < 320) {{
@@ -869,6 +895,37 @@ def build():
       lastTap = now;
     }});
   }})();
+
+  // ===== 交互菜单：点角色 → 头顶弹出一排交互键 =====
+  var actmenu = document.getElementById('actmenu');
+  function openMenu(force) {{
+    var on = (force === undefined) ? !actmenu.classList.contains('on') : !!force;
+    if (on) {{
+      // 定位到当前角色头顶
+      var it = activeItem();
+      var r = unionRect(it.querySelector('.sprite') || it);
+      var cx = r.width > 2 ? r.left + r.width / 2 : innerWidth / 2;
+      var ty = r.height > 2 ? r.top : innerHeight * 0.5;
+      actmenu.style.left = Math.round(cx) + 'px';
+      actmenu.style.top = Math.round(ty - 10) + 'px';
+      note('menu open at ' + Math.round(cx) + ',' + Math.round(ty));
+    }} else {{
+      note('menu close');
+    }}
+    actmenu.classList.toggle('on', on);
+  }}
+  actmenu.addEventListener('click', function (e) {{
+    var b = e.target.closest('button'); if (!b) return;
+    var k = b.getAttribute('data-menu');
+    openMenu(false);
+    if (k === 'sleep') doAct('sleep', 78, 140);
+    else if (k === 'eat') doAct('eat', 272, 352);
+    else if (k === 'dance') doAct('dance', 350, 140);
+    else if (k === 'look') doAct('look', 242, 120);
+    else if (k === 'form') setForm(room.dataset.form === 'fox' ? 'block' : 'fox');
+    else if (k === 'hide') setPetVisible(false);
+    note('menu pick ' + k);
+  }});
 
   function syncPetButtons() {{
     var on = room.dataset.pet !== 'off';
@@ -897,7 +954,6 @@ def build():
   document.getElementById('btn-fox').addEventListener('click', function () {{ setForm('fox'); }});
   document.getElementById('btn-none').addEventListener('click', function () {{ setPetVisible(false); }});
   setForm('block');
-  setPetVisible(false);     // 默认先不放桌宠：屋子还在施工，主人要看干净的屋子
 
   document.getElementById('gear').addEventListener('click', function () {{
     note('open settings');
