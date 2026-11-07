@@ -119,15 +119,8 @@ DECOR_CSS = """
 
   /* ===== 台灯（地面家具，挂物理刚体）：底座 + 灯杆 + 灯罩 + 暖光 + 地面光斑 ===== */
   .lamp { cursor:pointer; }
-  .lamp .lampbase { position:absolute; left:0; bottom:0; width:44px; height:12px; margin-left:-22px;
-    border-radius:50%/55%; background:linear-gradient(#d8a878,#96632f);
-    box-shadow: inset 0 2px 0 rgba(255,255,255,.3), 0 4px 8px rgba(60,35,15,.28); }
-  .lamp .pole { position:absolute; left:0; bottom:10px; width:5px; height:62px; margin-left:-2.5px;
-    background:linear-gradient(90deg,#d8a878,#8a5a2e); border-radius:3px; }
-  .lamp .shade { position:absolute; left:0; bottom:64px; width:54px; height:34px; margin-left:-27px;
-    background:linear-gradient(#ffe9c0,#f0b263); border-radius:6px 6px 3px 3px;
-    clip-path: polygon(16% 0, 84% 0, 100% 100%, 0 100%);
-    box-shadow:0 4px 10px rgba(240,178,99,.5); }
+  /* 旧的灯罩/灯杆/底座单面贴图已删除：现在这三样都是真盒子（box_css/shade_css），
+     ⚠️ 留着 .lamp .shade 会把新的锥形灯罩容器套成 54x34 的贴图（踩过）。 */
   .lamp .glow { position:absolute; left:0; bottom:34px; width:170px; height:120px; margin-left:-85px;
     border-radius:50%; pointer-events:none; filter:blur(4px); transition:opacity .25s;
     background:radial-gradient(ellipse at 50% 45%, rgba(255,220,140,.62), rgba(255,200,110,0) 68%); }
@@ -254,6 +247,39 @@ def bowl_dom(name='bowl8', n=8):
     return ('<div class="' + name + '">' + ''.join(f'<i class="s{k}"></i>' for k in range(n)) + '</div>')
 
 
+def shade_css(name='shade', r=26, r_top=17, h=32, n=16, y0=72):
+    """锥形灯罩：n 个面围一圈、每面上窄下宽（clip 梯形），面宽重叠 45% 盖住角缝。
+    只用 4 个面切梯形时，顶上四个角对不上 → 会「开花」，所以必须多面 + 重叠。"""
+    w = 2 * r * math.sin(math.pi / n) * 1.45
+    inset = (1 - r_top / float(r)) / 2 * 100
+    css = [f"""
+  /* 锥形灯罩：{n} 面围一圈 */
+  .{name} {{ position:absolute; left:0; bottom:{y0}px; width:0; height:0; transform-style:preserve-3d; }}
+  .{name} > i {{ position:absolute; left:0; top:0; display:block; width:{w:.2f}px; height:{h}px;
+    margin:{-h}px 0 0 {-w / 2:.2f}px;
+    clip-path: polygon({inset:.1f}% 0, {100 - inset:.1f}% 0, 100% 100%, 0 100%); }}"""]
+    for k in range(n):
+        phi = (360.0 / n) * k
+        rad = math.radians(phi)
+        sh = 0.84 + 0.16 * (math.sin(rad) * 0.5 + 0.5)
+        c1 = int(255 * sh); c2 = int(226 * sh)
+        css.append(f"""
+  .{name} .c{k} {{ background:linear-gradient(180deg, rgb({c1},{int(c1 * 0.94)},{int(c1 * 0.78)}), rgb({c2},{int(c2 * 0.87)},{int(c2 * 0.6)}));
+    transform: translate3d({r * math.cos(rad):.2f}px, 0, {r * math.sin(rad):.2f}px) rotateY({90 - phi:.2f}deg); }}""")
+    css.append(f"""
+  .{name} .cap {{ position:absolute; left:0; top:0; width:{2 * r_top - 2}px; height:{2 * r_top - 2}px;
+    margin:{-r_top + 1}px 0 0 {-r_top + 1}px; border-radius:50%;
+    background:radial-gradient(circle at 50% 45%, #fffdf2, #ffe9b8 70%, #f6cf87);
+    box-shadow:0 0 14px rgba(255,225,150,.8);
+    transform: translate3d(0,{-h - 1.2}px,0) rotateX(-90deg); }}""")
+    return ''.join(css)
+
+
+def shade_dom(name='shade', n=16):
+    return ('<div class="' + name + '">' + ''.join(f'<i class="c{k}"></i>' for k in range(n)) +
+            '<span class="cap"></span></div>')
+
+
 BOWL8_SPRITE = ('<div class="sprite">' + bowl_dom() +
                 '<span class="bdisc"></span><span class="rim"></span><span class="hollow"></span><span class="meal"></span></div>')
 
@@ -279,14 +305,7 @@ FURN_CSS = (
             top='linear-gradient(#e0ad74,#c98f4f)', bottom='#8a5a2e', radius='50%/40%') +
     box_css('lamp-pole3d', 7, 62, 7, y0=12, front='linear-gradient(#d8a878,#8a5a2e)',
             back='#9a6a38', side='#b07f45', top='#d8a878', bottom='#8a5a2e', radius='3px') +
-    box_css('lamp-shade3d', 52, 32, 40, y0=72, front='linear-gradient(#ffe9c0,#f0b263)',
-            back='#e7a95c', side='linear-gradient(90deg,#f8cd90,#e2a256)',
-            top='linear-gradient(#fff7e2,#ffe6b8)', bottom='#f4b76a', radius='2px') +
-    """
-  /* 灯罩上窄下宽：四个侧面切梯形，顶面缩小成灯口 */
-  .lamp-shade3d .bx-f, .lamp-shade3d .bx-b, .lamp-shade3d .bx-l, .lamp-shade3d .bx-r {
-    clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%); }
-  .lamp-shade3d .bx-t { width:34px; height:26px; margin:-13px 0 0 -17px; }""" +
+    shade_css() +
     """
   /* 收音机细节：喇叭 + 两个旋钮 + 天线 */
   .radio .dial { position:absolute; left:9px; bottom:13px; width:24px; height:24px; border-radius:50%;
@@ -306,7 +325,7 @@ BOWL_SPRITE = BOWL8_SPRITE
 RADIO_SPRITE = ('<div class="sprite">' + box_dom('radio3d') +
                 '<span class="dial"></span><span class="lamp"></span><span class="ant"></span></div>')
 LAMP_SPRITE = ('<div class="sprite">' + box_dom('lamp-base3d') + box_dom('lamp-pole3d') +
-               box_dom('lamp-shade3d') + '<span class="glow"></span></div>')
+               shade_dom() + '<span class="glow"></span></div>')
 
 
 LAMP_DOM = f"""
