@@ -306,16 +306,13 @@
     border:4px solid #ffa93f; background:transparent;
     box-shadow:0 0 0 1px rgba(255,236,200,.65) inset;
     transform: translate3d(0,-31.6px,0) rotateX(-90deg); }
-  .bowl .hollow { width:45px; height:45px;
-    margin:-22px 0 0 -22px; border-radius:50%;
+  .bowl .hollow { width:56px; height:56px;
+    margin:-28px 0 0 -28px; border-radius:50%;
     background:radial-gradient(circle at 50% 62%, #f6d9a8 0 26%, #d8b077 46%, #b8894c 74%, #9a6c36 100%);
     transform: translate3d(0,-30.8px,0) rotateX(-90deg); }
-  .bowl .meal { width:29px; height:29px;
-    margin:-14px 0 0 -14px; border-radius:50%;
-    background:radial-gradient(circle at 50% 40%, #ffd08a, #ffab52);
-    transform: translate3d(0,-31px,0) rotateX(-90deg); }
-  .bowl .bdisc { width:54px; height:54px;
-    margin:-27px 0 0 -27px; border-radius:50%;
+  /* 碗先做成空的（宝宝要空饭碗）：食物先不做，要加回来把 .meal 规则和 span 贴回来 */
+  .bowl .bdisc { width:57px; height:57px;
+    margin:-28px 0 0 -28px; border-radius:50%;
     background:radial-gradient(circle at 50% 40%, #e2e2e2, #adadad);
     transform: translate3d(0,-0.5px,0) rotateX(-90deg); }
   .radio3d { position:absolute; left:0; bottom:0px; width:66px; height:50px; margin-left:-33.0px;
@@ -723,7 +720,7 @@
            data-phys="56,56,36" data-drop="240" data-mass="1.5"
            style="transform: translate3d(272px,0,352px)">
         <span class="pshadow" style="width:110px;height:90px"></span>
-        <div class="sprite"><div class="bowl8"><i class="s0"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i><i class="s6"></i><i class="s7"></i></div><span class="bdisc"></span><span class="rim"></span><span class="hollow"></span><span class="meal"></span></div>
+        <div class="sprite"><div class="bowl8"><i class="s0"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i><i class="s6"></i><i class="s7"></i><i class="s8"></i><i class="s9"></i><i class="s10"></i><i class="s11"></i><i class="s12"></i><i class="s13"></i><i class="s14"></i><i class="s15"></i><i class="s16"></i><i class="s17"></i><i class="s18"></i><i class="s19"></i><i class="s20"></i><i class="s21"></i><i class="s22"></i><i class="s23"></i><span class="bdisc"></span><span class="rim"></span><span class="hollow"></span></div></div>
       </div>
 
       <div class="item radio" id="radioitem" data-act="dance" data-x="350" data-z="140"
@@ -1135,9 +1132,12 @@
   function unionRect(el) {
     var r = el.getBoundingClientRect();
     if (r.width > 1 || r.height > 1) return r;
+    // 拼装体（碗的多面体/床的盒子）自身是 0x0，而且零件可能嵌在多层容器里 →
+    // 遍历**所有后代**取并集，别只看直接子元素（只看一层会量到 0x0）
     var l = 1e9, t = 1e9, ri = -1e9, bo = -1e9, any = false;
-    for (var i = 0; i < el.children.length; i++) {
-      var c = el.children[i].getBoundingClientRect();
+    var all = el.querySelectorAll('*');
+    for (var i = 0; i < all.length; i++) {
+      var c = all[i].getBoundingClientRect();
       if (c.width < 1 && c.height < 1) continue;
       any = true;
       l = Math.min(l, c.left); t = Math.min(t, c.top);

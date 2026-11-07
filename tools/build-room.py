@@ -232,23 +232,23 @@ def bowl_css(name='bowl8', r=28, h=32, n=24):
     border:{max(4, r // 6)}px solid #ffa93f; background:transparent;
     box-shadow:0 0 0 1px rgba(255,236,200,.65) inset;
     transform: translate3d(0,{-h + 0.4}px,0) rotateX(-90deg); }}
-  .bowl .hollow {{ width:{int(1.62 * r)}px; height:{int(1.62 * r)}px;
-    margin:{-int(0.81 * r)}px 0 0 {-int(0.81 * r)}px; border-radius:50%;
+  .bowl .hollow {{ width:{int(2.00 * r)}px; height:{int(2.00 * r)}px;
+    margin:{-int(1.00 * r)}px 0 0 {-int(1.00 * r)}px; border-radius:50%;
     background:radial-gradient(circle at 50% 62%, #f6d9a8 0 26%, #d8b077 46%, #b8894c 74%, #9a6c36 100%);
     transform: translate3d(0,{-h + 1.2}px,0) rotateX(-90deg); }}
-  .bowl .meal {{ width:{int(1.05 * r)}px; height:{int(1.05 * r)}px;
-    margin:{-int(0.525 * r)}px 0 0 {-int(0.525 * r)}px; border-radius:50%;
-    background:radial-gradient(circle at 50% 40%, #ffd08a, #ffab52);
-    transform: translate3d(0,{-h + 1}px,0) rotateX(-90deg); }}
-  .bowl .bdisc {{ width:{int(1.94 * r)}px; height:{int(1.94 * r)}px;
-    margin:{-int(0.97 * r)}px 0 0 {-int(0.97 * r)}px; border-radius:50%;
+  /* 碗先做成空的（宝宝要空饭碗）：食物先不做，要加回来把 .meal 规则和 span 贴回来 */
+  .bowl .bdisc {{ width:{int(2.06 * r)}px; height:{int(2.06 * r)}px;
+    margin:{-int(1.03 * r)}px 0 0 {-int(1.03 * r)}px; border-radius:50%;
     background:radial-gradient(circle at 50% 40%, #e2e2e2, #adadad);
     transform: translate3d(0,-0.5px,0) rotateX(-90deg); }}""")
     return ''.join(css)
 
 
-def bowl_dom(name='bowl8', n=8):
-    return ('<div class="' + name + '">' + ''.join(f'<i class="s{k}"></i>' for k in range(n)) + '</div>')
+def bowl_dom(name='bowl8', n=24, extra=''):
+    # ⚠️ 碗沿/内壁/碗底必须和侧面**同属 .bowl8 这个 3D 上下文**，
+    # 否则容器自身 z=0、和平面深度相同就按 DOM 顺序画，内壁会整片盖住碗身（低角度看像少一块）
+    return ('<div class="' + name + '">' + ''.join(f'<i class="s{k}"></i>' for k in range(n)) +
+            extra + '</div>')
 
 
 def shade_css(name='shade', r=26, r_top=17, h=32, n=16, y0=72):
@@ -284,8 +284,8 @@ def shade_dom(name='shade', n=16):
             '<span class="cap"></span></div>')
 
 
-BOWL8_SPRITE = ('<div class="sprite">' + bowl_dom() +
-                '<span class="bdisc"></span><span class="rim"></span><span class="hollow"></span><span class="meal"></span></div>')
+BOWL8_SPRITE = ('<div class="sprite">' + bowl_dom(
+    extra='<span class="bdisc"></span><span class="rim"></span><span class="hollow"></span>') + '</div>')
 
 
 
@@ -1006,9 +1006,12 @@ def build():
   function unionRect(el) {{
     var r = el.getBoundingClientRect();
     if (r.width > 1 || r.height > 1) return r;
+    // 拼装体（碗的多面体/床的盒子）自身是 0x0，而且零件可能嵌在多层容器里 →
+    // 遍历**所有后代**取并集，别只看直接子元素（只看一层会量到 0x0）
     var l = 1e9, t = 1e9, ri = -1e9, bo = -1e9, any = false;
-    for (var i = 0; i < el.children.length; i++) {{
-      var c = el.children[i].getBoundingClientRect();
+    var all = el.querySelectorAll('*');
+    for (var i = 0; i < all.length; i++) {{
+      var c = all[i].getBoundingClientRect();
       if (c.width < 1 && c.height < 1) continue;
       any = true;
       l = Math.min(l, c.left); t = Math.min(t, c.top);
