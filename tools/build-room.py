@@ -121,6 +121,10 @@ DECOR_CSS = """
   .lamp { cursor:pointer; }
   /* 旧的灯罩/灯杆/底座单面贴图已删除：现在这三样都是真盒子（box_css/shade_css），
      ⚠️ 留着 .lamp .shade 会把新的锥形灯罩容器套成 54x34 的贴图（踩过）。 */
+  /* 灯泡：亮球（灯罩里的光源，从灯口露出来，比灯口小一圈不挡灯口） */
+  .lamp .bulb { position:absolute; left:0; bottom:88px; width:20px; height:20px; margin-left:-10px;
+    border-radius:50%; background:radial-gradient(circle at 42% 36%, #fffef7, #ffeaa6 52%, #ffcd57);
+    box-shadow:0 0 14px 4px rgba(255,228,145,.95), 0 0 34px 12px rgba(255,214,120,.55); }
   .lamp .glow { position:absolute; left:0; bottom:34px; width:170px; height:120px; margin-left:-85px;
     border-radius:50%; pointer-events:none; filter:blur(4px); transition:opacity .25s;
     background:radial-gradient(ellipse at 50% 45%, rgba(255,220,140,.62), rgba(255,200,110,0) 68%); }
@@ -250,14 +254,14 @@ def bowl_dom(name='bowl8', n=8):
 def shade_css(name='shade', r=26, r_top=17, h=32, n=16, y0=72):
     """锥形灯罩：n 个面围一圈、每面上窄下宽（clip 梯形），面宽重叠 45% 盖住角缝。
     只用 4 个面切梯形时，顶上四个角对不上 → 会「开花」，所以必须多面 + 重叠。"""
-    w = 2 * r * math.sin(math.pi / n) * 1.45
-    inset = (1 - r_top / float(r)) / 2 * 100
+    w = 2 * r * math.sin(math.pi / n) * 1.35
+    theta = math.degrees(math.atan((r - r_top) / float(h)))   # 每面向内倾的角度
+    slant = math.hypot(r - r_top, h)                          # 斜面长度（面高度）
     css = [f"""
-  /* 锥形灯罩：{n} 面围一圈 */
+  /* 锥形灯罩：{n} 面围一圈，每面绕自己的底边向内倾 {theta:.1f}°，顶口才真的收到 r_top（只用 clip 裁窄是假收口，顶面会盖不住） */
   .{name} {{ position:absolute; left:0; bottom:{y0}px; width:0; height:0; transform-style:preserve-3d; }}
-  .{name} > i {{ position:absolute; left:0; top:0; display:block; width:{w:.2f}px; height:{h}px;
-    margin:{-h}px 0 0 {-w / 2:.2f}px;
-    clip-path: polygon({inset:.1f}% 0, {100 - inset:.1f}% 0, 100% 100%, 0 100%); }}"""]
+  .{name} > i {{ position:absolute; left:0; top:0; display:block; width:{w:.2f}px; height:{slant:.2f}px;
+    margin:{-slant:.2f}px 0 0 {-w / 2:.2f}px; transform-origin:50% 100%; }}"""]
     for k in range(n):
         phi = (360.0 / n) * k
         rad = math.radians(phi)
@@ -265,7 +269,7 @@ def shade_css(name='shade', r=26, r_top=17, h=32, n=16, y0=72):
         c1 = int(255 * sh); c2 = int(226 * sh)
         css.append(f"""
   .{name} .c{k} {{ background:linear-gradient(180deg, rgb({c1},{int(c1 * 0.94)},{int(c1 * 0.78)}), rgb({c2},{int(c2 * 0.87)},{int(c2 * 0.6)}));
-    transform: translate3d({r * math.cos(rad):.2f}px, 0, {r * math.sin(rad):.2f}px) rotateY({90 - phi:.2f}deg); }}""")
+    transform: translate3d({r * math.cos(rad):.2f}px, 0, {r * math.sin(rad):.2f}px) rotateY({90 - phi:.2f}deg) rotateX({theta:.2f}deg); }}""")
     css.append(f"""
   .{name} .cap {{ position:absolute; left:0; top:0; width:{2 * r_top - 2}px; height:{2 * r_top - 2}px;
     margin:{-r_top + 1}px 0 0 {-r_top + 1}px; border-radius:50%;
@@ -301,9 +305,9 @@ FURN_CSS = (
     box_css('radio3d', 66, 50, 40, front='linear-gradient(#8d6e63,#6d4c41)',
             back='#5a3f36', side='linear-gradient(90deg,#7a5a4f,#57403a)',
             top='linear-gradient(#a1887f,#8d6e63)', bottom='#46302a', radius='6px') +
-    box_css('lamp-base3d', 40, 12, 40, front='#c98f4f', back='#a9743c', side='#bb8347',
+    box_css('lamp-base3d', 46, 6, 46, front='#c98f4f', back='#a9743c', side='#bb8347',
             top='linear-gradient(#e0ad74,#c98f4f)', bottom='#8a5a2e', radius='50%/40%') +
-    box_css('lamp-pole3d', 7, 62, 7, y0=12, front='linear-gradient(#d8a878,#8a5a2e)',
+    box_css('lamp-pole3d', 7, 62, 7, y0=6, front='linear-gradient(#d8a878,#8a5a2e)',
             back='#9a6a38', side='#b07f45', top='#d8a878', bottom='#8a5a2e', radius='3px') +
     shade_css() +
     """
@@ -325,7 +329,7 @@ BOWL_SPRITE = BOWL8_SPRITE
 RADIO_SPRITE = ('<div class="sprite">' + box_dom('radio3d') +
                 '<span class="dial"></span><span class="lamp"></span><span class="ant"></span></div>')
 LAMP_SPRITE = ('<div class="sprite">' + box_dom('lamp-base3d') + box_dom('lamp-pole3d') +
-               shade_dom() + '<span class="glow"></span></div>')
+               shade_dom() + '<span class="bulb"></span><span class="glow"></span></div>')
 
 
 LAMP_DOM = f"""

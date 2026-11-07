@@ -333,22 +333,22 @@
     transform: translateY(-25.0px) rotateX(-90deg); }
   .radio3d .bx-d { width:66px; height:40px; margin:-20.0px 0 0 -33.0px; background:#46302a;
     transform: translateY(25.0px) rotateX(90deg); }
-  .lamp-base3d { position:absolute; left:0; bottom:0px; width:40px; height:12px; margin-left:-20.0px;
+  .lamp-base3d { position:absolute; left:0; bottom:0px; width:46px; height:6px; margin-left:-23.0px;
     transform: translate3d(0px,0,0px); transform-style:preserve-3d; }
   .lamp-base3d > i { position:absolute; left:50%; top:50%; display:block; }
-  .lamp-base3d .bx-f { width:40px; height:12px; margin:-6.0px 0 0 -20.0px; border-radius:50%/40%;
-    background:#c98f4f; transform: translateZ(20.0px); }
-  .lamp-base3d .bx-b { width:40px; height:12px; margin:-6.0px 0 0 -20.0px; border-radius:50%/40%;
-    background:#a9743c; transform: translateZ(-20.0px) rotateY(180deg); }
-  .lamp-base3d .bx-l { width:40px; height:12px; margin:-6.0px 0 0 -20.0px; border-radius:0;
-    background:#bb8347; transform: translateX(-20.0px) rotateY(-90deg); }
-  .lamp-base3d .bx-r { width:40px; height:12px; margin:-6.0px 0 0 -20.0px; border-radius:0;
-    background:#bb8347; transform: translateX(20.0px) rotateY(90deg); }
-  .lamp-base3d .bx-t { width:40px; height:40px; margin:-20.0px 0 0 -20.0px; background:linear-gradient(#e0ad74,#c98f4f);
-    transform: translateY(-6.0px) rotateX(-90deg); }
-  .lamp-base3d .bx-d { width:40px; height:40px; margin:-20.0px 0 0 -20.0px; background:#8a5a2e;
-    transform: translateY(6.0px) rotateX(90deg); }
-  .lamp-pole3d { position:absolute; left:0; bottom:12px; width:7px; height:62px; margin-left:-3.5px;
+  .lamp-base3d .bx-f { width:46px; height:6px; margin:-3.0px 0 0 -23.0px; border-radius:50%/40%;
+    background:#c98f4f; transform: translateZ(23.0px); }
+  .lamp-base3d .bx-b { width:46px; height:6px; margin:-3.0px 0 0 -23.0px; border-radius:50%/40%;
+    background:#a9743c; transform: translateZ(-23.0px) rotateY(180deg); }
+  .lamp-base3d .bx-l { width:46px; height:6px; margin:-3.0px 0 0 -23.0px; border-radius:0;
+    background:#bb8347; transform: translateX(-23.0px) rotateY(-90deg); }
+  .lamp-base3d .bx-r { width:46px; height:6px; margin:-3.0px 0 0 -23.0px; border-radius:0;
+    background:#bb8347; transform: translateX(23.0px) rotateY(90deg); }
+  .lamp-base3d .bx-t { width:46px; height:46px; margin:-23.0px 0 0 -23.0px; background:linear-gradient(#e0ad74,#c98f4f);
+    transform: translateY(-3.0px) rotateX(-90deg); }
+  .lamp-base3d .bx-d { width:46px; height:46px; margin:-23.0px 0 0 -23.0px; background:#8a5a2e;
+    transform: translateY(3.0px) rotateX(90deg); }
+  .lamp-pole3d { position:absolute; left:0; bottom:6px; width:7px; height:62px; margin-left:-3.5px;
     transform: translate3d(0px,0,0px); transform-style:preserve-3d; }
   .lamp-pole3d > i { position:absolute; left:50%; top:50%; display:block; }
   .lamp-pole3d .bx-f { width:7px; height:62px; margin:-31.0px 0 0 -3.5px; border-radius:3px;
@@ -363,43 +363,42 @@
     transform: translateY(-31.0px) rotateX(-90deg); }
   .lamp-pole3d .bx-d { width:7px; height:7px; margin:-3.5px 0 0 -3.5px; background:#8a5a2e;
     transform: translateY(31.0px) rotateX(90deg); }
-  /* 锥形灯罩：16 面围一圈 */
+  /* 锥形灯罩：16 面围一圈，每面绕自己的底边向内倾 15.7°，顶口才真的收到 r_top（只用 clip 裁窄是假收口，顶面会盖不住） */
   .shade { position:absolute; left:0; bottom:72px; width:0; height:0; transform-style:preserve-3d; }
-  .shade > i { position:absolute; left:0; top:0; display:block; width:14.71px; height:32px;
-    margin:-32px 0 0 -7.35px;
-    clip-path: polygon(17.3% 0, 82.7% 0, 100% 100%, 0 100%); }
+  .shade > i { position:absolute; left:0; top:0; display:block; width:13.70px; height:33.24px;
+    margin:-33.24px 0 0 -6.85px; transform-origin:50% 100%; }
   .shade .c0 { background:linear-gradient(180deg, rgb(234,219,182), rgb(207,180,124));
-    transform: translate3d(26.00px, 0, 0.00px) rotateY(90.00deg); }
+    transform: translate3d(26.00px, 0, 0.00px) rotateY(90.00deg) rotateX(15.71deg); }
   .shade .c1 { background:linear-gradient(180deg, rgb(242,227,188), rgb(214,186,128));
-    transform: translate3d(24.02px, 0, 9.95px) rotateY(67.50deg); }
+    transform: translate3d(24.02px, 0, 9.95px) rotateY(67.50deg) rotateX(15.71deg); }
   .shade .c2 { background:linear-gradient(180deg, rgb(249,234,194), rgb(220,191,132));
-    transform: translate3d(18.38px, 0, 18.38px) rotateY(45.00deg); }
+    transform: translate3d(18.38px, 0, 18.38px) rotateY(45.00deg) rotateX(15.71deg); }
   .shade .c3 { background:linear-gradient(180deg, rgb(253,237,197), rgb(224,194,134));
-    transform: translate3d(9.95px, 0, 24.02px) rotateY(22.50deg); }
+    transform: translate3d(9.95px, 0, 24.02px) rotateY(22.50deg) rotateX(15.71deg); }
   .shade .c4 { background:linear-gradient(180deg, rgb(255,239,198), rgb(226,196,135));
-    transform: translate3d(0.00px, 0, 26.00px) rotateY(0.00deg); }
+    transform: translate3d(0.00px, 0, 26.00px) rotateY(0.00deg) rotateX(15.71deg); }
   .shade .c5 { background:linear-gradient(180deg, rgb(253,237,197), rgb(224,194,134));
-    transform: translate3d(-9.95px, 0, 24.02px) rotateY(-22.50deg); }
+    transform: translate3d(-9.95px, 0, 24.02px) rotateY(-22.50deg) rotateX(15.71deg); }
   .shade .c6 { background:linear-gradient(180deg, rgb(249,234,194), rgb(220,191,132));
-    transform: translate3d(-18.38px, 0, 18.38px) rotateY(-45.00deg); }
+    transform: translate3d(-18.38px, 0, 18.38px) rotateY(-45.00deg) rotateX(15.71deg); }
   .shade .c7 { background:linear-gradient(180deg, rgb(242,227,188), rgb(214,186,128));
-    transform: translate3d(-24.02px, 0, 9.95px) rotateY(-67.50deg); }
+    transform: translate3d(-24.02px, 0, 9.95px) rotateY(-67.50deg) rotateX(15.71deg); }
   .shade .c8 { background:linear-gradient(180deg, rgb(234,219,182), rgb(207,180,124));
-    transform: translate3d(-26.00px, 0, 0.00px) rotateY(-90.00deg); }
+    transform: translate3d(-26.00px, 0, 0.00px) rotateY(-90.00deg) rotateX(15.71deg); }
   .shade .c9 { background:linear-gradient(180deg, rgb(226,212,176), rgb(201,174,120));
-    transform: translate3d(-24.02px, 0, -9.95px) rotateY(-112.50deg); }
+    transform: translate3d(-24.02px, 0, -9.95px) rotateY(-112.50deg) rotateX(15.71deg); }
   .shade .c10 { background:linear-gradient(180deg, rgb(220,206,171), rgb(195,169,117));
-    transform: translate3d(-18.38px, 0, -18.38px) rotateY(-135.00deg); }
+    transform: translate3d(-18.38px, 0, -18.38px) rotateY(-135.00deg) rotateX(15.71deg); }
   .shade .c11 { background:linear-gradient(180deg, rgb(215,202,167), rgb(191,166,114));
-    transform: translate3d(-9.95px, 0, -24.02px) rotateY(-157.50deg); }
+    transform: translate3d(-9.95px, 0, -24.02px) rotateY(-157.50deg) rotateX(15.71deg); }
   .shade .c12 { background:linear-gradient(180deg, rgb(214,201,166), rgb(189,164,113));
-    transform: translate3d(-0.00px, 0, -26.00px) rotateY(-180.00deg); }
+    transform: translate3d(-0.00px, 0, -26.00px) rotateY(-180.00deg) rotateX(15.71deg); }
   .shade .c13 { background:linear-gradient(180deg, rgb(215,202,167), rgb(191,166,114));
-    transform: translate3d(9.95px, 0, -24.02px) rotateY(-202.50deg); }
+    transform: translate3d(9.95px, 0, -24.02px) rotateY(-202.50deg) rotateX(15.71deg); }
   .shade .c14 { background:linear-gradient(180deg, rgb(220,206,171), rgb(195,169,117));
-    transform: translate3d(18.38px, 0, -18.38px) rotateY(-225.00deg); }
+    transform: translate3d(18.38px, 0, -18.38px) rotateY(-225.00deg) rotateX(15.71deg); }
   .shade .c15 { background:linear-gradient(180deg, rgb(226,212,176), rgb(201,174,120));
-    transform: translate3d(24.02px, 0, -9.95px) rotateY(-247.50deg); }
+    transform: translate3d(24.02px, 0, -9.95px) rotateY(-247.50deg) rotateX(15.71deg); }
   .shade .cap { position:absolute; left:0; top:0; width:32px; height:32px;
     margin:-16px 0 0 -16px; border-radius:50%;
     background:radial-gradient(circle at 50% 45%, #fffdf2, #ffe9b8 70%, #f6cf87);
@@ -494,6 +493,10 @@
   .lamp { cursor:pointer; }
   /* 旧的灯罩/灯杆/底座单面贴图已删除：现在这三样都是真盒子（box_css/shade_css），
      ⚠️ 留着 .lamp .shade 会把新的锥形灯罩容器套成 54x34 的贴图（踩过）。 */
+  /* 灯泡：亮球（灯罩里的光源，从灯口露出来，比灯口小一圈不挡灯口） */
+  .lamp .bulb { position:absolute; left:0; bottom:88px; width:20px; height:20px; margin-left:-10px;
+    border-radius:50%; background:radial-gradient(circle at 42% 36%, #fffef7, #ffeaa6 52%, #ffcd57);
+    box-shadow:0 0 14px 4px rgba(255,228,145,.95), 0 0 34px 12px rgba(255,214,120,.55); }
   .lamp .glow { position:absolute; left:0; bottom:34px; width:170px; height:120px; margin-left:-85px;
     border-radius:50%; pointer-events:none; filter:blur(4px); transition:opacity .25s;
     background:radial-gradient(ellipse at 50% 45%, rgba(255,220,140,.62), rgba(255,200,110,0) 68%); }
@@ -734,7 +737,7 @@
            data-drop="280" data-mass="3" style="transform: translate3d(60px,0,330px)">
         <span class="pshadow" style="width:96px;height:76px"></span>
         <span class="lamp-pool"></span>
-        <div class="sprite"><div class="lamp-base3d"><i class="bx-f"></i><i class="bx-b"></i><i class="bx-l"></i><i class="bx-r"></i><i class="bx-t"></i><i class="bx-d"></i></div><div class="lamp-pole3d"><i class="bx-f"></i><i class="bx-b"></i><i class="bx-l"></i><i class="bx-r"></i><i class="bx-t"></i><i class="bx-d"></i></div><div class="shade"><i class="c0"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="c5"></i><i class="c6"></i><i class="c7"></i><i class="c8"></i><i class="c9"></i><i class="c10"></i><i class="c11"></i><i class="c12"></i><i class="c13"></i><i class="c14"></i><i class="c15"></i><span class="cap"></span></div><span class="glow"></span></div>
+        <div class="sprite"><div class="lamp-base3d"><i class="bx-f"></i><i class="bx-b"></i><i class="bx-l"></i><i class="bx-r"></i><i class="bx-t"></i><i class="bx-d"></i></div><div class="lamp-pole3d"><i class="bx-f"></i><i class="bx-b"></i><i class="bx-l"></i><i class="bx-r"></i><i class="bx-t"></i><i class="bx-d"></i></div><div class="shade"><i class="c0"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="c5"></i><i class="c6"></i><i class="c7"></i><i class="c8"></i><i class="c9"></i><i class="c10"></i><i class="c11"></i><i class="c12"></i><i class="c13"></i><i class="c14"></i><i class="c15"></i><span class="cap"></span></div><span class="bulb"></span><span class="glow"></span></div>
       </div>
 
       <div class="item" id="blockitem" style="transform: translate3d(210px,0,310px)">
